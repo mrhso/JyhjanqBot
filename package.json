@@ -1,0 +1,11 @@
+{
+    "name": "fanyiman",
+    "version": "0.114514",
+    "description": "范一满专用打喷机器.js（大嘘）",
+    "dependencies": {
+        "text-encoding": "^0.7.0"
+    },
+    "engines": {
+        "node": ">=7.0.0"
+    }
+}
