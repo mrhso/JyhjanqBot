@@ -32,11 +32,14 @@ try {
     penshern = require('./text.js');
 } catch (ex) {
     pluginManager.log('Failed to load text.js', true);
-}
+};
 
-for (var num = 1; num <= (config.count || 100); num ++) {
-    let random = penshern[Math.floor(Math.random() * penshern.length)]
+function daapen() {
+    let random = penshern[Math.floor(Math.random() * penshern.length)];
     config.isGroup === false ? qqbot.sendPrivateMessage(config.id, random) : qqbot.sendGroupMessage(config.id, random);
     pluginManager.log('Output: ' + random);
-    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, config.sleep || 100);
+};
+
+for (let i = 1; i <= (config.count || 100); i ++) {
+    setTimeout(daapen, (config.sleep || 100) * i);
 };
