@@ -34,12 +34,17 @@ try {
     pluginManager.log('Failed to load text.js', true);
 };
 
-function daapen() {
-    let random = penshern[Math.floor(Math.random() * penshern.length)];
-    config.isGroup === false ? qqbot.sendPrivateMessage(config.id, random) : qqbot.sendGroupMessage(config.id, random);
-    pluginManager.log('Output: ' + random);
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function daapen() {
+    for (let i = 1; i <= (config.count || 100); i ++) {
+        let random = penshern[Math.floor(Math.random() * penshern.length)];
+        config.isGroup === false ? qqbot.sendPrivateMessage(config.id, random) : qqbot.sendGroupMessage(config.id, random);
+        pluginManager.log('Output: ' + random);
+        await sleep((config.sleep || 100) * ramdom.length);
+    };
 };
 
-for (let i = 1; i <= (config.count || 100); i ++) {
-    setTimeout(daapen, (config.sleep || 100) * i);
-};
+daapen();
