@@ -34,7 +34,7 @@ try {
     pluginManager.log('Failed to load text.js', true);
 }
 
-for (var num = 1; num <= config.count || 100; num ++) {
+for (var num = 1; num <= (config.count || 100); num ++) {
     let random = penshern[Math.floor(Math.random() * penshern.length)]
     config.isGroup === false ? qqbot.sendPrivateMessage(config.id, random) : qqbot.sendGroupMessage(config.id, random);
     pluginManager.log('Output: ' + random);
