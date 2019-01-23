@@ -38,4 +38,5 @@ for (var num = 1; num <= (config.count || 100); num ++) {
     let random = penshern[Math.floor(Math.random() * penshern.length)]
     config.isGroup === false ? qqbot.sendPrivateMessage(config.id, random) : qqbot.sendGroupMessage(config.id, random);
     pluginManager.log('Output: ' + random);
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, config.sleep || 100);
 };
