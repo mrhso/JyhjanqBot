@@ -36,13 +36,17 @@ try {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
+};
 
 async function daapen() {
     for (let i = 1; i <= (config.count || 100); i ++) {
         let random = penshern[Math.floor(Math.random() * penshern.length)];
         await sleep((config.sleep || 100) * [...random].length);
-        config.isGroup === false ? qqbot.sendPrivateMessage(config.id, random) : qqbot.sendGroupMessage(config.id, random);
+        if (config.isGroup === false) {
+            qqbot.sendPrivateMessage(config.id, random)
+        } else {
+            qqbot.sendGroupMessage(config.id, random)
+        };
         pluginManager.log('Output: ' + random);
     };
 };
