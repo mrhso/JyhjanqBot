@@ -40,7 +40,8 @@ function sleep(ms) {
 
 async function daapen() {
     for (let i = 1; i <= (config.count || 100); i ++) {
-        let random = penshern[Math.floor(Math.random() * penshern.length)];
+        let ramdomIndex = Math.floor(Math.random() * penshern.length)
+        let random = penshern[ramdomIndex];
         await sleep((config.sleep || 100) * [...random].length);
         if (config.isGroup === false) {
             qqbot.sendPrivateMessage(config.id, random)
@@ -48,6 +49,9 @@ async function daapen() {
             qqbot.sendGroupMessage(config.id, random)
         };
         pluginManager.log(`Output: ${random}`);
+        if (config.unique) {
+            penshern.splice(ramdomIndex, 1);
+        };
     };
 };
 

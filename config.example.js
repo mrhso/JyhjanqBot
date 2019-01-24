@@ -7,5 +7,6 @@ module.exports = {
     "isGroup": true,     // true 为群，false 为私聊
     "id": "10000",       // QQ 群号或 QQ 号
     "count": 100,        // 消息总数
-    "sleep": 100         // 单字符延时（毫秒），单字符延时 × 字符数 = 字符串延时
+    "sleep": 100,        // 单字符延时（毫秒），单字符延时 × 字符数 = 字符串延时
+    "unique": false      // true 则喷辞不重复，false 允许重复
 };
