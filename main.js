@@ -28,6 +28,7 @@ qqbot.on('Error', (err) => {
 qqbot.start();
 
 let penshern = [];
+let penshernCopy = [];
 try {
     penshern = require('./text.js');
 } catch (ex) {
@@ -40,17 +41,20 @@ function sleep(ms) {
 
 async function daapen() {
     for (let i = 1; i <= (config.count || 100); i ++) {
-        let ramdomIndex = Math.floor(Math.random() * penshern.length)
-        let random = penshern[ramdomIndex];
+        if (config.unique && penshernCopy.length === 0) {
+            penshernCopy.push(...penshern);
+        };
+        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length)
+        let random = penshernCopy[ramdomIndex];
         await sleep((config.sleep || 100) * [...random].length);
-        if (config.isGroup === false) {
-            qqbot.sendPrivateMessage(config.id, random)
+        if (config.isGroup === undefined ? true : config.isGroup) {
+            qqbot.sendPrivateMessage(config.id, random);
         } else {
-            qqbot.sendGroupMessage(config.id, random)
+            qqbot.sendGroupMessage(config.id, random);
         };
         pluginManager.log(`Output: ${random}`);
         if (config.unique) {
-            penshern.splice(ramdomIndex, 1);
+            penshernCopy.splice(ramdomIndex, 1);
         };
     };
 };
