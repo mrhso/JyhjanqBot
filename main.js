@@ -47,7 +47,7 @@ async function daapen() {
         } else {
             qqbot.sendGroupMessage(config.id, random)
         };
-        pluginManager.log('Output: ' + random);
+        pluginManager.log(`Output: ${random}`);
     };
 };
 
