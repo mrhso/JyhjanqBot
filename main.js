@@ -42,25 +42,25 @@ function sleep(ms) {
 async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
         if (penshernCopy.length === 0) {
-            penshernCopy.push(...penshern);
+            penshernCopy.push(...penshern);                                // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
         };
 
-        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
-        let random = penshernCopy[ramdomIndex];
+        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length); // 生成随机数
+        let random = penshernCopy[ramdomIndex];                            // 用这个随机数来从 penshernCopy 抽取喷辞
 
         if (config.sleep === undefined ? true : config.sleep) {
-            await sleep((config.sleep || 100) * [...random].length);
+            await sleep((config.sleep || 100) * [...random].length);       // 延时
         };
 
         if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendGroupMessage(config.to, random);
+            qqbot.sendGroupMessage(config.to, random);                     // 群聊
         } else {
-            qqbot.sendPrivateMessage(config.to, random);
+            qqbot.sendPrivateMessage(config.to, random);                   // 私聊
         };
         pluginManager.log(`Output: ${random}`);
 
         if (config.unique) {
-            penshernCopy.splice(ramdomIndex, 1);
+            penshernCopy.splice(ramdomIndex, 1);                           // 从 penshernCopy 里删除用掉的喷辞
         };
     };
 };
