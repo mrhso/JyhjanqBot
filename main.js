@@ -44,7 +44,7 @@ async function daapen() {
         if (config.unique && penshernCopy.length === 0) {
             penshernCopy.push(...penshern);
         };
-        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length)
+        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
         let random = penshernCopy[ramdomIndex];
         await sleep((config.sleep || 100) * [...random].length);
         if (config.isGroup === undefined ? true : config.isGroup) {
