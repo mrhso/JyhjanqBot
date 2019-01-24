@@ -48,9 +48,9 @@ async function daapen() {
         let random = penshernCopy[ramdomIndex];
         await sleep((config.sleep || 100) * [...random].length);
         if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendPrivateMessage(config.id, random);
-        } else {
             qqbot.sendGroupMessage(config.id, random);
+        } else {
+            qqbot.sendPrivateMessage(config.id, random);
         };
         pluginManager.log(`Output: ${random}`);
         if (config.unique) {
