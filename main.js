@@ -66,12 +66,12 @@ async function daapenActive() {
 };
 
 function daapenPassive() {
-    qqbot.on('GroupMessage', (rawdata) => {
-        if (penshernCopy.length === 0) {
-            penshernCopy.push(...penshern);
-        };
-
+    qqbot.on('GroupMessage', async (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
+            if (penshernCopy.length === 0) {
+                penshernCopy.push(...penshern);
+            };
+
             let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
             let random = penshernCopy[ramdomIndex];
 
@@ -81,15 +81,15 @@ function daapenPassive() {
 
             qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${random}`, {noEscape: true});
             pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${random}`);
-        };
 
-        if (config.unique) {
-            penshernCopy.splice(ramdomIndex, 1);
+            if (config.unique) {
+                penshernCopy.splice(ramdomIndex, 1);
+            };
         };
     });
 
-    qqbot.on('PrivateMessage', (rawdata) => {
-        if ( penshernCopy.length === 0) {
+    qqbot.on('PrivateMessage', async (rawdata) => {
+        if (penshernCopy.length === 0) {
             penshernCopy.push(...penshern);
         };
 
