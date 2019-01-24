@@ -39,7 +39,7 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-async function daapen() {
+async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
         if (config.unique && penshernCopy.length === 0) {
             penshernCopy.push(...penshern);
@@ -48,9 +48,9 @@ async function daapen() {
         let random = penshernCopy[ramdomIndex];
         await sleep((config.sleep || 100) * [...random].length);
         if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendGroupMessage(config.id, random);
+            qqbot.sendGroupMessage(config.to, random);
         } else {
-            qqbot.sendPrivateMessage(config.id, random);
+            qqbot.sendPrivateMessage(config.to, random);
         };
         pluginManager.log(`Output: ${random}`);
         if (config.unique) {
@@ -59,4 +59,37 @@ async function daapen() {
     };
 };
 
-daapen();
+function daapenPassive() {
+    qqbot.on('GroupMessage', (rawdata) => {
+        if (config.unique && penshernCopy.length === 0) {
+            penshernCopy.push(...penshern);
+        };
+        if (rawdata.extra.ats.indexOf(config.id) > -1) {
+            let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
+            let random = penshernCopy[ramdomIndex];
+            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${random}`, {noEscape: true});
+            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${random}`);
+        };
+        if (config.unique) {
+            penshernCopy.splice(ramdomIndex, 1);
+        };
+    });
+    qqbot.on('PrivateMessage', (rawdata) => {
+        if (config.unique && penshernCopy.length === 0) {
+            penshernCopy.push(...penshern);
+        };
+        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
+        let random = penshernCopy[ramdomIndex];
+        qqbot.sendPrivateMessage(rawdata.from, random);
+        pluginManager.log(`Output: ${random}`);
+        if (config.unique) {
+            penshernCopy.splice(ramdomIndex, 1);
+        };
+    });
+};
+
+if (config.mode === "active") {
+    daapenActive();
+} else if (config.mode === "passive") {
+    daapenPassive();
+};
