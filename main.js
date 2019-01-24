@@ -41,7 +41,7 @@ function sleep(ms) {
 
 async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
-        if (config.unique && penshernCopy.length === 0) {
+        if (penshernCopy.length === 0) {
             penshernCopy.push(...penshern);
         };
         let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
@@ -61,7 +61,7 @@ async function daapenActive() {
 
 function daapenPassive() {
     qqbot.on('GroupMessage', (rawdata) => {
-        if (config.unique && penshernCopy.length === 0) {
+        if (penshernCopy.length === 0) {
             penshernCopy.push(...penshern);
         };
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
@@ -75,7 +75,7 @@ function daapenPassive() {
         };
     });
     qqbot.on('PrivateMessage', (rawdata) => {
-        if (config.unique && penshernCopy.length === 0) {
+        if ( penshernCopy.length === 0) {
             penshernCopy.push(...penshern);
         };
         let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
