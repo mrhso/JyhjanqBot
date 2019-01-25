@@ -116,7 +116,7 @@ function jinkohChishoh() {
             let answer = question;
     
             if(answer.search(/[一-龥][？\?]/g) > -1) {
-                answer = answer.replace(/[啊吗嗎吧呢的]?[？\?]/g, "的！").replace(/我/g, "\uD800").replace(/你/g, "我").replace(/\uD800([^\uDC00-\uDFFF])|\uD800$/g, "你$1").replace(/(.)不\1/g, "$1").replace(/难道/g, "当然");
+                answer = answer.replace(/([啊吗嗎吧呢的]+)?[？\?]/g, "！").replace(/我/g, "\uD800").replace(/[你您]/g, "我").replace(/\uD800([^\uDC00-\uDFFF])|\uD800$/g, "你$1").replace(/(.)[不没沒]\1/g, "$1").replace(/难道/g, "当然").replace(/難道/g, "當然").replace(/哪里/g, "台湾").replace(/哪[裏裡]/g, "台灣").replace(/[谁誰]/g, "蔡英文").replace(/究竟([^然])|究竟$/g, "就$1").replace(/为什么/g, "因为迫害").replace(/為什麼/g, "因為迫害");
             };
     
             if(answer.search(/[a-zA-Zａ-ｚＡ-Ｚ][？\?]/g) > -1) {
@@ -137,7 +137,7 @@ function jinkohChishoh() {
         let answer = question;
     
         if(answer.search(/[一-龥][？\?]/g) > -1) {
-            answer = answer.replace(/[啊吗嗎吧呢的]?[？\?]/g, "的！").replace(/我/g, "\uD800").replace(/你/g, "我").replace(/\uD800([^\uDC00-\uDFFF])|\uD800$/g, "你$1").replace(/(.)不\1/g, "$1").replace(/难道/g, "当然");
+            answer = answer.replace(/([啊吗嗎吧呢的]+)?[？\?]/g, "！").replace(/我/g, "\uD800").replace(/[你您]/g, "我").replace(/\uD800([^\uDC00-\uDFFF])|\uD800$/g, "你$1").replace(/(.)[不没沒]\1/g, "$1").replace(/难道/g, "当然").replace(/難道/g, "當然").replace(/哪里/g, "台湾").replace(/哪[裏裡]/g, "台灣").replace(/[谁誰]/g, "蔡英文").replace(/究竟[^然]|究竟$/g, "就").replace(/为什么/g, "因为迫害").replace(/為什麼/g, "因為迫害");
         };
     
         if(answer.search(/[a-zA-Zａ-ｚＡ-Ｚ][？\?]/g) > -1) {
