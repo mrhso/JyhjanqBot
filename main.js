@@ -126,6 +126,10 @@ function jinkohChishoh() {
             };
     
             if(answer !== question) {
+                if (config.sleep === undefined ? true : config.sleep) {
+                    await sleep((config.sleep || 100) * [...random].length);
+                };
+
                 qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
                 pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
             };
@@ -147,6 +151,10 @@ function jinkohChishoh() {
         };
     
         if(answer !== question) {
+            if (config.sleep === undefined ? true : config.sleep) {
+                await sleep((config.sleep || 100) * [...random].length);
+            };
+
             qqbot.sendPrivateMessage(rawdata.from, answer);
             pluginManager.log(`Output: ${answer}`);
         };
