@@ -109,8 +109,54 @@ function daapenPassive() {
     });
 };
 
+function jinkohChishoh() {
+    qqbot.on('GroupMessage', async (rawdata) => {
+        if (rawdata.extra.ats.indexOf(config.id) > -1) {
+            let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
+            let answer = question;
+    
+            if(answer.search(/[一-龥][？\?]/g) > -1) {
+                answer = answer.replace(/[啊吗嗎吧呢的]?[？\?]/g, "的！").replace(/我/g, "\uD800").replace(/你/g, "我").replace(/\uD800([^\uDC00-\uDFFF])|\uD800$/g, "你$1").replace(/(.)不\1/g, "$1").replace(/难道/g, "当然");
+            };
+    
+            if(answer.search(/[a-zA-Zａ-ｚＡ-Ｚ][？\?]/g) > -1) {
+                if(answer.search(/^[cCｃＣ][aAａＡ][nNｎＮ]/g) > -1) {
+                    answer = "Yes, I can!";
+                };
+            };
+    
+            if(answer !== question) {
+                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
+                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
+            };
+        };
+    });
+    
+    qqbot.on('PrivateMessage', async (rawdata) => {
+        let question = rawdata.text;
+        let answer = question;
+    
+        if(answer.search(/[一-龥][？\?]/g) > -1) {
+            answer = answer.replace(/[啊吗嗎吧呢的]?[？\?]/g, "的！").replace(/我/g, "\uD800").replace(/你/g, "我").replace(/\uD800([^\uDC00-\uDFFF])|\uD800$/g, "你$1").replace(/(.)不\1/g, "$1").replace(/难道/g, "当然");
+        };
+    
+        if(answer.search(/[a-zA-Zａ-ｚＡ-Ｚ][？\?]/g) > -1) {
+            if(answer.search(/^[cCｃＣ][aAａＡ][nNｎＮ]/g) > -1) {
+                answer = "Yes, I can!";
+            };
+        };
+    
+        if(answer !== question) {
+            qqbot.sendPrivateMessage(rawdata.from, answer);
+            pluginManager.log(`Output: ${answer}`);
+        };
+    });
+};
+
 if (config.mode === "active") {
     daapenActive();
 } else if (config.mode === "passive") {
     daapenPassive();
+} else if (config.mode === "chishoh") {
+    jinkohChishoh();
 };

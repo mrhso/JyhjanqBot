@@ -5,7 +5,9 @@ module.exports = {
     "host": "127.0.0.1", // 酷 Q 所在环境的 IP
     "port": 11235,       // 酷 Q 的通信端口
     "id": "10000",       // 机器人本身的 QQ 号
-    "mode": "active",    // active 为主动打喷，passive 为被动（被 at 和私聊）打喷
+    "mode": "active",    // active 为主动打喷模式
+                         // passive 为被动打喷模式，被 at 及私聊时会打喷
+                         // chishoh 为人工池沼模式
     "isGroup": true,     // true 为群，false 为私聊
     "to": "10000",       // 目的 QQ 群号或 QQ 号
     "count": 100,        // 消息总数

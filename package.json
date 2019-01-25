@@ -1,7 +1,7 @@
 {
     "name": "fanyiman",
-    "version": "0.0.114514",
-    "description": "范一满专用打喷机器.js（大嘘）",
+    "version": "0.0.1919810",
+    "description": "多功能池沼打喷机器满",
     "dependencies": {
         "text-encoding": "^0.7.0"
     },
