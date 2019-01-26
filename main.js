@@ -203,10 +203,6 @@ function jinkohChishoh() {
 };
 
 function AIxxz() {
-    let appid = "dcXbXX0X";
-    let ak = "5c011b2726e0adb52f98d6a57672774314c540a0";
-    let token = "f9e79b0d9144b9b47f3072359c0dfa75926a5013";
-    let devid = "UniqueDeviceID";
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
@@ -244,11 +240,11 @@ function AIxxz() {
                             };
                         });
                     });
-                    reqAnswer.write(`app=${appid}&dev=${devid}&uk=${uk}&text=${question}`);
+                    reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
                     reqAnswer.end();
                 });
             });
-            reqUK.write(`secret=${appid}|${ak}|${token}&event=GetUk&data=["${devid}"]`);
+            reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
             reqUK.end();
         };
     });
@@ -289,11 +285,11 @@ function AIxxz() {
                         };
                     });
                 });
-                reqAnswer.write(`app=${appid}&dev=${devid}&uk=${uk}&text=${question}`);
+                reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
                 reqAnswer.end();
             });
         });
-        reqUK.write(`secret=${appid}|${ak}|${token}&event=GetUk&data=["${devid}"]`);
+        reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
         reqUK.end();
     });
 };
