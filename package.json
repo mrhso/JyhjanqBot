@@ -1,6 +1,6 @@
 {
-    "name": "fanyiman",
-    "version": "0.0.1919810",
+    "name": "jyhjanqbot",
+    "version": "1.0.0",
     "description": "多功能人工池沼",
     "dependencies": {
         "text-encoding": "^0.7.0"
