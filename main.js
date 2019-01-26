@@ -169,9 +169,9 @@ function jinkohChishoh() {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
             let answer = jinkohChishohAnswer(question);
-            answer = splitText(answer);
 
             if(answer !== question) {
+                answer = splitText(answer);
                 for (let answerSplit of answer) {
                     if (config.sleep === undefined ? true : config.sleep) {
                         await sleep((config.sleep || 100) * [...answerSplit].length);
@@ -187,9 +187,9 @@ function jinkohChishoh() {
     qqbot.on('PrivateMessage', async (rawdata) => {
         let question = rawdata.text;
         let answer = jinkohChishohAnswer(question);
-        answer = splitText(answer);
 
         if(answer !== question) {
+            answer = splitText(answer);
             for (let answerSplit of answer) {
                 if (config.sleep === undefined ? true : config.sleep) {
                     await sleep((config.sleep || 100) * [...answerSplit].length);
