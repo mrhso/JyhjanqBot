@@ -260,6 +260,7 @@ function AIxxz() {
 
                 let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
                     res.on('data', async (chunk) => {
+                        let answer = [];
                         if (Array.isArray(JSON.parse(chunk.toString()).data)) {
                             for (let data in JSON.parse(chunk.toString()).data[0]) {
                                 answer.push(JSON.parse(chunk.toString()).data[0][data]);
