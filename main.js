@@ -50,8 +50,8 @@ function splitText(text) {
         let u2g = new TextEncoder('gb18030', {NONSTANDARD_allowLegacyEncoding: true});
         let b = u2g.encode(ch).length;                                                 // 计算 GB 18030 中该字符的长度
 
-        if (bytes + b > 846) {                                                         // 经过测试大概是 882 字节的样子，留个余裕
-                                                                                       // 846 = 850 - 2 - 2，「→」占 2 字节
+        if (bytes + b > 796) {                                                         // 经过测试大概是 882 字节的样子，留个余裕
+                                                                                       // 796 = 800 - 2 - 2，「→」占 2 字节
             line.push("→");
             lines.push(line.join(''));
             line = ["→", ch];
