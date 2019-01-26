@@ -1,7 +1,7 @@
 {
     "name": "fanyiman",
     "version": "0.0.1919810",
-    "description": "多功能池沼打喷机器满",
+    "description": "多功能人工池沼",
     "dependencies": {
         "text-encoding": "^0.7.0"
     },
