@@ -162,9 +162,10 @@ function jinkohChishoh() {
 };
 
 if (config.mode === "active") {
-    daapenActive();
+    daapenActive();                     // 主动打喷
 } else if (config.mode === "passive") {
-    daapenPassive();
+    daapenPassive();                    // 被动打喷
 } else if (config.mode === "chishoh") {
-    rengongJyhjanq();
+    jinkohChishoh();                    // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
+                                        // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
 };
