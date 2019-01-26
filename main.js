@@ -166,5 +166,5 @@ if (config.mode === "active") {
 } else if (config.mode === "passive") {
     daapenPassive();
 } else if (config.mode === "chishoh") {
-    jinkohChishoh();
+    rengongJyhjanq();
 };
