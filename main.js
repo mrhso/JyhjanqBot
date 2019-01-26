@@ -276,11 +276,11 @@ function AIxxz() {
 
                         for (let answerSplit of answer) {
                             if (config.sleep === undefined ? true : config.sleep) {
-                                await sleep((config.sleep || 100) * [...answer].length);
+                                await sleep((config.sleep || 100) * [...answerSplit].length);
                             };
 
-                            qqbot.sendPrivateMessage(rawdata.from, answer);
-                            pluginManager.log(`Output: ${answer}`);
+                            qqbot.sendPrivateMessage(rawdata.from, answerSplit);
+                            pluginManager.log(`Output: ${answerSplit}`);
                         };
                     });
                 });
