@@ -1,18 +1,19 @@
 # 多功能人工池沼
 ## 特点
-本人工池沼有三个模式：
-* 主动打喷模式
-* 被动打喷模式
-* 人工池沼模式
+本人工池沼有四个模式：
+- 主动打喷模式
+- 被动打喷模式
+- 人工池沼模式
+- 小信子模式
 
 ## 使用方法
 首先准备好依赖。
-* 安装 Node.js。
-* 下载[酷 Q](https://cqp.cc/)。
-* 下载 [me.cqp.ishisashi.cqsocketapi.cpk](https://dl.bintray.com/mrhso/cqsocketapi/me.cqp.ishisashi.cqsocketapi.cpk)，放入酷 Q 的 app 目录。
-* 启用插件「CoolQ Socket API (Node.js)」。
-* 下载机器人本体。
-* 执行：
+- 安装 Node.js。
+- 下载[酷 Q](https://cqp.cc/)。
+- 下载 [me.cqp.ishisashi.cqsocketapi.cpk](https://dl.bintray.com/mrhso/cqsocketapi/me.cqp.ishisashi.cqsocketapi.cpk)，放入酷 Q 的 app 目录。
+- 启用插件「CoolQ Socket API (Node.js)」。
+- 下载机器人本体。
+- 执行：
 ```
 npm install
 ```
@@ -37,3 +38,5 @@ node main.js
 1.0.0 起改名为 JyhjanqBot（智障 Bot），正式成为多功能人工智障。毕竟不局限于喷神了。
 
 不过称「范一满」我也无所谓的，当然还是希望大家能称「智障 Bot」，QQQXX。
+
+1.1.0 加入小信子模式。
