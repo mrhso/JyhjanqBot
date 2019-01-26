@@ -219,8 +219,10 @@ function AIxxz() {
                         res.on('data', async (chunk) => {
                             let answer = [];
                             if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                                for (let data in JSON.parse(chunk.toString()).data[0]) {
-                                    answer.push(JSON.parse(chunk.toString()).data[0][data]);
+                                for (let data in JSON.parse(chunk.toString()).data) {
+                                    for (let data2 in JSON.parse(chunk.toString()).data[data]) {
+                                        answer.push(JSON.parse(chunk.toString()).data[data][data2]);
+                                    };
                                 };
                             } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
                                 for (let data in JSON.parse(chunk.toString()).data) {
@@ -262,8 +264,10 @@ function AIxxz() {
                     res.on('data', async (chunk) => {
                         let answer = [];
                         if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                            for (let data in JSON.parse(chunk.toString()).data[0]) {
-                                answer.push(JSON.parse(chunk.toString()).data[0][data]);
+                            for (let data in JSON.parse(chunk.toString()).data) {
+                                for (let data2 in JSON.parse(chunk.toString()).data[data]) {
+                                    answer.push(JSON.parse(chunk.toString()).data[data][data2]);
+                                };
                             };
                         } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
                             for (let data in JSON.parse(chunk.toString()).data) {
