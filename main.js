@@ -41,59 +41,28 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-function splitText(text) {
-    let lines = [];
-    let line = [];
-    let bytes = 0;
-
-    for (let ch of text) {
-        let u2g = new TextEncoder('gb18030', {NONSTANDARD_allowLegacyEncoding: true});
-        let b = u2g.encode(ch).length;                                                 // 计算 GB 18030 中该字符的长度
-
-        if (bytes + b > 796) {                                                         // 经过测试大概是 882 字节的样子，留个余裕
-                                                                                       // 796 = 800 - 2 - 2，「→」占 2 字节
-            line.push("→");
-            lines.push(line.join(''));
-            line = ["→", ch];
-            bytes = b;
-        } else {
-            line.push(ch);
-            bytes += b;
-        }
-    }
-
-    if (line.length > 0) {
-        lines.push(line.join(''));
-    }
-
-    return lines;
-}
-
 async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
         if (penshernCopy.length === 0) {
-            penshernCopy.push(...penshern);                                   // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
+            penshernCopy.push(...penshern);                                // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
         };
 
-        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);    // 生成随机数
-        let random = penshernCopy[ramdomIndex];                               // 用这个随机数来从 penshernCopy 抽取喷辞
-        random = splitText(random);
+        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length); // 生成随机数
+        let random = penshernCopy[ramdomIndex];                            // 用这个随机数来从 penshernCopy 抽取喷辞
 
-        for (let randomSplit of random) {
-            if (config.sleep === undefined ? true : config.sleep) {
-                await sleep((config.sleep || 100) * [...randomSplit].length); // 延时
-            };
-
-            if (config.isGroup === undefined ? true : config.isGroup) {
-                qqbot.sendGroupMessage(config.to, randomSplit);               // 群聊
-            } else {
-                qqbot.sendPrivateMessage(config.to, randomSplit);             // 私聊
-            };
-            pluginManager.log(`Output: ${randomSplit}`);
+        if (config.sleep === undefined ? true : config.sleep) {
+            await sleep((config.sleep || 100) * [...random].length);       // 延时
         };
+
+        if (config.isGroup === undefined ? true : config.isGroup) {
+            qqbot.sendGroupMessage(config.to, random);                     // 群聊
+        } else {
+            qqbot.sendPrivateMessage(config.to, random);                   // 私聊
+        };
+        pluginManager.log(`Output: ${random}`);
 
         if (config.unique) {
-            penshernCopy.splice(ramdomIndex, 1);                              // 从 penshernCopy 里删除用掉的喷辞
+            penshernCopy.splice(ramdomIndex, 1);                           // 从 penshernCopy 里删除用掉的喷辞
         };
     };
 };
@@ -107,16 +76,13 @@ function daapenPassive() {
 
             let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
             let random = penshernCopy[ramdomIndex];
-            random = splitText(random);
 
-            for (let randomSplit of random) {
-                if (config.sleep === undefined ? true : config.sleep) {
-                    await sleep((config.sleep || 100) * [...randomSplit].length);
-                };
-
-                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${randomSplit}`, {noEscape: true});
-                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${randomSplit}`);
+            if (config.sleep === undefined ? true : config.sleep) {
+                await sleep((config.sleep || 100) * [...random].length);
             };
+
+            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${random}`, {noEscape: true});
+            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${random}`);
 
             if (config.unique) {
                 penshernCopy.splice(ramdomIndex, 1);
@@ -131,16 +97,13 @@ function daapenPassive() {
 
         let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
         let random = penshernCopy[ramdomIndex];
-        random = splitText(random);
 
-        for (let randomSplit of random) {
-            if (config.sleep === undefined ? true : config.sleep) {
-                await sleep((config.sleep || 100) * [...randomSplit].length);
-            };
-
-            qqbot.sendPrivateMessage(rawdata.from, randomSplit);
-            pluginManager.log(`Output: ${randomSplit}`);
+        if (config.sleep === undefined ? true : config.sleep) {
+            await sleep((config.sleep || 100) * [...random].length);
         };
+
+        qqbot.sendPrivateMessage(rawdata.from, random);
+        pluginManager.log(`Output: ${random}`);
 
         if (config.unique) {
             penshernCopy.splice(ramdomIndex, 1);
@@ -171,15 +134,12 @@ function jinkohChishoh() {
             let answer = jinkohChishohAnswer(question);
 
             if(answer !== question) {
-                answer = splitText(answer);
-                for (let answerSplit of answer) {
-                    if (config.sleep === undefined ? true : config.sleep) {
-                        await sleep((config.sleep || 100) * [...answerSplit].length);
-                    };
-
-                    qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answerSplit}`, {noEscape: true});
-                    pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answerSplit}`);
+                if (config.sleep === undefined ? true : config.sleep) {
+                    await sleep((config.sleep || 100) * [...answer].length);
                 };
+
+                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
+                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
             };
         };
     });
@@ -189,15 +149,12 @@ function jinkohChishoh() {
         let answer = jinkohChishohAnswer(question);
 
         if(answer !== question) {
-            answer = splitText(answer);
-            for (let answerSplit of answer) {
-                if (config.sleep === undefined ? true : config.sleep) {
-                    await sleep((config.sleep || 100) * [...answerSplit].length);
-                };
-
-                qqbot.sendPrivateMessage(rawdata.from, answerSplit);
-                pluginManager.log(`Output: ${answerSplit}`);
+            if (config.sleep === undefined ? true : config.sleep) {
+                await sleep((config.sleep || 100) * [...answer].length);
             };
+
+            qqbot.sendPrivateMessage(rawdata.from, answer);
+            pluginManager.log(`Output: ${answer}`);
         };
     });
 };
@@ -228,16 +185,13 @@ function AIxxz() {
                                 answer.push(JSON.parse(chunk.toString()).data);
                             };
                             answer = answer.join("\n");
-                            answer = splitText(answer);
 
-                            for (let answerSplit of answer) {
-                                if (config.sleep === undefined ? true : config.sleep) {
-                                    await sleep((config.sleep || 100) * [...answerSplit].length);
-                                };
-
-                                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answerSplit}`, {noEscape: true});
-                                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answerSplit}`);
+                            if (config.sleep === undefined ? true : config.sleep) {
+                                await sleep((config.sleep || 100) * [...answer].length);
                             };
+
+                            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
+                            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
                         });
                     });
                     reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
@@ -273,16 +227,13 @@ function AIxxz() {
                             answer.push(JSON.parse(chunk.toString()).data);
                         };
                         answer = answer.join("\n");
-                        answer = splitText(answer);
 
-                        for (let answerSplit of answer) {
-                            if (config.sleep === undefined ? true : config.sleep) {
-                                await sleep((config.sleep || 100) * [...answerSplit].length);
-                            };
-
-                            qqbot.sendPrivateMessage(rawdata.from, answerSplit);
-                            pluginManager.log(`Output: ${answerSplit}`);
+                        if (config.sleep === undefined ? true : config.sleep) {
+                            await sleep((config.sleep || 100) * [...answer].length);
                         };
+
+                        qqbot.sendPrivateMessage(rawdata.from, answer);
+                        pluginManager.log(`Output: ${answer}`);
                     });
                 });
                 reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
