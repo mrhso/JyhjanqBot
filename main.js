@@ -41,41 +41,42 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
+function daapen() {
+    if (penshernCopy.length === 0) {
+        penshernCopy.push(...penshern);                                // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
+    };
+
+    let ramdomIndex = Math.floor(Math.random() * penshernCopy.length); // 生成随机数
+    let random = penshernCopy[ramdomIndex];                            // 用这个随机数来从 penshernCopy 抽取喷辞
+
+    if (config.unique) {
+        penshernCopy.splice(ramdomIndex, 1);                           // 从 penshernCopy 里删除用掉的喷辞
+    };
+
+    return random;
+};
+
 async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
-        if (penshernCopy.length === 0) {
-            penshernCopy.push(...penshern);                                // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
-        };
-
-        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length); // 生成随机数
-        let random = penshernCopy[ramdomIndex];                            // 用这个随机数来从 penshernCopy 抽取喷辞
+        let random = daapen();
 
         if (config.sleep === undefined ? true : config.sleep) {
-            await sleep((config.sleep || 100) * [...random].length);       // 延时
+            await sleep((config.sleep || 100) * [...random].length);
         };
 
         if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendGroupMessage(config.to, random);                     // 群聊
+            qqbot.sendGroupMessage(config.to, random);
         } else {
-            qqbot.sendPrivateMessage(config.to, random);                   // 私聊
+            qqbot.sendPrivateMessage(config.to, random);
         };
         pluginManager.log(`Output: ${random}`);
-
-        if (config.unique) {
-            penshernCopy.splice(ramdomIndex, 1);                           // 从 penshernCopy 里删除用掉的喷辞
-        };
     };
 };
 
 function daapenPassive() {
     qqbot.on('GroupMessage', async (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
-            if (penshernCopy.length === 0) {
-                penshernCopy.push(...penshern);
-            };
-
-            let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
-            let random = penshernCopy[ramdomIndex];
+            let random = daapen();
 
             if (config.sleep === undefined ? true : config.sleep) {
                 await sleep((config.sleep || 100) * [...random].length);
@@ -83,20 +84,11 @@ function daapenPassive() {
 
             qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${random}`, {noEscape: true});
             pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${random}`);
-
-            if (config.unique) {
-                penshernCopy.splice(ramdomIndex, 1);
-            };
         };
     });
 
     qqbot.on('PrivateMessage', async (rawdata) => {
-        if (penshernCopy.length === 0) {
-            penshernCopy.push(...penshern);
-        };
-
-        let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
-        let random = penshernCopy[ramdomIndex];
+        let random = daapen();
 
         if (config.sleep === undefined ? true : config.sleep) {
             await sleep((config.sleep || 100) * [...random].length);
@@ -104,10 +96,6 @@ function daapenPassive() {
 
         qqbot.sendPrivateMessage(rawdata.from, random);
         pluginManager.log(`Output: ${random}`);
-
-        if (config.unique) {
-            penshernCopy.splice(ramdomIndex, 1);
-        };
     });
 };
 
@@ -159,48 +147,54 @@ function jinkohChishoh() {
     });
 };
 
+function AIxxzAnswer(question, callback) {
+    let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+        res.on('data', (chunk) => {
+            let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
+
+            let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+                res.on('data', (chunk) => {
+                    let answer = [];
+                    if (Array.isArray(JSON.parse(chunk.toString()).data)) {
+                        for (let data in JSON.parse(chunk.toString()).data) {
+                            for (let data2 in JSON.parse(chunk.toString()).data[data]) {
+                                answer.push(JSON.parse(chunk.toString()).data[data][data2]);
+                            };
+                        };
+                    } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
+                        for (let data in JSON.parse(chunk.toString()).data) {
+                            answer.push(JSON.parse(chunk.toString()).data[data]);
+                        };
+                    } else {
+                        answer.push(JSON.parse(chunk.toString()).data);
+                    };
+                    answer = answer.join("\n");
+
+                    callback(answer);
+                });
+            });
+            reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
+            reqAnswer.end();
+        });
+    });
+    reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
+    reqUK.end();
+};
+
 function AIxxz() {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             if (rawdata.extra.images.length === 0) {
                 let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
 
-                let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                    res.on('data', (chunk) => {
-                        let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
+                AIxxzAnswer(question, async (answer) => {
+                    if (config.sleep === undefined ? true : config.sleep) {
+                        await sleep((config.sleep || 100) * [...answer].length);
+                    };
 
-                        let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                            res.on('data', async (chunk) => {
-                                let answer = [];
-                                if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                                    for (let data in JSON.parse(chunk.toString()).data) {
-                                        for (let data2 in JSON.parse(chunk.toString()).data[data]) {
-                                            answer.push(JSON.parse(chunk.toString()).data[data][data2]);
-                                        };
-                                    };
-                                } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
-                                    for (let data in JSON.parse(chunk.toString()).data) {
-                                        answer.push(JSON.parse(chunk.toString()).data[data]);
-                                    };
-                                } else {
-                                    answer.push(JSON.parse(chunk.toString()).data);
-                                };
-                                answer = answer.join("\n");
-
-                                if (config.sleep === undefined ? true : config.sleep) {
-                                    await sleep((config.sleep || 100) * [...answer].length);
-                                };
-
-                                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
-                                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
-                            });
-                        });
-                        reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
-                        reqAnswer.end();
-                    });
+                    qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
+                    pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
                 });
-                reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
-                reqUK.end();
             } else if (rawdata.extra.images.join(",").search(".gif") > -1) {
                 if (config.lang === "zh_TW" || config.lang === "zh_HK") {
                     qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] 那就不曉得了。`, {noEscape: true});
@@ -220,42 +214,14 @@ function AIxxz() {
         if (rawdata.extra.images.length === 0) {
             let question = rawdata.text;
 
-            let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                res.on('data', (chunk) => {
-                    let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
+            AIxxzAnswer(question, async (answer) => {
+                if (config.sleep === undefined ? true : config.sleep) {
+                    await sleep((config.sleep || 100) * [...answer].length);
+                };
 
-                    let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                        res.on('data', async (chunk) => {
-                            let answer = [];
-                            if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                                for (let data in JSON.parse(chunk.toString()).data) {
-                                    for (let data2 in JSON.parse(chunk.toString()).data[data]) {
-                                        answer.push(JSON.parse(chunk.toString()).data[data][data2]);
-                                    };
-                                };
-                            } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
-                                for (let data in JSON.parse(chunk.toString()).data) {
-                                    answer.push(JSON.parse(chunk.toString()).data[data]);
-                                };
-                            } else {
-                                answer.push(JSON.parse(chunk.toString()).data);
-                            };
-                            answer = answer.join("\n");
-
-                            if (config.sleep === undefined ? true : config.sleep) {
-                                await sleep((config.sleep || 100) * [...answer].length);
-                            };
-
-                            qqbot.sendPrivateMessage(rawdata.from, answer);
-                            pluginManager.log(`Output: ${answer}`);
-                        });
-                    });
-                    reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
-                    reqAnswer.end();
-                });
+                qqbot.sendPrivateMessage(rawdata.from, answer);
+                pluginManager.log(`Output: ${answer}`);
             });
-            reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
-            reqUK.end();
         } else if (rawdata.extra.images.join(",").search(".gif") > -1) {
             if (config.lang === "zh_TW" || config.lang === "zh_HK") {
                 qqbot.sendPrivateMessage(rawdata.from, `那就不曉得了。`, {noEscape: true});
