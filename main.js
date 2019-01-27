@@ -147,93 +147,77 @@ function jinkohChishoh() {
     });
 };
 
-function AIxxzAnswer(question, callback) {
-    let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-        res.on('data', (chunk) => {
-            let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
+function AIxxzAnswer(question, images, callback) {
+    if (images.length === 0) {
+        let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+            res.on('data', (chunk) => {
+                let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
 
-            let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                res.on('data', (chunk) => {
-                    let answer = [];
-                    if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                        for (let data in JSON.parse(chunk.toString()).data) {
-                            for (let data2 in JSON.parse(chunk.toString()).data[data]) {
-                                answer.push(JSON.parse(chunk.toString()).data[data][data2]);
+                let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+                    res.on('data', (chunk) => {
+                        let answer = [];
+                        if (Array.isArray(JSON.parse(chunk.toString()).data)) {
+                            for (let data in JSON.parse(chunk.toString()).data) {
+                                for (let data2 in JSON.parse(chunk.toString()).data[data]) {
+                                    answer.push(JSON.parse(chunk.toString()).data[data][data2]);
+                                };
                             };
+                        } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
+                            for (let data in JSON.parse(chunk.toString()).data) {
+                                answer.push(JSON.parse(chunk.toString()).data[data]);
+                            };
+                        } else {
+                            answer.push(JSON.parse(chunk.toString()).data);
                         };
-                    } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
-                        for (let data in JSON.parse(chunk.toString()).data) {
-                            answer.push(JSON.parse(chunk.toString()).data[data]);
-                        };
-                    } else {
-                        answer.push(JSON.parse(chunk.toString()).data);
-                    };
-                    answer = answer.join("\n");
-
-                    callback(answer);
+                        callback(answer.join("\n"));
+                    });
                 });
+                reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
+                reqAnswer.end();
             });
-            reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
-            reqAnswer.end();
         });
-    });
-    reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
-    reqUK.end();
+        reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
+        reqUK.end();
+    } else if (images.join(",").search(".gif") > -1) {
+        if (config.lang === "zh_TW" || config.lang === "zh_HK") {
+            callback("那就不曉得了。");
+        } else {
+            callback("那就不晓得了。");
+        };
+    } else {
+        callback("收到图片");
+    };
 };
 
 function AIxxz() {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
-            if (rawdata.extra.images.length === 0) {
-                let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
+            let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
+            let images = rawdata.extra.images;
 
-                AIxxzAnswer(question, async (answer) => {
-                    if (config.sleep === undefined ? true : config.sleep) {
-                        await sleep((config.sleep || 100) * [...answer].length);
-                    };
-
-                    qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
-                    pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
-                });
-            } else if (rawdata.extra.images.join(",").search(".gif") > -1) {
-                if (config.lang === "zh_TW" || config.lang === "zh_HK") {
-                    qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] 那就不曉得了。`, {noEscape: true});
-                    pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} 那就不曉得了。`);
-                } else {
-                    qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] 那就不晓得了。`, {noEscape: true});
-                    pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} 那就不晓得了。`);
-                };
-            } else {
-                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] 收到图片`, {noEscape: true});
-                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} 收到图片`);
-            };
-        };
-    });
-
-    qqbot.on('PrivateMessage', (rawdata) => {
-        if (rawdata.extra.images.length === 0) {
-            let question = rawdata.text;
-
-            AIxxzAnswer(question, async (answer) => {
+            AIxxzAnswer(question, images, async (answer) => {
                 if (config.sleep === undefined ? true : config.sleep) {
                     await sleep((config.sleep || 100) * [...answer].length);
                 };
 
-                qqbot.sendPrivateMessage(rawdata.from, answer);
-                pluginManager.log(`Output: ${answer}`);
+                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
+                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
             });
-        } else if (rawdata.extra.images.join(",").search(".gif") > -1) {
-            if (config.lang === "zh_TW" || config.lang === "zh_HK") {
-                qqbot.sendPrivateMessage(rawdata.from, `那就不曉得了。`, {noEscape: true});
-                pluginManager.log(`Output: 那就不曉得了。`);
-            } else {
-                qqbot.sendPrivateMessage(rawdata.from, `那就不晓得了。`, {noEscape: true});
-                pluginManager.log(`Output: 那就不晓得了。`);
-            };
-        } else {
-            qqbot.sendPrivateMessage(rawdata.from, `收到图片`, {noEscape: true});
-            pluginManager.log(`Output: 收到图片`);
         };
+    });
+
+    qqbot.on('PrivateMessage', (rawdata) => {
+        let question = rawdata.text;
+        let images = rawdata.extra.images;
+
+        AIxxzAnswer(question, images, async (answer) => {
+            if (config.sleep === undefined ? true : config.sleep) {
+                await sleep((config.sleep || 100) * [...answer].length);
+            };
+
+            qqbot.sendPrivateMessage(rawdata.from, answer);
+            pluginManager.log(`Output: ${answer}`);
+        });
     });
 };
 
