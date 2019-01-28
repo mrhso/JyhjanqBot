@@ -20,5 +20,9 @@ module.exports = {
     "token": "f9e79b0d9144b9b47f3072359c0dfa75926a5013", // 小信子 Token
     "devid": "UniqueDeviceID",                           // 小信子 DevID
     "lang": "zh_CN",                                     // 小信子语文，已知 zh_CN、zh_TW、zh_HK
-    "nickname": ""                                       // 若指定为空，则为群名片或 QQ 昵称
+    "nickname": "",                                      // 小信子有效，用户昵称
+                                                         // 若指定为空，则为群名片或 QQ 昵称
+                                                         // 实际上未指定该参数或 API 无法识别时，返回为「互动者」
+    "city": ""                                           // 小信子有效，用户城市
+                                                         // 这个查天气有用
 };
