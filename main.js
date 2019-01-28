@@ -160,7 +160,7 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
             });
             // 接收完毕
             res.on('end', () => {
-                // 将 chunk 合并起来，读为 json
+                // 将 chunk 合并起来，读为 JSON
                 let chunk = JSON.parse(Buffer.concat(chunks).toString());
                 // 取得 Userkey
                 let uk = chunk.data.UniqueDeviceID.uk;
@@ -171,11 +171,16 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
                         chunks.push(chunk);
                     });
                     res.on('end', async () => {
-                        let chunk = JSON.parse(Buffer.concat(chunks).toString());
+                        let chunk = Buffer.concat(chunks).toString();
+                        // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
+                        chunk = JSON.parse(chunk.substring(chunk.search(/\{/g)));
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
+                        // 音乐连链接没返回，所以没有处理的必要
+                        if (chunk.xxztype === "music") {
+                            return;
                         // 图片这个比较特殊，会给出重复链接，所以筛掉
-                        if (chunk.xxztype === "image") {
+                        } else if (chunk.xxztype === "image") {
                             for (let data of chunk.data) {
                                 for (let data2 in data) {
                                     if (data2 !== "picurl") {
