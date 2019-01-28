@@ -152,36 +152,50 @@ function jinkohChishoh() {
 function AIxxzAnswer(userID, nickname, question, images, callback) {
     if (images.length === 0) {
         let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+            // 用数组装入 chunk
+            let chunks = [];
+            // 接收 chunk
             res.on('data', (chunk) => {
+                chunks.push(chunk);
+            });
+            // 接收完毕
+            res.on('end', () => {
+                // 将 chunk 合并起来，读为 json
+                let chunk = JSON.parse(Buffer.concat(chunks).toString());
                 // 取得 Userkey
-                let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
+                let uk = chunk.data.UniqueDeviceID.uk;
                 // 请求回答
                 let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                    res.on('data', async (chunk) => {
+                    let chunks = [];
+                    res.on('data', (chunk) => {
+                        chunks.push(chunk);
+                    });
+                    res.on('end', async () => {
+                        let chunk = JSON.parse(Buffer.concat(chunks).toString());
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
                         // 图片这个比较特殊，会给出重复链接，所以筛掉
-                        if (JSON.parse(chunk.toString()).xxztype === "image") {
-                            for (let data of JSON.parse(chunk.toString()).data) {
+                        if (chunk.xxztype === "image") {
+                            for (let data of chunk.data) {
                                 for (let data2 in data) {
                                     if (data2 !== "picurl") {
                                         answer.push(data[data2]);
                                     };
                                 };
                             };
-                        } else if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                            for (let data of JSON.parse(chunk.toString()).data) {
+                        } else if (Array.isArray(chunk.data)) {
+                            for (let data of chunk.data) {
                                 // 有时数组里面还包着对象
                                 for (let data2 in data) {
                                     answer.push(data[data2]);
                                 };
                             };
-                        } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
-                            for (let data in JSON.parse(chunk.toString()).data) {
-                                answer.push(JSON.parse(chunk.toString()).data[data]);
+                        } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
+                            for (let data in chunk.data) {
+                                answer.push(chunk.data[data]);
                             };
                         } else {
-                            answer.push(JSON.parse(chunk.toString()).data);
+                            answer.push(chunk.data);
                         };
                         // 处理 URI
                         let answerURI = [];
@@ -198,10 +212,10 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
                         answer = answerURI.join("\n");
                         callback(answer);
                         // 如果是提醒的话，处理提醒时间
-                        if (JSON.parse(chunk.toString()).xxztype === "remind") {
+                        if (chunk.xxztype === "remind") {
                             // 处理小信子返回的时间，注意时区为 UTC+8
-                            let remindTime = new Date(`${JSON.parse(chunk.toString()).semantic.start_date} ${JSON.parse(chunk.toString()).semantic.start_time} UTC+0800`);
-                            let remindMessage = JSON.parse(chunk.toString()).semantic.message;
+                            let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time} UTC+0800`);
+                            let remindMessage = chunk.semantic.message;
                             if (config.lang === "zh_TW" || config.lang === "zh_HK") {
                                 remindMessage = `提醒時間到了！${remindMessage}`;
                             } else {
