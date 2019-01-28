@@ -157,7 +157,7 @@ function AIxxzAnswer(question, images, callback) {
                 let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
                 // 请求回答
                 let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
-                    res.on('data', (chunk) => {
+                    res.on('data', async (chunk) => {
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
                         if (Array.isArray(JSON.parse(chunk.toString()).data)) {
@@ -175,8 +175,23 @@ function AIxxzAnswer(question, images, callback) {
                             answer.push(JSON.parse(chunk.toString()).data);
                         };
                         // 将数组转为换行字符串
-                        let answer = answer.join("\n");
+                        answer = answer.join("\n");
                         callback(answer);
+                        // 如果是提醒的话，处理提醒时间
+                        if (JSON.parse(chunk.toString()).xxztype === "remind") {
+                            // 处理小信子返回的时间，注意时区为 UTC+8
+                            let remindTime = new Date(`${JSON.parse(chunk.toString()).semantic.start_date} ${JSON.parse(chunk.toString()).semantic.start_time} UTC+0800`);
+                            let remindMessage = JSON.parse(chunk.toString()).semantic.message;
+                            if (config.lang === "zh_TW" || config.lang === "zh_HK") {
+                                remindMessage = `提醒時間到了！${remindMessage}`;
+                            } else {
+                                remindMessage = `提醒时间到了！${remindMessage}`;
+                            };
+                            // 获取当前时间，并与小信子返回的时间相减，然后延时
+                            await sleep(remindTime - new Date());
+                            // 回复
+                            callback(remindMessage);
+                        };
                     });
                 });
                 reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
