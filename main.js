@@ -219,7 +219,7 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
                         // 如果是提醒的话，处理提醒时间
                         if (chunk.xxztype === "remind") {
                             // 处理小信子返回的时间，注意时区为 UTC+8
-                            let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time} UTC+0800`);
+                            let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || "08:00:00"} UTC+0800`);
                             let remindMessage = chunk.semantic.message;
                             if (config.lang === "zh_TW" || config.lang === "zh_HK") {
                                 remindMessage = `提醒時間到了！${remindMessage}`;
