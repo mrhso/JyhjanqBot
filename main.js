@@ -149,7 +149,7 @@ function jinkohChishoh() {
     });
 };
 
-function AIxxzAnswer(question, images, callback) {
+function AIxxzAnswer(nickname, question, images, callback) {
     if (images.length === 0) {
         let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
             res.on('data', (chunk) => {
@@ -214,7 +214,7 @@ function AIxxzAnswer(question, images, callback) {
                         };
                     });
                 });
-                reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
+                reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}&nickname=${nickname}`);
                 reqAnswer.end();
             });
         });
@@ -238,8 +238,14 @@ function AIxxz() {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
             let images = rawdata.extra.images;
+            let nickname;
+            if (config.nickname) {
+                nickname = config.nickname;
+            } else {
+                nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
+            };
 
-            AIxxzAnswer(question, images, async (answer) => {
+            AIxxzAnswer(nickname, question, images, async (answer) => {
                 if (config.sleep === undefined ? true : config.sleep) {
                     await sleep((config.sleep || 100) * [...answer].length);
                 };
@@ -253,8 +259,14 @@ function AIxxz() {
     qqbot.on('PrivateMessage', (rawdata) => {
         let question = rawdata.text;
         let images = rawdata.extra.images;
+        let nickname;
+        if (config.nickname) {
+            nickname = config.nickname;
+        } else {
+            nickname = rawdata.user.name || rawdata.user.qq.toString();
+        };
 
-        AIxxzAnswer(question, images, async (answer) => {
+        AIxxzAnswer(nickname, question, images, async (answer) => {
             if (config.sleep === undefined ? true : config.sleep) {
                 await sleep((config.sleep || 100) * [...answer].length);
             };

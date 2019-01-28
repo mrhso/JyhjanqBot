@@ -19,5 +19,6 @@ module.exports = {
     "ak": "5c011b2726e0adb52f98d6a57672774314c540a0",    // 小信子 Authkey
     "token": "f9e79b0d9144b9b47f3072359c0dfa75926a5013", // 小信子 Token
     "devid": "UniqueDeviceID",                           // 小信子 DevID
-    "lang": "zh_CN"                                      // 小信子语文，已知 zh_CN、zh_TW、zh_HK
+    "lang": "zh_CN",                                     // 小信子语文，已知 zh_CN、zh_TW、zh_HK
+    "nickname": ""                                       // 若指定为空，则为群名片或 QQ 昵称
 };
