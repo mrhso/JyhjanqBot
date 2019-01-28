@@ -42,24 +42,26 @@ function sleep(ms) {
 };
 
 function daapen() {
+    // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
     if (penshernCopy.length === 0) {
-        penshernCopy.push(...penshern);                                // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
+        penshernCopy.push(...penshern);
     };
-
-    let ramdomIndex = Math.floor(Math.random() * penshernCopy.length); // 生成随机数
-    let random = penshernCopy[ramdomIndex];                            // 用这个随机数来从 penshernCopy 抽取喷辞
-
+    // 生成随机数
+    let ramdomIndex = Math.floor(Math.random() * penshernCopy.length);
+    // 用这个随机数来从 penshernCopy 抽取喷辞
+    let random = penshernCopy[ramdomIndex];
+    // 从 penshernCopy 里删除用掉的喷辞
     if (config.unique) {
-        penshernCopy.splice(ramdomIndex, 1);                           // 从 penshernCopy 里删除用掉的喷辞
+        penshernCopy.splice(ramdomIndex, 1);
     };
-
+    // 返回回答
     return random;
 };
 
 async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
         let random = daapen();
-
+        // 延时
         if (config.sleep === undefined ? true : config.sleep) {
             await sleep((config.sleep || 100) * [...random].length);
         };
@@ -151,13 +153,16 @@ function AIxxzAnswer(question, images, callback) {
     if (images.length === 0) {
         let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
             res.on('data', (chunk) => {
+                // 取得 Userkey
                 let uk = JSON.parse(chunk.toString()).data.UniqueDeviceID.uk;
-
+                // 请求回答
                 let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
                     res.on('data', (chunk) => {
+                        // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
                         if (Array.isArray(JSON.parse(chunk.toString()).data)) {
                             for (let data in JSON.parse(chunk.toString()).data) {
+                                // 有时数组里面还包着对象
                                 for (let data2 in JSON.parse(chunk.toString()).data[data]) {
                                     answer.push(JSON.parse(chunk.toString()).data[data][data2]);
                                 };
@@ -169,7 +174,9 @@ function AIxxzAnswer(question, images, callback) {
                         } else {
                             answer.push(JSON.parse(chunk.toString()).data);
                         };
-                        callback(answer.join("\n"));
+                        // 将数组转为换行字符串
+                        let answer = answer.join("\n");
+                        callback(answer);
                     });
                 });
                 reqAnswer.write(`app=${config.appid || "dcXbXX0X"}&dev=${config.devid || "UniqueDeviceID"}&uk=${uk}&text=${question}&lang=${config.lang || "zh_CN"}`);
@@ -180,12 +187,14 @@ function AIxxzAnswer(question, images, callback) {
         reqUK.end();
     } else if (images.join(",").search(".gif") > -1) {
         if (config.lang === "zh_TW" || config.lang === "zh_HK") {
-            callback("那就不曉得了。");
+            let answer = "那就不曉得了。";
         } else {
-            callback("那就不晓得了。");
+            let answer = "那就不晓得了。";
         };
+        callback(answer);
     } else {
-        callback("收到图片");
+        let answer = "收到图片";
+        callback(answer);
     };
 };
 
