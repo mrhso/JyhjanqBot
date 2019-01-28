@@ -160,11 +160,20 @@ function AIxxzAnswer(question, images, callback) {
                     res.on('data', async (chunk) => {
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
-                        if (Array.isArray(JSON.parse(chunk.toString()).data)) {
-                            for (let data in JSON.parse(chunk.toString()).data) {
+                        // 图片这个比较特殊，会给出重复链接，所以筛掉
+                        if (JSON.parse(chunk.toString()).xxztype === "image") {
+                            for (let data of JSON.parse(chunk.toString()).data) {
+                                for (let data2 in data) {
+                                    if (data2 !== "picurl") {
+                                        answer.push(data[data2]);
+                                    };
+                                };
+                            };
+                        } else if (Array.isArray(JSON.parse(chunk.toString()).data)) {
+                            for (let data of JSON.parse(chunk.toString()).data) {
                                 // 有时数组里面还包着对象
-                                for (let data2 in JSON.parse(chunk.toString()).data[data]) {
-                                    answer.push(JSON.parse(chunk.toString()).data[data][data2]);
+                                for (let data2 in data) {
+                                    answer.push(data[data2]);
                                 };
                             };
                         } else if (Object.prototype.toString.call(JSON.parse(chunk.toString()).data) === '[object Object]') {
@@ -174,8 +183,19 @@ function AIxxzAnswer(question, images, callback) {
                         } else {
                             answer.push(JSON.parse(chunk.toString()).data);
                         };
+                        // 处理 URI
+                        let answerURI = [];
+                        for (let data of answer) {
+                            if (data.search(/https?:\/\//g) > -1) {
+                                // 百分号编码
+                                data = encodeURI(data);
+                                answerURI.push(data);
+                            } else {
+                                answerURI.push(data);
+                            };
+                        };
                         // 将数组转为换行字符串
-                        answer = answer.join("\n");
+                        answer = answerURI.join("\n");
                         callback(answer);
                         // 如果是提醒的话，处理提醒时间
                         if (JSON.parse(chunk.toString()).xxztype === "remind") {
@@ -200,7 +220,7 @@ function AIxxzAnswer(question, images, callback) {
         });
         reqUK.write(`secret=${config.appid || "dcXbXX0X"}|${config.ak || "5c011b2726e0adb52f98d6a57672774314c540a0"}|${config.token || "f9e79b0d9144b9b47f3072359c0dfa75926a5013"}&event=GetUk&data=["${config.devid || "UniqueDeviceID"}"]`);
         reqUK.end();
-    } else if (images.join(",").search(".gif") > -1) {
+    } else if (images.join(",").search(/\.gif/g) > -1) {
         if (config.lang === "zh_TW" || config.lang === "zh_HK") {
             let answer = "那就不曉得了。";
         } else {
