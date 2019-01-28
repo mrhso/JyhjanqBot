@@ -176,7 +176,7 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
                         chunk = JSON.parse(chunk.substring(chunk.search(/\{/g)));
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
-                        // 音乐连链接没返回，所以没有处理的必要
+                        // 音乐连链接都没返回，所以没有处理的必要
                         if (chunk.xxztype === "music") {
                             return;
                         // 图片这个比较特殊，会给出重复链接，所以筛掉
