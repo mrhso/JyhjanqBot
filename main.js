@@ -199,6 +199,8 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
                             for (let data in chunk.data) {
                                 answer.push(chunk.data[data]);
                             };
+                        } else if (chunk.data === null) {
+                            return;
                         } else {
                             answer.push(chunk.data);
                         };
