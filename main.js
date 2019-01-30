@@ -19,7 +19,8 @@ const config = require('./config.js');
 
 let qqbot = new QQBot({
     host: config.host || '127.0.0.1',
-    port: config.port || 11235
+    port: config.port || 11235,
+    CoolQPro: config.CoolQPro
 });
 pluginManager.log('Starting QQBot...');
 
@@ -39,6 +40,26 @@ try {
 
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
+};
+
+async function reply(rawdata, isGroup, message) {
+    // 延时
+    if (config.sleep === undefined ? true : config.sleep) {
+        await sleep((config.sleep || 100) * [...message].length);
+    };
+
+    if (isGroup) {
+        if (rawdata.from === 80000000) {
+            qqbot.sendGroupMessage(rawdata.group, `${message}`, {noEscape: true});
+            pluginManager.log(`Output: ${message}`);
+        } else {
+            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, {noEscape: true});
+            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${message}`);
+        };
+    } else {
+        qqbot.sendPrivateMessage(rawdata.from, message);
+        pluginManager.log(`Output: ${message}`);
+    };
 };
 
 function daapen() {
@@ -61,7 +82,7 @@ function daapen() {
 async function daapenActive() {
     for (let i = 1; i <= (config.count || 100); i ++) {
         let random = daapen();
-        // 延时
+        // 延时不放在 for 里不行，所以没办法把发送部分封入函数
         if (config.sleep === undefined ? true : config.sleep) {
             await sleep((config.sleep || 100) * [...random].length);
         };
@@ -80,24 +101,14 @@ function daapenPassive() {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             let random = daapen();
 
-            if (config.sleep === undefined ? true : config.sleep) {
-                await sleep((config.sleep || 100) * [...random].length);
-            };
-
-            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${random}`, {noEscape: true});
-            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${random}`);
+            reply(rawdata, true, random);
         };
     });
 
     qqbot.on('PrivateMessage', async (rawdata) => {
         let random = daapen();
 
-        if (config.sleep === undefined ? true : config.sleep) {
-            await sleep((config.sleep || 100) * [...random].length);
-        };
-
-        qqbot.sendPrivateMessage(rawdata.from, random);
-        pluginManager.log(`Output: ${random}`);
+        reply(rawdata, false, random);
     });
 };
 
@@ -124,12 +135,7 @@ function jinkohChishoh() {
             let answer = jinkohChishohAnswer(question);
 
             if(answer !== question) {
-                if (config.sleep === undefined ? true : config.sleep) {
-                    await sleep((config.sleep || 100) * [...answer].length);
-                };
-
-                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
-                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
+                reply(rawdata, true, answer);
             };
         };
     });
@@ -139,12 +145,7 @@ function jinkohChishoh() {
         let answer = jinkohChishohAnswer(question);
 
         if(answer !== question) {
-            if (config.sleep === undefined ? true : config.sleep) {
-                await sleep((config.sleep || 100) * [...answer].length);
-            };
-
-            qqbot.sendPrivateMessage(rawdata.from, answer);
-            pluginManager.log(`Output: ${answer}`);
+            reply(rawdata, false, answer);
         };
     });
 };
@@ -261,19 +262,20 @@ function AIxxz() {
             let nickname;
             if (config.nickname) {
                 nickname = config.nickname;
+            } else if (rawdata.from === 80000000) {
+                if (config.CoolQPro) {
+                    nickname = rawdata.user.groupCard;
+                } else {
+                    nickname = "匿名消息";
+                };
             } else {
                 nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
             };
             let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
             let images = rawdata.extra.images;
 
-            AIxxzAnswer(userID, nickname, question, images, async (answer) => {
-                if (config.sleep === undefined ? true : config.sleep) {
-                    await sleep((config.sleep || 100) * [...answer].length);
-                };
-
-                qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${answer}`, {noEscape: true});
-                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${answer}`);
+            AIxxzAnswer(userID, nickname, question, images, (answer) => {
+                reply(rawdata, true, answer);
             });
         };
     });
@@ -289,13 +291,8 @@ function AIxxz() {
         let question = rawdata.text;
         let images = rawdata.extra.images;
 
-        AIxxzAnswer(userID, nickname, question, images, async (answer) => {
-            if (config.sleep === undefined ? true : config.sleep) {
-                await sleep((config.sleep || 100) * [...answer].length);
-            };
-
-            qqbot.sendPrivateMessage(rawdata.from, answer);
-            pluginManager.log(`Output: ${answer}`);
+        AIxxzAnswer(userID, nickname, question, images, (answer) => {
+            reply(rawdata, false, answer);
         });
     });
 };
