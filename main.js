@@ -97,7 +97,7 @@ async function daapenActive() {
 };
 
 function daapenPassive() {
-    qqbot.on('GroupMessage', async (rawdata) => {
+    qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             let random = daapen();
 
@@ -105,7 +105,7 @@ function daapenPassive() {
         };
     });
 
-    qqbot.on('PrivateMessage', async (rawdata) => {
+    qqbot.on('PrivateMessage', (rawdata) => {
         let random = daapen();
 
         reply(rawdata, false, random);
@@ -129,7 +129,7 @@ function jinkohChishohAnswer(question) {
 };
 
 function jinkohChishoh() {
-    qqbot.on('GroupMessage', async (rawdata) => {
+    qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(config.id) > -1) {
             let question = rawdata.text.replace(new RegExp(`@${config.id} ?`, "g"), "");
             let answer = jinkohChishohAnswer(question);
@@ -140,7 +140,7 @@ function jinkohChishoh() {
         };
     });
 
-    qqbot.on('PrivateMessage', async (rawdata) => {
+    qqbot.on('PrivateMessage', (rawdata) => {
         let question = rawdata.text;
         let answer = jinkohChishohAnswer(question);
 
