@@ -121,7 +121,7 @@ function jinkohChishohAnswer(question) {
                         .replace(/\uD800/gu, '你')
                         .replace(/(.)[不没沒]\1/gu, '$1')
                         .replace(/难道/gu, '当然')
-                        .replace(/難道/g, '當然')
+                        .replace(/難道/gu, '當然')
                         .replace(/哪里/gu, '台湾')
                         .replace(/哪[裏裡]/gu, '台灣')
                         .replace(/[谁誰]/gu, '蔡英文')
