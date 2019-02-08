@@ -41,22 +41,33 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-async function reply(rawdata, isGroup, message) {
+async function reply(rawdata, isGroup, message, options) {
+    let length;
+    if (options && options.noEscape) {
+        length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ')
+                            .replace(/&#91;/gu, '[')
+                            .replace(/&#93;/gu, ']')
+                            .replace(/&amp;/gu, '&')].length;
+    } else {
+        length = [...message].length;
+        message = qqbot.escape(message);
+    };
+
     // 延时
     if (config.sleep === undefined ? true : config.sleep) {
-        await sleep((config.sleep || 100) * [...message].length);
+        await sleep((config.sleep || 100) * length);
     };
 
     if (isGroup) {
         if (rawdata.from === 80000000) {
-            qqbot.sendGroupMessage(rawdata.group, `${message}`);
+            qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
             pluginManager.log(`Output: ${message}`);
         } else {
-            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${qqbot.escape(message)}`, {noEscape: true});
+            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
             pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${message}`);
         };
     } else {
-        qqbot.sendPrivateMessage(rawdata.from, message);
+        qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
         pluginManager.log(`Output: ${message}`);
     };
 };
