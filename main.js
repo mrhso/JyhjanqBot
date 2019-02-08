@@ -37,17 +37,18 @@ try {
     pluginManager.log('Failed to load text.js', true);
 };
 
-function sleep(ms) {
+const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
 
-async function reply(rawdata, isGroup, message, options) {
+const toLF = (str) => {
+    return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
+};
+
+const reply = async (rawdata, isGroup, message, options) => {
     let length;
     if (options && options.noEscape) {
-        length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ')
-                            .replace(/&#91;/gu, '[')
-                            .replace(/&#93;/gu, ']')
-                            .replace(/&amp;/gu, '&')].length;
+        length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ').replace(/&#91;/gu, '[').replace(/&#93;/gu, ']').replace(/&amp;/gu, '&')].length;
     } else {
         length = [...message].length;
         message = qqbot.escape(message);
@@ -61,18 +62,18 @@ async function reply(rawdata, isGroup, message, options) {
     if (isGroup) {
         if (rawdata.from === 80000000) {
             qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
-            pluginManager.log(`Output: ${message}`);
+            pluginManager.log(`Output: ${qqbot.parseMessage(message)}`);
         } else {
             qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
-            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${message}`);
+            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message)}`);
         };
     } else {
         qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
-        pluginManager.log(`Output: ${message}`);
+        pluginManager.log(`Output: ${qqbot.parseMessage(message)}`);
     };
 };
 
-function daapen() {
+const daapen = () => {
     // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
     if (penshernCopy.length === 0) {
         penshernCopy.push(...penshern);
@@ -89,7 +90,7 @@ function daapen() {
     return random;
 };
 
-async function daapenActive() {
+const daapenActive = async () => {
     for (let i = 1; i <= (config.count || 100); i ++) {
         let random = daapen();
         // 延时不放在 for 里不行，所以没办法把发送部分封入函数
@@ -106,7 +107,7 @@ async function daapenActive() {
     };
 };
 
-function daapenPassive() {
+const daapenPassive = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
             let random = daapen();
@@ -122,27 +123,19 @@ function daapenPassive() {
     });
 };
 
-function jinkohChishohAnswer(question) {
+const jinkohChishohAnswer = (question) => {
     let answer = question;
 
     if(answer.search(/[一-龥][？\?]/gu) > -1) {
         answer = answer.replace(/([啊吗嗎吧呢的]+)?[？\?]/gu, '！')
-                        .replace(/我/gu, '\uD800')
-                        .replace(/[你您]/gu, '我')
-                        .replace(/\uD800/gu, '你')
-                        .replace(/(.)[不没沒]\1/gu, '$1')
-                        .replace(/难道/gu, '当然')
-                        .replace(/難道/gu, '當然')
-                        .replace(/哪里/gu, '台湾')
-                        .replace(/哪[裏裡]/gu, '台灣')
-                        .replace(/[谁誰]/gu, '蔡英文')
-                        .replace(/竟然/gu, '\uD800')
-                        .replace(/究竟|到底/gu, '就')
-                        .replace(/\uD800/gu, '竟然')
-                        .replace(/为什么/gu, '因为非常大颗')
-                        .replace(/為什麼/gu, '因為非常大顆')
-                        .replace(/什么/gu, '竞选')
-                        .replace(/什麼/gu, '競選');
+                       .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
+                       .replace(/(.)[不没沒]\1/gu, '$1')
+                       .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
+                       .replace(/哪里/gu, '台湾').replace(/哪[裏裡]/gu, '台灣')
+                       .replace(/[谁誰]/gu, '蔡英文')
+                       .replace(/竟然/gu, '\uD800').replace(/究竟|到底/gu, '就').replace(/\uD800/gu, '竟然')
+                       .replace(/为什么/gu, '因为非常大颗').replace(/為什麼/gu, '因為非常大顆')
+                       .replace(/什么/gu, '竞选').replace(/什麼/gu, '競選');
     };
 
     if(answer.search(/[a-zA-Zａ-ｚＡ-Ｚ][？\?]/gu) > -1) {
@@ -154,7 +147,7 @@ function jinkohChishohAnswer(question) {
     return answer;
 };
 
-function jinkohChishoh() {
+const jinkohChishoh = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
             let question = rawdata.text.replace(new RegExp(`@${qqbot.qq} ?`, 'gu'), '');
@@ -176,7 +169,7 @@ function jinkohChishoh() {
     });
 };
 
-function AIxxzAnswer(userID, nickname, question, images, callback) {
+const AIxxzAnswer = (userID, nickname, question, images, callback) => {
     if (images.length === 0) {
         let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
             // 用数组装入 chunk
@@ -244,7 +237,7 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
                         };
                         // 将数组转为换行字符串
                         // 注意小信子本身返回的数据就掺杂着 CR LF
-                        answer = answerURI.join('\n').replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
+                        answer = toLF(answerURI.join('\n'));
                         callback(answer);
                         // 如果是提醒的话，处理提醒时间
                         if (chunk.xxztype === 'remind') {
@@ -282,7 +275,7 @@ function AIxxzAnswer(userID, nickname, question, images, callback) {
     };
 };
 
-function AIxxz() {
+const AIxxz = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
             let userID = rawdata.from;
