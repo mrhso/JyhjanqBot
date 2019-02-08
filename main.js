@@ -47,6 +47,7 @@ const toLF = (str) => {
 
 const reply = async (rawdata, isGroup, message, options) => {
     let length;
+
     if (options && options.noEscape) {
         length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ').replace(/&#91;/gu, '[').replace(/&#93;/gu, ']').replace(/&amp;/gu, '&')].length;
     } else {
@@ -59,17 +60,18 @@ const reply = async (rawdata, isGroup, message, options) => {
         await sleep((config.sleep || 100) * length);
     };
 
+    // TODO 将消息所含的 @ 替换为名片
     if (isGroup) {
         if (rawdata.from === 80000000) {
             qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
-            pluginManager.log(`Output: ${qqbot.parseMessage(message)}`);
+            pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
         } else {
             qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
-            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message)}`);
+            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
         };
     } else {
         qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
-        pluginManager.log(`Output: ${qqbot.parseMessage(message)}`);
+        pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
     };
 };
 
@@ -111,14 +113,12 @@ const daapenPassive = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
             let random = daapen();
-
             reply(rawdata, true, random);
         };
     });
 
     qqbot.on('PrivateMessage', (rawdata) => {
         let random = daapen();
-
         reply(rawdata, false, random);
     });
 };
@@ -150,21 +150,21 @@ const jinkohChishohAnswer = (question) => {
 const jinkohChishoh = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let question = rawdata.text.replace(new RegExp(`@${qqbot.qq} ?`, 'gu'), '');
+            let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
             let answer = jinkohChishohAnswer(question);
 
             if(answer !== question) {
-                reply(rawdata, true, answer);
+                reply(rawdata, true, answer, { noEscape: true });
             };
         };
     });
 
     qqbot.on('PrivateMessage', (rawdata) => {
-        let question = rawdata.text;
+        let question = rawdata.raw;
         let answer = jinkohChishohAnswer(question);
 
         if(answer !== question) {
-            reply(rawdata, false, answer);
+            reply(rawdata, false, answer, { noEscape: true });
         };
     });
 };
