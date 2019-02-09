@@ -82,12 +82,10 @@ const reply = async (rawdata, isGroup, message, options) => {
                     };
                 };
             });
+        } else if (rawdata.from === 80000000) {
+            pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
         } else {
-            if (rawdata.from === 80000000) {
-                pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
-            } else {
-                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
-            };
+            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
         };
     } else {
         qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
@@ -283,10 +281,11 @@ const AIxxzAnswer = (userID, nickname, question, images, callback) => {
         reqUK.write(`secret=${config.appid || 'dcXbXX0X'}|${config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0'}|${config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013'}&event=GetUk&data=["${config.devid || 'UniqueDeviceID'}"]`);
         reqUK.end();
     } else if (images.join(',').search(/\.gif/gu) > -1) {
+        let answer;
         if (config.lang === 'zh_TW' || config.lang === 'zh_HK') {
-            let answer = '那就不曉得了。';
+            answer = '那就不曉得了。';
         } else {
-            let answer = '那就不晓得了。';
+            answer = '那就不晓得了。';
         };
         callback(answer);
     } else {
