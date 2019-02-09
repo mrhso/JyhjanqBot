@@ -66,7 +66,8 @@ const reply = async (rawdata, isGroup, message, options) => {
         } else {
             qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
         };
-        if (qqbot.parseMessage(message).extra.ats) {
+        // 这里要注意，数组即使为空也为真值，这与空字符串不同
+        if (qqbot.parseMessage(message).extra.ats.length > 0) {
             let conout = message;
             for (let at of qqbot.parseMessage(message).extra.ats) {
                 qqbot.groupMemberInfo(rawdata.group, at);
