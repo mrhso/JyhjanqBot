@@ -1,5 +1,6 @@
 const QQBot = require('./lib/QQBot.js');
 const http = require('http');
+const { readFile, writeFile } = require('fs');
 
 const pluginManager = {
     log: (message, isError = false) => {
@@ -74,7 +75,7 @@ const reply = async (rawdata, isGroup, message, options) => {
             };
             qqbot.on('GroupMemberInfo', (info) => {
                 conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
-                if (!(conout.match(/\[CQ:at,qq=\d*\]/u))) {
+                if (!(conout.search(/\[CQ:at,qq=\d*\]/gu) > -1)) {
                     if (rawdata.from === 80000000) {
                         pluginManager.log(`Output: ${qqbot.parseMessage(conout).text}`);
                     } else {
@@ -168,7 +169,7 @@ const jinkohChishohAnswer = (question) => {
 const jinkohChishoh = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+            let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\]( +)?`, 'gu'), '');
             let answer = jinkohChishohAnswer(question);
 
             if(answer !== question) {
@@ -306,7 +307,7 @@ const AIxxz = () => {
             } else {
                 nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
             };
-            let question = rawdata.text.replace(new RegExp(`@${qqbot.qq} ?`, 'gu'), '');
+            let question = rawdata.text.replace(new RegExp(`@${qqbot.qq}( +)?`, 'gu'), '');
             let images = rawdata.extra.images;
 
             AIxxzAnswer(userID, nickname, question, images, (answer) => {
@@ -332,6 +333,95 @@ const AIxxz = () => {
     });
 };
 
+const petOutput = (user, input) => {
+    let petList = config.petList || {};
+    let pet = petList[user] || { 'name': '', 'died': false };
+    let output = '';
+
+    if (input.search(/^[领領][养養]/gu) > -1) {
+        if (pet.died) {
+            output = '你有过宠物，但是却死在了你的手里。所以，不能再领养了。\n全·都·是·你·的·所·作·所·为';
+        } else if (pet.name) {
+            output = '你已经有宠物了。';
+        } else {
+            pet.name = input.replace(/^[领領][养養]( +)?/gu, '');
+            pet.died = false;
+            output = `你成功领养了一只${pet.name}。记得发送「喂食」，定期给它喂食吧。`;
+        };
+    };
+    if (input.search(/^[喂餵投]食/gu) > -1) {
+        if (pet.died) {
+            output = `你心里其实很明白，${pet.name}已经不会再醒来了。`;
+        } else if (pet.name) {
+            let random = Math.random();
+            if (random < 0.01) {
+                output = `是啊，果不其然啊……${pet.name}一声惨笑，踢开了窗户，从 114514 楼下坠了下去……\n结束了。一切都结束了。\n现在可以发送「领养 [宠物名]」领养你的新宠物。`;
+                pet.name = '';
+                pet.died = false;
+            } else {
+                output = `${pet.name}吃得似乎有点撑。`;
+                pet.died = true;
+            };
+        } else {
+            output = '你还没有宠物呢。发送「领养 [宠物名]」，领养你的第一只宠物吧。';
+        };
+    } else if (input.search(/^[状狀][态態]/gu) > -1) {
+        if (pet.died) {
+            output = `你心里其实很明白，${pet.name}已经不会再醒来了。`;
+        } else if (pet.name) {
+            output = `${pet.name}似乎有点饿。记得发送「喂食」，定期给它喂食吧。`;
+        } else {
+            output = '你还没有宠物呢。发送「领养 [宠物名]」，领养你的第一只宠物吧。';
+        };
+    // 如果发红包且宠物死了，复活宠物
+    } else if (input.search(/\[CQ:hb,.*?\]/gu) > -1 && pet.died) {
+        output = `你的${pet.name}不知怎的，突然就活了。`;
+        pet.died = false;
+    // 随机死亡
+    } else if (!pet.died) {
+        let random = Math.random();
+        if (random < 0.005) {
+            output = `声音产生的振动，恰恰是${pet.name}的天敌……${pet.name}抱着你，倒了下去。\n要了解它的状态，请发送状态。`;
+            pet.died = true;
+        };
+    };
+    // 处理完毕后更改设定
+    petList[user] = pet;
+    config.petList = petList;
+    readFile('./config.js', (err, data) => {
+        if (err) throw err;
+        let str = data.toString().replace(/("petList": )\{.*\}/gu, `$1${JSON.stringify(petList)}`);
+        let buf = Buffer.from(str);
+        writeFile('./config.js', buf, (err) => {
+            if (err) throw err;
+        });
+    });
+    // 返回答语
+    return output;
+};
+
+const pet = () => {
+    qqbot.on('GroupMessage', (rawdata) => {
+        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+            let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\]( +)?`, 'gu'), '');
+            let output = petOutput(rawdata.from, input);
+
+            if(output) {
+                reply(rawdata, true, output, { noEscape: true });
+            };
+        };
+    });
+
+    qqbot.on('PrivateMessage', (rawdata) => {
+        let input = rawdata.raw;
+        let output = petOutput(rawdata.from, input);
+
+        if(output) {
+            reply(rawdata, false, output, { noEscape: true });
+        };
+    });
+};
+
 if (config.mode === 'active') {
     daapenActive();                     // 主动打喷
 } else if (config.mode === 'passive') {
@@ -341,4 +431,6 @@ if (config.mode === 'active') {
                                         // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
 } else if (config.mode === 'AIxxz') {
     AIxxz();                            // 小信子，真·人工池沼
+} else if (config.mode === 'pet') {
+    pet();                              // 某致郁游戏，复活一时爽，一直复活一直爽
 };
