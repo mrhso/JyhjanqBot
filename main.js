@@ -60,14 +60,33 @@ const reply = async (rawdata, isGroup, message, options) => {
         await sleep((config.sleep || 100) * length);
     };
 
-    // TODO 将消息所含的 @ 替换为名片
     if (isGroup) {
         if (rawdata.from === 80000000) {
             qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
-            pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
         } else {
             qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
-            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
+        };
+        if (qqbot.parseMessage(message).extra.ats) {
+            let conout = message;
+            for (let at of qqbot.parseMessage(message).extra.ats) {
+                qqbot.groupMemberInfo(rawdata.group, at);
+            };
+            qqbot.on('GroupMemberInfo', (info) => {
+                conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
+                if (!(conout.match(/\[CQ:at,qq=\d*\]/u))) {
+                    if (rawdata.from === 80000000) {
+                        pluginManager.log(`Output: ${qqbot.parseMessage(conout).text}`);
+                    } else {
+                        pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
+                    };
+                };
+            });
+        } else {
+            if (rawdata.from === 80000000) {
+                pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
+            } else {
+                pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
+            };
         };
     } else {
         qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
