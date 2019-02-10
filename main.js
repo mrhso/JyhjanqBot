@@ -418,7 +418,7 @@ const petOutput = (user, input) => {
 
 const pet = () => {
     qqbot.on('GroupMessage', (rawdata) => {
-        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
             let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\]( +)?`, 'gu'), '');
             let output = petOutput(rawdata.from, input);
 
