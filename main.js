@@ -2,17 +2,25 @@ const QQBot = require('./lib/QQBot.js');
 const http = require('http');
 const { readFile, writeFile } = require('fs');
 
-const pluginManager = {
-    log: (message, isError = false) => {
-        let date = new Date().toISOString();
-        let output = `[${date.substring(0,10)} ${date.substring(11,19)}] ${message}`;
+const conLog = (message, isError = false) => {
+    let date = new Date();
+    let zone = - date.getTimezoneOffset();
+    let dateStr = new Date(date.getTime() + 60000 * zone).toISOString();
+    let zoneStr = '';
+    if (zone > 0) {
+        zoneStr = `UTC+${zone / 60}`;
+    } else if (zone === 0) {
+        zoneStr = `UTC`;
+    } else {
+        zoneStr = `UTC${zone / 60}`;
+    };
+    let output = `[${dateStr.substring(0, 10)} ${dateStr.substring(11, 19)} (${zoneStr})] ${message}`;
 
-        if (isError) {
-            console.error(output);
-        } else {
-            console.log(output);
-        };
-    },
+    if (isError) {
+        console.error(output);
+    } else {
+        console.log(output);
+    };
 };
 
 const config = require('./config.js');
@@ -22,10 +30,10 @@ let qqbot = new QQBot({
     host: config.host || '127.0.0.1',
     port: config.port || 11235,
 });
-pluginManager.log('Starting QQBot...');
+conLog('Starting QQBot...');
 
 qqbot.on('Error', (err) => {
-    pluginManager.log(`QQBot Error: ${err.error.toString()} (${err.event})`, true);
+    conLog(`QQBot Error: ${err.error.toString()} (${err.event})`, true);
 });
 
 qqbot.start();
@@ -36,7 +44,7 @@ if (config.mode === 'active' || config.mode === 'passive') {
     try {
         penshern = require('./text.js');
     } catch (ex) {
-        pluginManager.log('Failed to load text.js', true);
+        conLog('Failed to load text.js', true);
     };
 };
 
@@ -45,7 +53,7 @@ if (config.mode === 'pet') {
     try {
         petText = require('./pet.js');
     } catch (ex) {
-        pluginManager.log('Failed to load pet.js', true);
+        conLog('Failed to load pet.js', true);
     };
 };
 
@@ -92,20 +100,20 @@ const reply = async (rawdata, isGroup, message, options) => {
                 conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
                 if (!(conout.search(/\[CQ:at,qq=\d*\]/gu) > -1)) {
                     if (rawdata.from === 80000000) {
-                        pluginManager.log(`Output: ${qqbot.parseMessage(conout).text}`);
+                        conLog(`Output: ${qqbot.parseMessage(conout).text}`);
                     } else {
-                        pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
+                        conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
                     };
                 };
             });
         } else if (rawdata.from === 80000000) {
-            pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
+            conLog(`Output: ${qqbot.parseMessage(message).text}`);
         } else {
-            pluginManager.log(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
+            conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
         };
     } else {
         qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
-        pluginManager.log(`Output: ${qqbot.parseMessage(message).text}`);
+        conLog(`Output: ${qqbot.parseMessage(message).text}`);
     };
 };
 
@@ -139,7 +147,7 @@ const daapenActive = async () => {
         } else {
             qqbot.sendPrivateMessage(config.to, random);
         };
-        pluginManager.log(`Output: ${random}`);
+        conLog(`Output: ${random}`);
     };
 };
 
@@ -369,6 +377,8 @@ const petOutput = (user, input) => {
             output = eval(`\`${arrayRandom(petText.dead)}\``);
         } else if (pet.name) {
             let random = Math.random();
+            // 随机三位数
+            let randomNumber = Math.floor(Math.random() * 900) + 100;
             // 1% 概率触发迫真 GE
             if (random < 0.01) {
                 output = eval(`\`${arrayRandom(petText.goodEnding)}\``);
@@ -381,7 +391,7 @@ const petOutput = (user, input) => {
         } else {
             output = eval(`\`${arrayRandom(petText.adoptRemind)}\``);
         };
-    } else if (input.search(/^[状狀][态態]/gu) > -1) {
+    } else if (input.search(/^([宠寵]物|[状狀][态態])/gu) > -1) {
         if (pet.dead) {
             output = eval(`\`${arrayRandom(petText.dead)}\``);
         } else if (pet.name) {
@@ -405,12 +415,17 @@ const petOutput = (user, input) => {
     petList[user] = pet;
     config.petList = petList;
     readFile('./config.js', (err, data) => {
-        if (err) throw err;
-        let str = data.toString().replace(/("petList": )\{.*\}/gu, `$1${JSON.stringify(petList)}`);
-        let buf = Buffer.from(str);
-        writeFile('./config.js', buf, (err) => {
-            if (err) throw err;
-        });
+        if (err) {
+            conLog('Failed to read pet.js', true);
+        } else {
+            let str = data.toString().replace(/("petList": )\{.*\}/gu, `$1${JSON.stringify(petList)}`);
+            let buf = Buffer.from(str);
+            writeFile('./config.js', buf, (err) => {
+                if (err) {
+                    conLog('Failed to write pet.js', true);
+                };
+            });
+        };
     });
     // 返回答语
     return output;
