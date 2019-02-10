@@ -361,7 +361,7 @@ const petOutput = (user, input) => {
     let pet = petList[user] || { 'name': '', 'dead': false };
     let output = '';
 
-    if (input.search(/^[领領][养養]/gu) > -1) {
+    if (input.search(/^[领領][养養]/gu) > -1 && input.replace(/^[领領][养養] ?/gu, '').length > 0) {
         if (pet.dead) {
             output = eval(`\`${arrayRandom(petText.readoptDead)}\``);
         } else if (pet.name) {
