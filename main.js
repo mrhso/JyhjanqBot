@@ -57,10 +57,6 @@ const toLF = (str) => {
     return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
 };
 
-const evalTemplateString = (str) => {
-    return eval(`\`${str}\``);
-};
-
 const arrayRandom = (arr) => {
     return arr[Math.floor(Math.random() * arr.length)];
 };
@@ -354,55 +350,55 @@ const AIxxz = () => {
 
 const petOutput = (user, input) => {
     let petList = config.petList || {};
-    let pet = petList[user] || { 'name': '', 'died': false };
+    let pet = petList[user] || { 'name': '', 'dead': false };
     let output = '';
 
     if (input.search(/^[领領][养養]/gu) > -1) {
-        if (pet.died) {
-            output = evalTemplateString(arrayRandom(petText.readoptDied));
+        if (pet.dead) {
+            output = eval(`\`${arrayRandom(petText.readoptDead)}\``);
         } else if (pet.name) {
-            output = evalTemplateString(arrayRandom(petText.readopt));
+            output = eval(`\`${arrayRandom(petText.readopt)}\``);
         } else {
             pet.name = input.replace(/^[领領][养養] ?/gu, '');
-            pet.died = false;
-            output = evalTemplateString(arrayRandom(petText.adopt));
+            pet.dead = false;
+            output = eval(`\`${arrayRandom(petText.adopt)}\``);
         };
     };
     if (input.search(/^[喂餵投]食/gu) > -1) {
-        if (pet.died) {
-            output = evalTemplateString(arrayRandom(petText.died));
+        if (pet.dead) {
+            output = eval(`\`${arrayRandom(petText.dead)}\``);
         } else if (pet.name) {
             let random = Math.random();
             // 1% 概率触发迫真 GE
             if (random < 0.01) {
-                output = evalTemplateString(arrayRandom(petText.goodEnding));
+                output = eval(`\`${arrayRandom(petText.goodEnding)}\``);
                 pet.name = '';
-                pet.died = false;
+                pet.dead = false;
             } else {
-                output = evalTemplateString(arrayRandom(petText.badEnding));
-                pet.died = true;
+                output = eval(`\`${arrayRandom(petText.badEnding)}\``);
+                pet.dead = true;
             };
         } else {
-            output = evalTemplateString(arrayRandom(petText.adoptRemind));
+            output = eval(`\`${arrayRandom(petText.adoptRemind)}\``);
         };
     } else if (input.search(/^[状狀][态態]/gu) > -1) {
-        if (pet.died) {
-            output = evalTemplateString(arrayRandom(petText.died));
+        if (pet.dead) {
+            output = eval(`\`${arrayRandom(petText.dead)}\``);
         } else if (pet.name) {
-            output = evalTemplateString(arrayRandom(petText.feed));
+            output = eval(`\`${arrayRandom(petText.feed)}\``);
         } else {
-            output = evalTemplateString(arrayRandom(petText.adoptRemind));
+            output = eval(`\`${arrayRandom(petText.adoptRemind)}\``);
         };
     // 如果发红包且宠物死了，复活宠物
-    } else if (input.search(/\[CQ:hb,.*?\]/gu) > -1 && pet.died) {
-        output = evalTemplateString(arrayRandom(petText.revive));
-        pet.died = false;
+    } else if (input.search(/\[CQ:hb,.*?\]/gu) > -1 && pet.dead) {
+        output = eval(`\`${arrayRandom(petText.revive)}\``);
+        pet.dead = false;
     // 0.5% 概率随机死亡
-    } else if (!pet.died) {
+    } else if (!pet.dead) {
         let random = Math.random();
         if (random < 0.005) {
-            output = evalTemplateString(arrayRandom(petText.randomDied));
-            pet.died = true;
+            output = eval(`\`${arrayRandom(petText.randomDie)}\``);
+            pet.dead = true;
         };
     };
     // 处理完毕后更改设定

@@ -5,7 +5,7 @@
 
 module.exports = {
     // 死去后再领养
-    "readoptDied": [
+    "readoptDead": [
         "你有过宠物，但是却死在了你的手里。所以，不能再领养了。\n全·都·是·你·的·所·作·所·为"
     ],
     // 活着时再领养
@@ -17,7 +17,7 @@ module.exports = {
         "你成功领养了一只${pet.name}。记得发送「喂食」，定期给它喂食吧。"
     ],
     // 已去世
-    "died": [
+    "dead": [
         "你心里其实很明白，${pet.name}已经不会再醒来了。"
     ],
     // 迫真 GE
@@ -43,7 +43,7 @@ module.exports = {
         "你的${pet.name}不知怎的，突然就活了。"
     ],
     // 随机死亡
-    "randomDied": [
+    "randomDie": [
         "声音产生的振动，恰恰是${pet.name}的天敌……${pet.name}抱着你，倒了下去。\n要了解它的状态，请发送状态。"
     ]
 };
