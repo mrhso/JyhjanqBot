@@ -18,9 +18,9 @@
 ```
 npm install
 ```
-这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text.example.js 来定义合适的文本。
+这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text.example.js 与 pet.example.js 来定义合适的文本。
 
-编辑完毕后，将 config.example.js 与 text.example.js 分别更名为 config.js 与 text.js。
+编辑完毕后，将 config.example.js、text.example.js 与 pet.example.js 分别更名为 config.js、text.js 与 pet.js。
 
 打开酷 Q，然后执行：
 ```

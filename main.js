@@ -11,16 +11,16 @@ const pluginManager = {
             console.error(output);
         } else {
             console.log(output);
-        }
+        };
     },
 };
 
 const config = require('./config.js');
 
 let qqbot = new QQBot({
+    CoolQPro: config.CoolQPro,
     host: config.host || '127.0.0.1',
     port: config.port || 11235,
-    CoolQPro: config.CoolQPro
 });
 pluginManager.log('Starting QQBot...');
 
@@ -32,10 +32,21 @@ qqbot.start();
 
 let penshern = [];
 let penshernCopy = [];
-try {
-    penshern = require('./text.js');
-} catch (ex) {
-    pluginManager.log('Failed to load text.js', true);
+if (config.mode === 'active' || config.mode === 'passive') {
+    try {
+        penshern = require('./text.js');
+    } catch (ex) {
+        pluginManager.log('Failed to load text.js', true);
+    };
+};
+
+let petText = {};
+if (config.mode === 'pet') {
+    try {
+        petText = require('./pet.js');
+    } catch (ex) {
+        pluginManager.log('Failed to load pet.js', true);
+    };
 };
 
 const sleep = (ms) => {
@@ -44,6 +55,14 @@ const sleep = (ms) => {
 
 const toLF = (str) => {
     return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
+};
+
+const evalTemplateString = (str) => {
+    return eval(`\`${str}\``);
+};
+
+const arrayRandom = (arr) => {
+    return arr[Math.floor(Math.random() * arr.length)];
 };
 
 const reply = async (rawdata, isGroup, message, options) => {
@@ -169,7 +188,7 @@ const jinkohChishohAnswer = (question) => {
 const jinkohChishoh = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\]( +)?`, 'gu'), '');
+            let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
             let answer = jinkohChishohAnswer(question);
 
             if(answer !== question) {
@@ -307,7 +326,7 @@ const AIxxz = () => {
             } else {
                 nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
             };
-            let question = rawdata.text.replace(new RegExp(`@${qqbot.qq}( +)?`, 'gu'), '');
+            let question = rawdata.text.replace(new RegExp(`@${qqbot.qq} ?`, 'gu'), '');
             let images = rawdata.extra.images;
 
             AIxxzAnswer(userID, nickname, question, images, (answer) => {
@@ -340,48 +359,49 @@ const petOutput = (user, input) => {
 
     if (input.search(/^[领領][养養]/gu) > -1) {
         if (pet.died) {
-            output = '你有过宠物，但是却死在了你的手里。所以，不能再领养了。\n全·都·是·你·的·所·作·所·为';
+            output = evalTemplateString(arrayRandom(petText.readoptDied));
         } else if (pet.name) {
-            output = '你已经有宠物了。';
+            output = evalTemplateString(arrayRandom(petText.readopt));
         } else {
-            pet.name = input.replace(/^[领領][养養]( +)?/gu, '');
+            pet.name = input.replace(/^[领領][养養] ?/gu, '');
             pet.died = false;
-            output = `你成功领养了一只${pet.name}。记得发送「喂食」，定期给它喂食吧。`;
+            output = evalTemplateString(arrayRandom(petText.adopt));
         };
     };
     if (input.search(/^[喂餵投]食/gu) > -1) {
         if (pet.died) {
-            output = `你心里其实很明白，${pet.name}已经不会再醒来了。`;
+            output = evalTemplateString(arrayRandom(petText.died));
         } else if (pet.name) {
             let random = Math.random();
+            // 1% 概率触发迫真 GE
             if (random < 0.01) {
-                output = `是啊，果不其然啊……${pet.name}一声惨笑，踢开了窗户，从 114514 楼下坠了下去……\n结束了。一切都结束了。\n现在可以发送「领养 [宠物名]」领养你的新宠物。`;
+                output = evalTemplateString(arrayRandom(petText.goodEnding));
                 pet.name = '';
                 pet.died = false;
             } else {
-                output = `${pet.name}吃得似乎有点撑。`;
+                output = evalTemplateString(arrayRandom(petText.badEnding));
                 pet.died = true;
             };
         } else {
-            output = '你还没有宠物呢。发送「领养 [宠物名]」，领养你的第一只宠物吧。';
+            output = evalTemplateString(arrayRandom(petText.adoptRemind));
         };
     } else if (input.search(/^[状狀][态態]/gu) > -1) {
         if (pet.died) {
-            output = `你心里其实很明白，${pet.name}已经不会再醒来了。`;
+            output = evalTemplateString(arrayRandom(petText.died));
         } else if (pet.name) {
-            output = `${pet.name}似乎有点饿。记得发送「喂食」，定期给它喂食吧。`;
+            output = evalTemplateString(arrayRandom(petText.feed));
         } else {
-            output = '你还没有宠物呢。发送「领养 [宠物名]」，领养你的第一只宠物吧。';
+            output = evalTemplateString(arrayRandom(petText.adoptRemind));
         };
     // 如果发红包且宠物死了，复活宠物
     } else if (input.search(/\[CQ:hb,.*?\]/gu) > -1 && pet.died) {
-        output = `你的${pet.name}不知怎的，突然就活了。`;
+        output = evalTemplateString(arrayRandom(petText.revive));
         pet.died = false;
-    // 随机死亡
+    // 0.5% 概率随机死亡
     } else if (!pet.died) {
         let random = Math.random();
         if (random < 0.005) {
-            output = `声音产生的振动，恰恰是${pet.name}的天敌……${pet.name}抱着你，倒了下去。\n要了解它的状态，请发送状态。`;
+            output = evalTemplateString(arrayRandom(petText.randomDied));
             pet.died = true;
         };
     };
