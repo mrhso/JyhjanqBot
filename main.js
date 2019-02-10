@@ -23,27 +23,7 @@ const conLog = (message, isError = false) => {
     };
 };
 
-const toLF = (str) => {
-    return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
-};
-
-const toCRLF = (str) => {
-    return toLF(str).replace(/\n/gu, '\r\n');
-};
-
 const config = require('./config.js');
-
-// 覆写设定
-// 注释会消失，所以请用家从 config.example.js 建立副本
-const writeConfig = (config) => {
-    let str = `module.exports = ${toCRLF(JSON.stringify(config, null, 4))}\r\n`;
-    let buf = Buffer.from(str);
-    writeFile('./config.js', buf, (err) => {
-        if (err) {
-            conLog('Failed to write pet.js', true);
-        };
-    });
-};
 
 let qqbot = new QQBot({
     CoolQPro: config.CoolQPro,
@@ -69,11 +49,17 @@ if (config.mode === 'active' || config.mode === 'passive') {
 };
 
 let petText = {};
+let petList = {};
 if (config.mode === 'pet') {
     try {
         petText = require('./pet.js');
     } catch (ex) {
         conLog('Failed to load pet.js', true);
+    };
+    try {
+        petList = require('./pet.list.js');
+    } catch (ex) {
+        conLog('Failed to load pet.list.js', true);
     };
 };
 
@@ -83,6 +69,25 @@ const sleep = (ms) => {
 
 const arrayRandom = (arr) => {
     return arr[Math.floor(Math.random() * arr.length)];
+};
+
+const toLF = (str) => {
+    return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
+};
+
+const toCRLF = (str) => {
+    return toLF(str).replace(/\n/gu, '\r\n');
+};
+
+// 覆写设定，不保留注释
+const writeConfig = (config, file) => {
+    let str = `module.exports = ${toCRLF(JSON.stringify(config, null, 4))}\r\n`;
+    let buf = Buffer.from(str);
+    writeFile(file, buf, (err) => {
+        if (err) {
+            conLog('Failed to write pet.js', true);
+        };
+    });
 };
 
 const reply = async (rawdata, isGroup, message, options) => {
@@ -375,7 +380,6 @@ const AIxxz = () => {
 };
 
 const petOutput = (user, input) => {
-    let petList = config.petList || {};
     let pet = petList[user] || { 'name': '', 'dead': false };
     let output = '';
 
@@ -431,8 +435,7 @@ const petOutput = (user, input) => {
     };
     // 处理完毕后更改设定
     petList[user] = pet;
-    config.petList = petList;
-    writeConfig(config);
+    writeConfig(petList, './pet.list.js');
     // 返回答语
     return output;
 };
