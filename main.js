@@ -23,7 +23,27 @@ const conLog = (message, isError = false) => {
     };
 };
 
+const toLF = (str) => {
+    return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
+};
+
+const toCRLF = (str) => {
+    return toLF(str).replace(/\n/gu, '\r\n');
+};
+
 const config = require('./config.js');
+
+// 覆写设定
+// 注释会消失，所以请用家从 config.example.js 建立副本
+const writeConfig = (config) => {
+    let str = `module.exports = ${toCRLF(JSON.stringify(config, null, 4))}\r\n`;
+    let buf = Buffer.from(str);
+    writeFile('./config.js', buf, (err) => {
+        if (err) {
+            conLog('Failed to write pet.js', true);
+        };
+    });
+};
 
 let qqbot = new QQBot({
     CoolQPro: config.CoolQPro,
@@ -59,10 +79,6 @@ if (config.mode === 'pet') {
 
 const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
-};
-
-const toLF = (str) => {
-    return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
 };
 
 const arrayRandom = (arr) => {
@@ -155,12 +171,14 @@ const daapenPassive = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
             let random = daapen();
+
             reply(rawdata, true, random);
         };
     });
 
     qqbot.on('PrivateMessage', (rawdata) => {
         let random = daapen();
+
         reply(rawdata, false, random);
     });
 };
@@ -414,19 +432,7 @@ const petOutput = (user, input) => {
     // 处理完毕后更改设定
     petList[user] = pet;
     config.petList = petList;
-    readFile('./config.js', (err, data) => {
-        if (err) {
-            conLog('Failed to read pet.js', true);
-        } else {
-            let str = data.toString().replace(/("petList": )\{.*\}/gu, `$1${JSON.stringify(petList)}`);
-            let buf = Buffer.from(str);
-            writeFile('./config.js', buf, (err) => {
-                if (err) {
-                    conLog('Failed to write pet.js', true);
-                };
-            });
-        };
-    });
+    writeConfig(config);
     // 返回答语
     return output;
 };
