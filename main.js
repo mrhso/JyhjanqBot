@@ -1,6 +1,7 @@
 const QQBot = require('./lib/QQBot.js');
 const http = require('http');
 const { readFile, writeFile } = require('fs');
+const path = require('path');
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -85,7 +86,7 @@ const writeConfig = (config, file) => {
     let buf = Buffer.from(str);
     writeFile(file, buf, (err) => {
         if (err) {
-            conLog(`Failed to write ${file}`, true);
+            conLog(`Failed to write ${path.basename(file)}`, true);
         };
     });
 };
@@ -191,23 +192,15 @@ const daapenPassive = () => {
 const jinkohChishohAnswer = (question) => {
     let answer = question;
 
-    if(answer.search(/[一-龥][？\?]/gu) > -1) {
-        answer = answer.replace(/([啊吗嗎吧呢的]+)?[？\?]/gu, '！')
-                       .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
-                       .replace(/(.)[不没沒]\1/gu, '$1')
-                       .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
-                       .replace(/哪里/gu, '台湾').replace(/哪[裏裡]/gu, '台灣')
-                       .replace(/[谁誰]/gu, '蔡英文')
-                       .replace(/竟然/gu, '\uD800').replace(/究竟|到底/gu, '就').replace(/\uD800/gu, '竟然')
-                       .replace(/为什么/gu, '因为非常大颗').replace(/為什麼/gu, '因為非常大顆')
-                       .replace(/什么/gu, '竞选').replace(/什麼/gu, '競選');
-    };
-
-    if(answer.search(/[a-zA-Zａ-ｚＡ-Ｚ][？\?]/gu) > -1) {
-        if(answer.search(/^[cCｃＣ][aAａＡ][nNｎＮ]/gu) > -1) {
-            answer = 'Yes, I can!';
-        };
-    };
+    answer = answer.replace(/([啊吗嗎吧呢的]+)?([？\?]|$)/gu, '！')
+                   .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
+                   .replace(/(.)[不没沒]\1/gu, '$1')
+                   .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
+                   .replace(/哪里/gu, '台湾').replace(/哪[裏裡]/gu, '台灣')
+                   .replace(/[谁誰]/gu, '蔡英文')
+                   .replace(/竟然/gu, '\uD800').replace(/究竟|到底/gu, '就').replace(/\uD800/gu, '竟然')
+                   .replace(/为什么/gu, '因为非常大颗').replace(/為什麼/gu, '因為非常大顆')
+                   .replace(/什么/gu, '竞选').replace(/什麼/gu, '競選');
 
     return answer;
 };
