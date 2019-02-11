@@ -85,7 +85,7 @@ const writeConfig = (config, file) => {
     let buf = Buffer.from(str);
     writeFile(file, buf, (err) => {
         if (err) {
-            conLog('Failed to write pet.js', true);
+            conLog(`Failed to write ${file}`, true);
         };
     });
 };
@@ -164,9 +164,9 @@ const daapenActive = async () => {
         };
 
         if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendGroupMessage(config.to, random);
+            qqbot.sendGroupMessage(config.to, random, { noEscape: true });
         } else {
-            qqbot.sendPrivateMessage(config.to, random);
+            qqbot.sendPrivateMessage(config.to, random, { noEscape: true });
         };
         conLog(`Output: ${random}`);
     };
@@ -177,14 +177,14 @@ const daapenPassive = () => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
             let random = daapen();
 
-            reply(rawdata, true, random);
+            reply(rawdata, true, random, { noEscape: true });
         };
     });
 
     qqbot.on('PrivateMessage', (rawdata) => {
         let random = daapen();
 
-        reply(rawdata, false, random);
+        reply(rawdata, false, random, { noEscape: true });
     });
 };
 
@@ -353,7 +353,7 @@ const AIxxz = () => {
             } else {
                 nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
             };
-            let question = rawdata.text.replace(new RegExp(`@${qqbot.qq} ?`, 'gu'), '');
+            let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), ''));
             let images = rawdata.extra.images;
 
             AIxxzAnswer(userID, nickname, question, images, (answer) => {
