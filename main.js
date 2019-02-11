@@ -1,6 +1,8 @@
+'use strict';
+
 const QQBot = require('./lib/QQBot.js');
 const http = require('http');
-const writeFile = require('fs').writeFile;
+const fs = require('fs');
 const path = require('path');
 
 const conLog = (message, isError = false) => {
@@ -84,7 +86,7 @@ const toCRLF = (str) => {
 const writeConfig = (config, file) => {
     let str = `module.exports = ${toCRLF(JSON.stringify(config, null, 4))}\r\n`;
     let buf = Buffer.from(str);
-    writeFile(file, buf, (err) => {
+    fs.writeFile(file, buf, (err) => {
         if (err) {
             conLog(`Failed to write ${path.basename(file)}`, true);
         };
