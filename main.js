@@ -419,7 +419,7 @@ const petOutput = (user, input, randomDie = undefined) => {
         output = eval(`\`${arrayRandom(petText.revive)}\``);
         pet.dead = false;
     // 0.5% 概率随机死亡
-    } else if (randomDie === undefined ? Math.random() < 0.005 : randomDie) {
+    } else if (randomDie === undefined ? !pet.died && Math.random() < 0.005 : !pet.died && randomDie) {
         output = eval(`\`${arrayRandom(petText.randomDie)}\``);
         pet.dead = true;
     };
