@@ -372,7 +372,7 @@ const AIxxz = () => {
     });
 };
 
-const petOutput = (user, input) => {
+const petOutput = (user, input, randomDie = undefined) => {
     let pet = petList[user] || { 'name': '', 'dead': false };
     let output = '';
 
@@ -419,12 +419,9 @@ const petOutput = (user, input) => {
         output = eval(`\`${arrayRandom(petText.revive)}\``);
         pet.dead = false;
     // 0.5% 概率随机死亡
-    } else if (!pet.dead) {
-        let random = Math.random();
-        if (random < 0.005) {
-            output = eval(`\`${arrayRandom(petText.randomDie)}\``);
-            pet.dead = true;
-        };
+    } else if (randomDie === undefined ? Math.random() < 0.005 : randomDie) {
+        output = eval(`\`${arrayRandom(petText.randomDie)}\``);
+        pet.dead = true;
     };
     // 处理完毕后更改设定
     petList[user] = pet;
@@ -442,6 +439,12 @@ const pet = () => {
             if(output) {
                 reply(rawdata, true, output, { noEscape: true });
             };
+        // 即使没有 at 机器人，也有 0.5% 概率触发随机死亡
+        } else if (Math.random() < 0.005) {
+            // 不用送输入了，反正要死
+            let output = petOutput(rawdata.from, '', true);
+
+            reply(rawdata, true, output, { noEscape: true });
         };
     });
 
