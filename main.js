@@ -1,6 +1,6 @@
 const QQBot = require('./lib/QQBot.js');
 const http = require('http');
-const { readFile, writeFile } = require('fs');
+const writeFile = require('fs').writeFile;
 const path = require('path');
 
 const conLog = (message, isError = false) => {
@@ -227,7 +227,7 @@ const jinkohChishoh = () => {
     });
 };
 
-const AIxxzAnswer = (userID, nickname, question, images, callback) => {
+const AIxxzAnswer = (rawdata, question, images, callback) => {
     if (images.length === 0) {
         let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
             // 用数组装入 chunk
@@ -242,6 +242,17 @@ const AIxxzAnswer = (userID, nickname, question, images, callback) => {
                 let chunk = JSON.parse(Buffer.concat(chunks).toString());
                 // 取得 Userkey
                 let uk = chunk.data.UniqueDeviceID.uk;
+                // 定义 UID 为 QQ 号
+                let user = rawdata.from;
+                // 昵称
+                let nickname;
+                if (config.nickname) {
+                    nickname = config.nickname;
+                } else if (rawdata.from === 80000000) {
+                    nickname = rawdata.user.groupCard;
+                } else {
+                    nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
+                };
                 // 请求回答
                 let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
                     let chunks = [];
@@ -314,7 +325,7 @@ const AIxxzAnswer = (userID, nickname, question, images, callback) => {
                         };
                     });
                 });
-                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${userID}&city=${config.city}`);
+                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${user}&city=${config.city}`);
                 reqAnswer.end();
             });
         });
@@ -337,36 +348,20 @@ const AIxxzAnswer = (userID, nickname, question, images, callback) => {
 const AIxxz = () => {
     qqbot.on('GroupMessage', (rawdata) => {
         if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let userID = rawdata.from;
-            let nickname;
-            if (config.nickname) {
-                nickname = config.nickname;
-            } else if (rawdata.from === 80000000) {
-                nickname = rawdata.user.groupCard;
-            } else {
-                nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
-            };
             let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), ''));
             let images = rawdata.extra.images;
 
-            AIxxzAnswer(userID, nickname, question, images, (answer) => {
+            AIxxzAnswer(rawdata, question, images, (answer) => {
                 reply(rawdata, true, answer);
             });
         };
     });
 
     qqbot.on('PrivateMessage', (rawdata) => {
-        let userID = rawdata.from;
-        let nickname;
-        if (config.nickname) {
-            nickname = config.nickname;
-        } else {
-            nickname = rawdata.user.name || rawdata.user.qq.toString();
-        };
         let question = rawdata.text;
         let images = rawdata.extra.images;
 
-        AIxxzAnswer(userID, nickname, question, images, (answer) => {
+        AIxxzAnswer(rawdata, question, images, (answer) => {
             reply(rawdata, false, answer);
         });
     });
