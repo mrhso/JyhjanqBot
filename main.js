@@ -137,12 +137,10 @@ const reply = async (rawdata, isGroup, message, options) => {
             };
             qqbot.on('GroupMemberInfo', (info) => {
                 conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
-                if (!(conout.search(/\[CQ:at,qq=\d*\]/gu) > -1)) {
-                    if (rawdata.from === 80000000) {
-                        conLog(`Output: ${qqbot.parseMessage(conout).text}`);
-                    } else {
-                        conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
-                    };
+                if (conout.search(/\[CQ:at,qq=\d*\]/gu === -1) && rawdata.from === 80000000) {
+                    conLog(`Output: ${qqbot.parseMessage(conout).text}`);
+                } else if (conout.search(/\[CQ:at,qq=\d*\]/gu === -1)) {
+                    conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
                 };
             });
         } else if (rawdata.from === 80000000) {
@@ -180,7 +178,6 @@ const daapenActive = async () => {
         if (config.sleep === undefined ? true : config.sleep) {
             await sleep((config.sleep || 100) * [...random].length);
         };
-
         if (config.isGroup === undefined ? true : config.isGroup) {
             qqbot.sendGroupMessage(config.to, random, { noEscape: true });
         } else {
@@ -190,23 +187,7 @@ const daapenActive = async () => {
     };
 };
 
-const daapenPassive = () => {
-    qqbot.on('GroupMessage', (rawdata) => {
-        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let random = daapen();
-
-            reply(rawdata, true, random, { noEscape: true });
-        };
-    });
-
-    qqbot.on('PrivateMessage', (rawdata) => {
-        let random = daapen();
-
-        reply(rawdata, false, random, { noEscape: true });
-    });
-};
-
-const jinkohChishohAnswer = (question) => {
+const jinkohChishoh = (question) => {
     let answer = question;
 
     answer = answer.replace(/([啊吗嗎吧呢的]+)?([？\?]|$)/gu, '！')
@@ -222,29 +203,7 @@ const jinkohChishohAnswer = (question) => {
     return answer;
 };
 
-const jinkohChishoh = () => {
-    qqbot.on('GroupMessage', (rawdata) => {
-        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
-            let answer = jinkohChishohAnswer(question);
-
-            if(answer !== question) {
-                reply(rawdata, true, answer, { noEscape: true });
-            };
-        };
-    });
-
-    qqbot.on('PrivateMessage', (rawdata) => {
-        let question = rawdata.raw;
-        let answer = jinkohChishohAnswer(question);
-
-        if(answer !== question) {
-            reply(rawdata, false, answer, { noEscape: true });
-        };
-    });
-};
-
-const AIxxzAnswer = (rawdata, question, images, callback) => {
+const AIxxz = (rawdata, question, images, callback) => {
     if (images.length === 0) {
         let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
             // 用数组装入 chunk
@@ -362,29 +321,7 @@ const AIxxzAnswer = (rawdata, question, images, callback) => {
     };
 };
 
-const AIxxz = () => {
-    qqbot.on('GroupMessage', (rawdata) => {
-        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), ''));
-            let images = rawdata.extra.images;
-
-            AIxxzAnswer(rawdata, question, images, (answer) => {
-                reply(rawdata, true, answer);
-            });
-        };
-    });
-
-    qqbot.on('PrivateMessage', (rawdata) => {
-        let question = rawdata.text;
-        let images = rawdata.extra.images;
-
-        AIxxzAnswer(rawdata, question, images, (answer) => {
-            reply(rawdata, false, answer);
-        });
-    });
-};
-
-const petOutput = (user, input, randomDie = undefined) => {
+const pet = (user, input, randomDie = undefined) => {
     let pet = petList[user] || { 'name': '', 'dead': false };
     let output = '';
 
@@ -442,67 +379,133 @@ const petOutput = (user, input, randomDie = undefined) => {
     return output;
 };
 
-const pet = () => {
-    qqbot.on('GroupMessage', (rawdata) => {
-        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
-            let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
-            let output = petOutput(rawdata.from, input);
-
-            if(output) {
-                reply(rawdata, true, output, { noEscape: true });
-            };
-        // 即使没有 at 机器人，也有 0.5% 概率触发随机死亡
-        } else if (Math.random() < 0.005) {
-            // 不用送输入了，反正要死
-            let output = petOutput(rawdata.from, '', true);
-
-            reply(rawdata, true, output, { noEscape: true });
-        };
-    });
-
-    qqbot.on('PrivateMessage', (rawdata) => {
-        let input = rawdata.raw;
-        let output = petOutput(rawdata.from, input);
-
-        if(output) {
-            reply(rawdata, false, output, { noEscape: true });
-        };
-    });
-};
-
-const alphaGongOut = () => {
+const alphaGong = () => {
     let output = eval(`\`${arrayRandom(gongFormat)}\``);
-
     return output;
 };
 
-const alphaGong = () => {
+if (config.mode === 'active') {
+    // 主动打喷
+    daapenActive();
+} else {
+    // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
-        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-            let gong = alphaGongOut();
+        if (config.switchPrefix && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(`^${config.switchPrefix} ?`, 'gu')) > -1) {
+            let newMode = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(`^${config.switchPrefix} ?`, 'gu'), '');
+            config.mode = newMode;
+            reply(rawdata, true, `已切换模式至「${newMode}」。`);
+            writeConfig(config, './config.js');
+        } else {
+            switch (config.mode) {
+                // 被动打喷
+                case 'passive':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let random = daapen();
+                        reply(rawdata, true, random, { noEscape: true });
+                    };
+                    break;
 
-            reply(rawdata, true, gong);
+                // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
+                // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
+                case 'chishoh':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                        let answer = jinkohChishoh(question);
+                        if(answer !== question) {
+                            reply(rawdata, true, answer, { noEscape: true });
+                        };
+                    };
+                    break;
+
+                // 小信子，真·人工池沼
+                case 'AIxxz':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), ''));
+                        let images = rawdata.extra.images;
+                        AIxxz(rawdata, question, images, (answer) => {
+                            reply(rawdata, true, answer);
+                        });
+                    };
+                    break;
+
+                // 某致郁游戏，复活一时爽，一直复活一直爽
+                case 'pet':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                        let output = pet(rawdata.from, input);
+                        if(output) {
+                            reply(rawdata, true, output, { noEscape: true });
+                        };
+                    // 即使没有 at 机器人，也有 0.5% 概率触发随机死亡
+                    } else if (Math.random() < 0.005) {
+                        // 不用送输入了，反正要死
+                        let output = pet(rawdata.from, '', true);
+                        reply(rawdata, true, output, { noEscape: true });
+                    };
+                    break;
+
+                // AlphaGong 龚诗生成器
+                case 'gong':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let gong = alphaGong();
+                        reply(rawdata, true, gong);
+                    };
+                    break;
+
+                default:
+                    reply(rawdata, true, '当前模式不存在，请检查设定。');
+                    break;
+            };
         };
     });
-
+    // 私聊
     qqbot.on('PrivateMessage', (rawdata) => {
-        let gong = alphaGongOut();
+        if (config.switchPrefix && rawdata.raw.search(new RegExp(`^${config.switchPrefix} ?`, 'gu')) > -1) {
+            let newMode = rawdata.raw.replace(new RegExp(`^${config.switchPrefix} ?`, 'gu'), '');
+            config.mode = newMode;
+            reply(rawdata, false, `已切换模式至「${newMode}」。`);
+            writeConfig(config, './config.js');
+        } else {
+            let question;
+            switch (config.mode) {
+                case 'passive':
+                    let random = daapen();
+                    reply(rawdata, false, random, { noEscape: true });
+                    break;
 
-        reply(rawdata, false, gong);
+                case 'chishoh':
+                    question = rawdata.raw;
+                    let answer = jinkohChishoh(question);
+                    if(answer !== question) {
+                        reply(rawdata, false, answer, { noEscape: true });
+                    };
+                    break;
+
+                case 'AIxxz':
+                    question = rawdata.text;
+                    let images = rawdata.extra.images;
+                    AIxxz(rawdata, question, images, (answer) => {
+                        reply(rawdata, false, answer);
+                    });
+                    break;
+
+                case 'pet':
+                    let input = rawdata.raw;
+                    let output = pet(rawdata.from, input);
+                    if(output) {
+                        reply(rawdata, false, output, { noEscape: true });
+                    };
+                    break;
+
+                case 'gong':
+                    let gong = alphaGong();
+                    reply(rawdata, false, gong);
+                    break;
+
+                default:
+                    reply(rawdata, false, '当前模式不存在，请检查设定。');
+                    break;
+            };
+        };
     });
-};
-
-if (config.mode === 'active') {
-    daapenActive();                     // 主动打喷
-} else if (config.mode === 'passive') {
-    daapenPassive();                    // 被动打喷
-} else if (config.mode === 'chishoh') {
-    jinkohChishoh();                    // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
-                                        // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
-} else if (config.mode === 'AIxxz') {
-    AIxxz();                            // 小信子，真·人工池沼
-} else if (config.mode === 'pet') {
-    pet();                              // 某致郁游戏，复活一时爽，一直复活一直爽
-} else if (config.mode === 'gong') {
-    alphaGong();                        // AlphaGong 龚诗生成器
 };
