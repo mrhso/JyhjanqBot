@@ -1,11 +1,12 @@
 # 多功能人工池沼
 ## 特点
-本人工池沼有四个模式：
+本人工池沼为多功能人工池沼，功能如下：
 - 主动打喷模式
 - 被动打喷模式
 - 人工池沼模式
 - 小信子模式
 - 宠爱世界模式
+- AlphaGong 模式
 
 ## 使用方法
 首先准备好依赖。
@@ -18,9 +19,9 @@
 ```
 npm install
 ```
-这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text.example.js 与 pet.example.js 来定义合适的文本。
+这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑文本。
 
-编辑完毕后，将 config.example.js、text.example.js 与 pet.example.js 分别更名为 config.js、text.js 与 pet.js。
+编辑完毕后，将 *.example.js 都更名为 *.js。
 
 打开酷 Q，然后执行：
 ```
@@ -43,3 +44,5 @@ node main.js
 1.1.0 加入小信子模式。
 
 1.2.0 正式加入某致郁游戏，不过文本很是缺乏。
+
+1.3.0 将原 Excel AlphaGong 移植入智障 Bot。

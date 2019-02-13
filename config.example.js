@@ -10,6 +10,7 @@ module.exports = {
                                                          // chishoh 为人工池沼模式，建议将 sleep 设定为 0，更有人工池沼的感觉
                                                          // AIxxz 为小信子模式，同样建议将 sleep 设定为 0。不过这个是真·人工池沼，啊啊
                                                          // pet 为宠爱世界模式，迫真养宠物实则骗红包的致郁游戏
+                                                         // gong 为 AlphaGong 模式，龚诗生成器
     "isGroup": true,                                     // 主动打喷模式有效，true 为群，false 为私聊
     "to": "10000",                                       // 主动打喷模式有效，目的 QQ 群号或 QQ 号
     "count": 100,                                        // 主动打喷模式有效，消息总数

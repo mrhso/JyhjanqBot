@@ -55,14 +55,29 @@ let petText = {};
 let petList = {};
 if (config.mode === 'pet') {
     try {
-        petText = require('./pet.js');
+        petText = require('./pet.text.js');
     } catch (ex) {
-        conLog('Failed to load pet.js', true);
+        conLog('Failed to load pet.text.js', true);
     };
     try {
         petList = require('./pet.list.js');
     } catch (ex) {
         conLog('Failed to load pet.list.js', true);
+    };
+};
+
+let gongText = {};
+let gongFormat = [];
+if (config.mode === 'gong') {
+    try {
+        gongText = require('./gong.text.js');
+    } catch (ex) {
+        conLog('Failed to load gong.text.js', true);
+    };
+    try {
+        gongFormat = require('./gong.format.js');
+    } catch (ex) {
+        conLog('Failed to load gong.format.js', true);
     };
 };
 
@@ -455,6 +470,28 @@ const pet = () => {
     });
 };
 
+const alphaGongOut = () => {
+    let output = eval(`\`${arrayRandom(gongFormat)}\``);
+
+    return output;
+};
+
+const alphaGong = () => {
+    qqbot.on('GroupMessage', (rawdata) => {
+        if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+            let gong = alphaGongOut();
+
+            reply(rawdata, true, gong);
+        };
+    });
+
+    qqbot.on('PrivateMessage', (rawdata) => {
+        let gong = alphaGongOut();
+
+        reply(rawdata, false, gong);
+    });
+};
+
 if (config.mode === 'active') {
     daapenActive();                     // 主动打喷
 } else if (config.mode === 'passive') {
@@ -466,4 +503,6 @@ if (config.mode === 'active') {
     AIxxz();                            // 小信子，真·人工池沼
 } else if (config.mode === 'pet') {
     pet();                              // 某致郁游戏，复活一时爽，一直复活一直爽
+} else if (config.mode === 'gong') {
+    alphaGong();                        // AlphaGong 龚诗生成器
 };
