@@ -43,57 +43,49 @@ qqbot.start();
 
 let penshern = [];
 let penshernCopy = [];
-if (config.mode === 'active' || config.mode === 'passive') {
-    try {
-        penshern = require('./text.js');
-    } catch (ex) {
-        conLog('Failed to load text.js', true);
-    };
+try {
+    penshern = require('./text.js');
+} catch (ex) {
+    conLog('Failed to load text.js', true);
 };
 
 let petText = {};
 let petList = {};
-if (config.mode === 'pet') {
-    try {
-        petText = require('./pet.text.js');
-    } catch (ex) {
-        conLog('Failed to load pet.text.js', true);
-    };
-    try {
-        petList = require('./pet.list.js');
-    } catch (ex) {
-        conLog('Failed to load pet.list.js', true);
-    };
+try {
+    petText = require('./pet.text.js');
+} catch (ex) {
+    conLog('Failed to load pet.text.js', true);
+};
+try {
+    petList = require('./pet.list.js');
+} catch (ex) {
+    conLog('Failed to load pet.list.js', true);
 };
 
 let gongText = {};
 let gongFormat = [];
-if (config.mode === 'gong') {
-    try {
-        gongText = require('./gong.text.js');
-    } catch (ex) {
-        conLog('Failed to load gong.text.js', true);
-    };
-    try {
-        gongFormat = require('./gong.format.js');
-    } catch (ex) {
-        conLog('Failed to load gong.format.js', true);
-    };
+try {
+    gongText = require('./gong.text.js');
+} catch (ex) {
+    conLog('Failed to load gong.text.js', true);
+};
+try {
+    gongFormat = require('./gong.format.js');
+} catch (ex) {
+    conLog('Failed to load gong.format.js', true);
 };
 
 let kufonText = {};
 let kufonFormat = [];
-if (config.mode === 'kufon') {
-    try {
-        kufonText = require('./kufon.text.js');
-    } catch (ex) {
-        conLog('Failed to load kufon.text.js', true);
-    };
-    try {
-        kufonFormat = require('./kufon.format.js');
-    } catch (ex) {
-        conLog('Failed to load kufon.format.js', true);
-    };
+try {
+    kufonText = require('./kufon.text.js');
+} catch (ex) {
+    conLog('Failed to load kufon.text.js', true);
+};
+try {
+    kufonFormat = require('./kufon.format.js');
+} catch (ex) {
+    conLog('Failed to load kufon.format.js', true);
 };
 
 const sleep = (ms) => {
@@ -481,7 +473,9 @@ if (config.mode === 'active') {
                     break;
 
                 default:
-                    reply(rawdata, true, '当前模式不存在，请检查设定。');
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        reply(rawdata, true, '当前模式不存在，请检查设定。');
+                    };
                     break;
             };
         };
