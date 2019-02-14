@@ -197,7 +197,7 @@ const daapenActive = async () => {
 const jinkohChishoh = (question) => {
     let answer = question;
 
-    answer = answer.replace(/([啊吗嗎吧呢的]+)?([？\?]|$)/gu, '！')
+    answer = answer.replace(/([啊吗嗎吧呢的]+)?([？。！~]|$)/gu, '！')
                    .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
                    .replace(/(.)[不没沒]\1/gu, '$1')
                    .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
@@ -423,9 +423,7 @@ if (config.mode === 'active') {
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
                         let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
                         let answer = jinkohChishoh(question);
-                        if(answer !== question) {
-                            reply(rawdata, true, answer, { noEscape: true });
-                        };
+                        reply(rawdata, true, answer, { noEscape: true });
                     };
                     break;
 
@@ -498,9 +496,7 @@ if (config.mode === 'active') {
                 case 'chishoh':
                     question = rawdata.raw;
                     let answer = jinkohChishoh(question);
-                    if(answer !== question) {
-                        reply(rawdata, false, answer, { noEscape: true });
-                    };
+                    reply(rawdata, false, answer, { noEscape: true });
                     break;
 
                 case 'AIxxz':
