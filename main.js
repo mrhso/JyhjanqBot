@@ -301,7 +301,7 @@ const AIxxz = (rawdata, question, images, callback) => {
                         };
                     });
                 });
-                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${user}&city=${config.city}`);
+                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${user}&city=${config.city || ''}`);
                 reqAnswer.end();
             });
         });
