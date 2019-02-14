@@ -81,6 +81,21 @@ if (config.mode === 'gong') {
     };
 };
 
+let kufonText = {};
+let kufonFormat = [];
+if (config.mode === 'kufon') {
+    try {
+        kufonText = require('./kufon.text.js');
+    } catch (ex) {
+        conLog('Failed to load kufon.text.js', true);
+    };
+    try {
+        kufonFormat = require('./kufon.format.js');
+    } catch (ex) {
+        conLog('Failed to load kufon.format.js', true);
+    };
+};
+
 const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
@@ -384,6 +399,11 @@ const alphaGong = () => {
     return output;
 };
 
+const alphaKufonZero = () => {
+    let output = eval(`\`${arrayRandom(kufonFormat)}\``);
+    return output;
+};
+
 if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
@@ -452,6 +472,14 @@ if (config.mode === 'active') {
                     };
                     break;
 
+                // AlphaKufon Zero 迫真古风生成器
+                case 'kufon':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let kufon = alphaKufonZero();
+                        reply(rawdata, true, kufon);
+                    };
+                    break;
+
                 default:
                     reply(rawdata, true, '当前模式不存在，请检查设定。');
                     break;
@@ -500,6 +528,11 @@ if (config.mode === 'active') {
                 case 'gong':
                     let gong = alphaGong();
                     reply(rawdata, false, gong);
+                    break;
+
+                case 'kufon':
+                    let kufon = alphaKufonZero();
+                    reply(rawdata, false, kufon);
                     break;
 
                 default:

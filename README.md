@@ -7,6 +7,7 @@
 - 小信子模式
 - 宠爱世界模式
 - AlphaGong 模式
+- AlphaKufon Zero 模式
 
 ## 使用方法
 首先准备好依赖。
@@ -46,3 +47,5 @@ node main.js
 1.2.0 正式加入某致郁游戏，不过文本很是缺乏。
 
 1.3.0 将原 Excel AlphaGong 移植入智障 Bot。
+
+1.3.5 移植 Excel AlphaKufon Zero，并加入切换模式功能。
