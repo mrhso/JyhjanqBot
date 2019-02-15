@@ -1,9 +1,11 @@
 'use strict';
 
 const QQBot = require('./lib/QQBot.js');
+const URL = require('url').URL;
 const http = require('http');
-const fs = require('fs');
+const https = require('https');
 const path = require('path');
+const fs = require('fs');
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -210,9 +212,9 @@ const jinkohChishoh = (question) => {
     return answer;
 };
 
-const AIxxz = (rawdata, question, images, callback) => {
-    if (images.length === 0) {
-        let reqUK = http.request({host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+const AIxxz = (rawdata, question, callback) => {
+    if (rawdata.extra.images.length === 0) {
+        let reqUK = http.request({ host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } }, (res) => {
             // 用数组装入 chunk
             let chunks = [];
             // 接收 chunk
@@ -237,7 +239,7 @@ const AIxxz = (rawdata, question, images, callback) => {
                     nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
                 };
                 // 请求回答
-                let reqAnswer = http.request({host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: {'content-type': 'application/x-www-form-urlencoded'}}, (res) => {
+                let reqAnswer = http.request({ host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } }, (res) => {
                     let chunks = [];
                     res.on('data', (chunk) => {
                         chunks.push(chunk);
@@ -314,7 +316,7 @@ const AIxxz = (rawdata, question, images, callback) => {
         });
         reqUK.write(`secret=${config.appid || 'dcXbXX0X'}|${config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0'}|${config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013'}&event=GetUk&data=["${config.devid || 'UniqueDeviceID'}"]`);
         reqUK.end();
-    } else if (images.join(',').search(/\.gif/gu) > -1) {
+    } else if (rawdata.extra.images.join(',').search(/\.gif/gu) > -1) {
         let answer;
         if (config.lang === 'zh_TW' || config.lang === 'zh_HK') {
             answer = '那就不曉得了。';
@@ -396,17 +398,98 @@ const alphaKufonZero = () => {
     return output;
 };
 
+const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
+    // 根据 tkk 获取 tk，高能
+    let getTk = (text, tkk) => {
+        // 我只好用 Nazo 表达我的绝望
+        let nazo = (a, b) => {
+            for (let c = 0; c < b.length - 2; c += 3) {
+                let d = b[c + 2];
+                d = d >= 'a' ? d.codePointAt(0) - 87 : parseInt(d);
+                d = b[c + 1] === '+' ? a >>> d: a << d;
+                a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
+            };
+            return a;
+        };
+        let tkkInt = parseInt(tkk.split('.')[0]);
+        let tkkDec = parseInt(tkk.split('.')[1]);
+        let a = [];
+        let b = 0;
+        for (let c = 0; c < text.length; c++) {
+            // 啊啊啊 charCodeAt 必须死，，，
+            // 但是这里因为 non-BMP 结果不同没办法换成 codePointAt
+            let d = text.charCodeAt(c);
+            // 这段代码原文是用 ? : 写的，阅读起来完全就是地狱
+            if (d < 128) {
+                a[b++] = d;
+            } else {
+                if (d < 2048) {
+                    a[b++] = d >> 6 | 192;
+                } else {
+                    if ((d & 64512) === 55296 && c + 1 < text.length && (text.charCodeAt(c + 1) & 64512) === 56320) {
+                        d = 65536 + ((d & 1023) << 10) + (text.charCodeAt(++c) & 1023);
+                        a[b++] = d >> 18 | 240;
+                        a[b++] = d >> 12 & 63 | 128;
+                    } else {
+                        a[b++] = d >> 12 | 224;
+                    };
+                    a[b++] = d >> 6 & 63 | 128;
+                };
+                a[b++] = d & 63 | 128;
+            };
+        };
+        let e = tkkInt;
+        for (b = 0; b < a.length; b++) {
+            e += a[b];
+            e = nazo(e, '+-a^+6');
+        };
+        e = nazo(e, '+-3^+b+-f');
+        e ^= tkkDec;
+        0 > e && (e = (e & 2147483647) + 2147483648);
+        e %= 1E6;
+        return (`${e}.${e ^ tkkInt}`);
+    };
+    // 开始请求
+    https.get(new URL('https://translate.google.cn'), (res) => {
+        let chunks = [];
+        res.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+        res.on('end', () => {
+            let chunk = Buffer.concat(chunks).toString();
+            let tkk = chunk.match(/tkk:'(.*?)'/u)[1];
+            let tk = getTk(text,tkk);
+            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${src}&tl={tgt}&hl=${tgt}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${tk}&q=${text}`), (res) => {
+                let chunks = [];
+                res.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+                res.on('end', () => {
+                    let chunk = Buffer.concat(chunks).toString();
+                    // 读入 JSON
+                    chunk = JSON.parse(chunk);
+                    callback(chunk[0][0][0]);
+                });
+            });
+        });
+    });
+};
+
 if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
 } else {
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
-        if (config.switchPrefix && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(`^${config.switchPrefix} ?`, 'gu')) > -1) {
-            let newMode = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(`^${config.switchPrefix} ?`, 'gu'), '');
-            config.mode = newMode;
-            reply(rawdata, true, `已切换模式至「${newMode}」。`);
-            writeConfig(config, './config.js');
+        if (config.modeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
+            if (newMode) {
+                config.mode = newMode;
+                reply(rawdata, true, `已切换模式至「${newMode}」。`);
+                writeConfig(config, './config.js');
+            } else {
+                reply(rawdata, true, '可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt');
+            };
         } else {
             switch (config.mode) {
                 // 被动打喷
@@ -430,9 +513,8 @@ if (config.mode === 'active') {
                 // 小信子，真·人工池沼
                 case 'AIxxz':
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), ''));
-                        let images = rawdata.extra.images;
-                        AIxxz(rawdata, question, images, (answer) => {
+                        let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '')).text;
+                        AIxxz(rawdata, question, (answer) => {
                             reply(rawdata, true, answer);
                         });
                     };
@@ -470,6 +552,33 @@ if (config.mode === 'active') {
                     };
                     break;
 
+                // Google 翻译
+                case 'gt':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                        if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                config.gtSrc = newSrc;
+                                reply(rawdata, true, `已切换源语文至「${newSrc}」。`);
+                                writeConfig(config, './config.js');
+                            };
+                        } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                config.gtTgt = newTgt;
+                                reply(rawdata, true, `已切换目标语文至「${newTgt}」。`);
+                                writeConfig(config, './config.js');
+                            };
+                        } else {
+                            input = qqbot.parseMessage(input).text;
+                            googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
+                                reply(rawdata, true, output);
+                            });
+                        };
+                    };
+                    break;
+
                 default:
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
                         reply(rawdata, true, '当前模式不存在，请检查设定。');
@@ -480,13 +589,18 @@ if (config.mode === 'active') {
     });
     // 私聊
     qqbot.on('PrivateMessage', (rawdata) => {
-        if (config.switchPrefix && rawdata.raw.search(new RegExp(`^${config.switchPrefix} ?`, 'gu')) > -1) {
-            let newMode = rawdata.raw.replace(new RegExp(`^${config.switchPrefix} ?`, 'gu'), '');
-            config.mode = newMode;
-            reply(rawdata, false, `已切换模式至「${newMode}」。`);
-            writeConfig(config, './config.js');
+        if (config.modeSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
+            if (newMode) {
+                config.mode = newMode;
+                reply(rawdata, false, `已切换模式至「${newMode}」。`);
+                writeConfig(config, './config.js');
+            } else {
+                reply(rawdata, false, '可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt');
+            };
         } else {
             let question;
+            let input;
             switch (config.mode) {
                 case 'passive':
                     let random = daapen();
@@ -501,14 +615,13 @@ if (config.mode === 'active') {
 
                 case 'AIxxz':
                     question = rawdata.text;
-                    let images = rawdata.extra.images;
-                    AIxxz(rawdata, question, images, (answer) => {
+                    AIxxz(rawdata, question, (answer) => {
                         reply(rawdata, false, answer);
                     });
                     break;
 
                 case 'pet':
-                    let input = rawdata.raw;
+                    input = rawdata.raw;
                     let output = pet(rawdata.from, input);
                     if(output) {
                         reply(rawdata, false, output, { noEscape: true });
@@ -523,6 +636,30 @@ if (config.mode === 'active') {
                 case 'kufon':
                     let kufon = alphaKufonZero();
                     reply(rawdata, false, kufon);
+                    break;
+
+                case 'gt':
+                    input = rawdata.raw;
+                    if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
+                        let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
+                        if (newSrc) {
+                            config.gtSrc = newSrc;
+                            reply(rawdata, false, `已切换源语文至「${newSrc}」。`);
+                            writeConfig(config, './config.js');
+                        };
+                    } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
+                        let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
+                        if (newTgt) {
+                            config.gtTgt = newTgt;
+                            reply(rawdata, false, `已切换目标语文至「${newTgt}」。`);
+                            writeConfig(config, './config.js');
+                        };
+                    } else {
+                        input = qqbot.parseMessage(input).text;
+                        googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
+                            reply(rawdata, false, output);
+                        });
+                    };
                     break;
 
                 default:

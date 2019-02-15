@@ -12,6 +12,7 @@ module.exports = {
                                                          // pet 为宠爱世界模式，迫真养宠物实则骗红包的致郁游戏
                                                          // gong 为 AlphaGong 模式，龚诗生成器
                                                          // kufon 为 AlphaKufon Zero 模式，迫真古风生成器
+                                                         // gt 为 Google 翻译模式
     "isGroup": true,                                     // 主动打喷模式有效，true 为群，false 为私聊
     "to": "10000",                                       // 主动打喷模式有效，目的 QQ 群号或 QQ 号
     "count": 100,                                        // 主动打喷模式有效，消息总数
@@ -28,6 +29,11 @@ module.exports = {
                                                          // 实际上未指定该参数或 API 无法识别时，返回为「互动者」
     "city": "",                                          // 小信子有效，用户城市
                                                          // 这个查天气有用
-    "switchPrefix": ""                                   // 切换模式用的前缀，留空则关闭
+    "modeSwitch": "",                                    // 模式切换，留空则关闭
                                                          // 支持 CQ 码、正则表达式，注意 CQ 码转义、JS 转义、正则表达式转义
+                                                         // 例如「^&#91;mode&#93; ?」
+    "gtSrc": "auto",                                     // Google 翻译源语文
+    "gtTgt": "en",                                       // Google 翻译目标语文
+    "gtSrcSwitch": "",                                   // Google 翻译源语文切换，用法同 modeSwitch
+    "gtTgtSwitch": ""                                    // Google 翻译目标语文切换，用法同 modeSwitch
 };
