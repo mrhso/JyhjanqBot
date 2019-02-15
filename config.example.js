@@ -13,6 +13,7 @@ module.exports = {
                                                          // gong 为 AlphaGong 模式，龚诗生成器
                                                          // kufon 为 AlphaKufon Zero 模式，迫真古风生成器
                                                          // gt 为 Google 翻译模式
+                                                         // gtRound 为 Google 来回翻译模式，翻译过去再翻译回来
     "isGroup": true,                                     // 主动打喷模式有效，true 为群，false 为私聊
     "to": "10000",                                       // 主动打喷模式有效，目的 QQ 群号或 QQ 号
     "count": 100,                                        // 主动打喷模式有效，消息总数

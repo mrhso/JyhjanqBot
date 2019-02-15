@@ -9,6 +9,7 @@
 - AlphaGong 模式
 - AlphaKufon Zero 模式
 - Google 翻译模式
+- Google 来回翻译模式
 
 ## 使用方法
 首先准备好依赖。
@@ -52,3 +53,5 @@ node main.js
 1.3.5 移植 Excel AlphaKufon Zero，并加入切换模式功能。
 
 1.4.0 加入 Google 翻译模式。
+
+1.4.5 加入 Google 来回翻译模式。
