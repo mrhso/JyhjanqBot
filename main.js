@@ -310,7 +310,7 @@ const AIxxz = (rawdata, question, callback) => {
                         };
                     });
                 });
-                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${user}&city=${config.city || ''}`);
+                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question.replace(/\n/gu, '%0A')}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${user}&city=${config.city || ''}`);
                 reqAnswer.end();
             });
         });
@@ -459,7 +459,7 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
             let chunk = Buffer.concat(chunks).toString();
             let tkk = chunk.match(/tkk:'(.*?)'/u)[1];
             let tk = getTk(text,tkk);
-            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${src}&tl={tgt}&hl=${tgt}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${tk}&q=${text}`), (res) => {
+            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${src}&tl={tgt}&hl=${tgt}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${tk}&q=${text.replace(/\n/gu, '%0A')}`), (res) => {
                 let chunks = [];
                 res.on('data', (chunk) => {
                     chunks.push(chunk);
@@ -468,7 +468,14 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
                     let chunk = Buffer.concat(chunks).toString();
                     // 读入 JSON
                     chunk = JSON.parse(chunk);
-                    callback(chunk[0][0][0]);
+                    let ret = [];
+                    for (let result of chunk [0]) {
+                        if (result[0] !== null) {
+                            ret.push(result[0]);
+                        };
+                    };
+                    ret = ret.join('');
+                    callback(ret);
                 });
             });
         });
