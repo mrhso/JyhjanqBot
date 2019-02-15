@@ -488,7 +488,7 @@ if (config.mode === 'active') {
                 reply(rawdata, true, `已切换模式至「${newMode}」。`);
                 writeConfig(config, './config.js');
             } else {
-                reply(rawdata, true, '可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt');
+                reply(rawdata, true, `当前模式为「${config.mode}」。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt`);
             };
         } else {
             switch (config.mode) {
@@ -562,6 +562,8 @@ if (config.mode === 'active') {
                                 config.gtSrc = newSrc;
                                 reply(rawdata, true, `已切换源语文至「${newSrc}」。`);
                                 writeConfig(config, './config.js');
+                            } else {
+                                reply(rawdata, true, `当前源语文为「${config.gtSrc}」。`);
                             };
                         } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
                             let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
@@ -569,6 +571,8 @@ if (config.mode === 'active') {
                                 config.gtTgt = newTgt;
                                 reply(rawdata, true, `已切换目标语文至「${newTgt}」。`);
                                 writeConfig(config, './config.js');
+                            } else {
+                                reply(rawdata, true, `当前目标语文为「${config.gtTgt}」。`);
                             };
                         } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
                             let newSrc = config.gtTgt;
@@ -576,6 +580,7 @@ if (config.mode === 'active') {
                             config.gtSrc = newSrc;
                             config.gtTgt = newTgt;
                             reply(rawdata, true, `已交换源语文与目标语文。\n现在源语文为「${newSrc}」，目标语文为「${newTgt}」。`);
+                            writeConfig(config, './config.js');
                         } else {
                             input = qqbot.parseMessage(input).text;
                             googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
@@ -602,7 +607,7 @@ if (config.mode === 'active') {
                 reply(rawdata, false, `已切换模式至「${newMode}」。`);
                 writeConfig(config, './config.js');
             } else {
-                reply(rawdata, false, '可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt');
+                reply(rawdata, false, `当前模式为「${config.mode}」。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt`);
             };
         } else {
             let question;
@@ -652,6 +657,8 @@ if (config.mode === 'active') {
                             config.gtSrc = newSrc;
                             reply(rawdata, false, `已切换源语文至「${newSrc}」。`);
                             writeConfig(config, './config.js');
+                        } else {
+                            reply(rawdata, false, `当前源语文为「${config.gtSrc}」。`);
                         };
                     } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
                         let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
@@ -659,6 +666,8 @@ if (config.mode === 'active') {
                             config.gtTgt = newTgt;
                             reply(rawdata, false, `已切换目标语文至「${newTgt}」。`);
                             writeConfig(config, './config.js');
+                        } else {
+                            reply(rawdata, false, `当前目标语文为「${config.gtTgt}」。`);
                         };
                     } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
                         let newSrc = config.gtTgt;
@@ -666,6 +675,7 @@ if (config.mode === 'active') {
                         config.gtSrc = newSrc;
                         config.gtTgt = newTgt;
                         reply(rawdata, false, `已交换源语文与目标语文。\n现在源语文为「${newSrc}」，目标语文为「${newTgt}」。`);
+                        writeConfig(config, './config.js');
                     } else {
                         input = qqbot.parseMessage(input).text;
                         googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
