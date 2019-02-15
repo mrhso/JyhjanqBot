@@ -310,11 +310,11 @@ const AIxxz = (rawdata, question, callback) => {
                         };
                     });
                 });
-                reqAnswer.write(`app=${config.appid || 'dcXbXX0X'}&dev=${config.devid || 'UniqueDeviceID'}&uk=${uk}&text=${question.replace(/\n/gu, '%0A')}&lang=${config.lang || 'zh_CN'}&nickname=${nickname}&user=${user}&city=${config.city || ''}`);
+                reqAnswer.write(`app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(config.devid || 'UniqueDeviceID')}&uk=${encodeURIComponent(uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(config.lang || 'zh_CN')}&nickname=${encodeURIComponent(nickname)}&user=${encodeURIComponent(user)}&city=${encodeURIComponent(config.city || '')}`);
                 reqAnswer.end();
             });
         });
-        reqUK.write(`secret=${config.appid || 'dcXbXX0X'}|${config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0'}|${config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013'}&event=GetUk&data=["${config.devid || 'UniqueDeviceID'}"]`);
+        reqUK.write(`secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(config.devid || 'UniqueDeviceID')}"]`);
         reqUK.end();
     } else if (rawdata.extra.images.join(',').search(/\.gif/gu) > -1) {
         let answer;
@@ -459,7 +459,7 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
             let chunk = Buffer.concat(chunks).toString();
             let tkk = chunk.match(/tkk:'(.*?)'/u)[1];
             let tk = getTk(text,tkk);
-            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${src}&tl={tgt}&hl=${tgt}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${tk}&q=${text.replace(/\n/gu, '%0A')}`), (res) => {
+            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl={encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}&q=${encodeURIComponent(text)}`), (res) => {
                 let chunks = [];
                 res.on('data', (chunk) => {
                     chunks.push(chunk);
