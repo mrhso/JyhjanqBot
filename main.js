@@ -400,9 +400,9 @@ const alphaKufonZero = () => {
 
 const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
     // 根据 tkk 获取 tk，高能
-    let getTk = (text, tkk) => {
+    const getTk = (text, tkk) => {
         // 我只好用 Nazo 表达我的绝望
-        let nazo = (a, b) => {
+        const nazo = (a, b) => {
             for (let c = 0; c < b.length - 2; c += 3) {
                 let d = b[c + 2];
                 d = d >= 'a' ? d.codePointAt(0) - 87 : parseInt(d);
