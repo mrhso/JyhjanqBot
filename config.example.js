@@ -35,5 +35,6 @@ module.exports = {
     "gtSrc": "auto",                                     // Google 翻译源语文
     "gtTgt": "en",                                       // Google 翻译目标语文
     "gtSrcSwitch": "",                                   // Google 翻译源语文切换，用法同 modeSwitch
-    "gtTgtSwitch": ""                                    // Google 翻译目标语文切换，用法同 modeSwitch
+    "gtTgtSwitch": "",                                   // Google 翻译目标语文切换，用法同 modeSwitch
+    "gtSwapSwitch": ""                                   // Google 翻译源语文与目标语文交换，用法同 modeSwitch
 };

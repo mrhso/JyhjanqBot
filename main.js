@@ -570,6 +570,12 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换目标语文至「${newTgt}」。`);
                                 writeConfig(config, './config.js');
                             };
+                        } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
+                            let newSrc = config.gtTgt;
+                            let newTgt = config.gtSrc;
+                            config.gtSrc = newSrc;
+                            config.gtTgt = newTgt;
+                            reply(rawdata, true, '已交换源语文与目标语文。');
                         } else {
                             input = qqbot.parseMessage(input).text;
                             googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
@@ -654,6 +660,12 @@ if (config.mode === 'active') {
                             reply(rawdata, false, `已切换目标语文至「${newTgt}」。`);
                             writeConfig(config, './config.js');
                         };
+                    } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
+                        let newSrc = config.gtTgt;
+                        let newTgt = config.gtSrc;
+                        config.gtSrc = newSrc;
+                        config.gtTgt = newTgt;
+                        reply(rawdata, false, '已交换源语文与目标语文。');
                     } else {
                         input = qqbot.parseMessage(input).text;
                         googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
