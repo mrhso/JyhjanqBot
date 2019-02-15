@@ -575,7 +575,7 @@ if (config.mode === 'active') {
                             let newTgt = config.gtSrc;
                             config.gtSrc = newSrc;
                             config.gtTgt = newTgt;
-                            reply(rawdata, true, '已交换源语文与目标语文。');
+                            reply(rawdata, true, `已交换源语文与目标语文。\n现在源语文为「${newSrc}」，目标语文为「${newTgt}」。`);
                         } else {
                             input = qqbot.parseMessage(input).text;
                             googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
@@ -665,7 +665,7 @@ if (config.mode === 'active') {
                         let newTgt = config.gtSrc;
                         config.gtSrc = newSrc;
                         config.gtTgt = newTgt;
-                        reply(rawdata, false, '已交换源语文与目标语文。');
+                        reply(rawdata, false, `已交换源语文与目标语文。\n现在源语文为「${newSrc}」，目标语文为「${newTgt}」。`);
                     } else {
                         input = qqbot.parseMessage(input).text;
                         googleTranslate(input, config.gtSrc || 'auto', config.gtTgt || 'en', (output) => {
