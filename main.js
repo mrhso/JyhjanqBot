@@ -483,16 +483,32 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
                     let chunk = Buffer.concat(chunks).toString();
                     // 读入 JSON
                     chunk = JSON.parse(chunk);
-                    let ret = [];
+                    let output = [];
                     for (let result of chunk [0]) {
                         if (result[0] !== null) {
-                            ret.push(result[0]);
+                            output.push(result[0]);
                         };
                     };
-                    ret = ret.join('');
-                    callback(ret);
+                    output = output.join('');
+                    callback(output);
                 });
             });
+        });
+    });
+};
+
+const couplet = (text, callback) => {
+    https.get(new URL(`https://ai-backend.binwang.me/chat/couplet/${encodeURIComponent(text)}`), (res) => {
+        let chunks = [];
+        res.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+        res.on('end', () => {
+            let chunk = Buffer.concat(chunks).toString();
+            // 读入 JSON
+            chunk = JSON.parse(chunk);
+            let output = chunk.output;
+            callback(output);
         });
     });
 };
@@ -501,7 +517,7 @@ if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
 } else {
-    let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound';
+    let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet';
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
         if (config.pModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
@@ -751,7 +767,7 @@ if (config.mode === 'active') {
                     };
                     break;
 
-                // Google 来回翻译模式，翻译过去再翻译回来
+                // Google 来回翻译，翻译过去再翻译回来
                 // 一个来回就面目全非了 www
                 case 'gtRound':
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
@@ -888,6 +904,17 @@ if (config.mode === 'active') {
                                 });
                             });
                         };
+                    };
+                    break;
+
+                // 对对联
+                // 就是那个 https://ai.binwang.me/couplet/，好像很火的样子
+                case 'couplet':
+                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                        let input = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '')).text;
+                        couplet(input, (output) => {
+                            reply(rawdata, true, output);
+                        });
                     };
                     break;
 
@@ -1155,6 +1182,13 @@ if (config.mode === 'active') {
                             });
                         });
                     };
+                    break;
+
+                case 'couplet':
+                    input = rawdata.text;
+                    couplet(input, (output) => {
+                        reply(rawdata, false, output);
+                    });
                     break;
 
                 default:
