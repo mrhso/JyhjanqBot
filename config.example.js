@@ -37,5 +37,13 @@ module.exports = {
     "gtTgt": "en",                                       // Google 翻译目标语文
     "gtSrcSwitch": "",                                   // Google 翻译源语文切换，用法同 modeSwitch
     "gtTgtSwitch": "",                                   // Google 翻译目标语文切换，用法同 modeSwitch
-    "gtSwapSwitch": ""                                   // Google 翻译源语文与目标语文交换，用法同 modeSwitch
+    "gtSwapSwitch": "",                                  // Google 翻译源语文与目标语文交换，用法同 modeSwitch
+    "gModeSwitch": "",                                   // modeSwitch 单群版
+    "gGtSrcSwitch": "",                                  // gtSrcSwitch 单群版
+    "gGtTgtSwitch": "",                                  // gtTgtSwitch 单群版
+    "gGtSwapSwitch": "",                                 // gtSwapSwitch 单群版
+    "pModeSwitch": "",                                   // modeSwitch 单 QQ 版
+    "pGtSrcSwitch": "",                                  // gtSrcSwitch 单 QQ 版
+    "pGtTgtSwitch": "",                                  // gtTgtSwitch 单 QQ 版
+    "pGtSwapSwitch": ""                                  // gtSwapSwitch 单 QQ 版
 };

@@ -29,6 +29,8 @@ const conLog = (message, isError = false) => {
 };
 
 const config = require('./config.js');
+const pMode = require('./mode.private.js');
+const gMode = require('./mode.group.js');
 
 let qqbot = new QQBot({
     CoolQPro: config.CoolQPro,
@@ -488,17 +490,54 @@ if (config.mode === 'active') {
 } else {
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
-        if (config.modeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+        if (config.pModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
+            if (newMode) {
+                pMode[rawdata.from] = newMode;
+                reply(rawdata, true, `已切换单 QQ 模式至「${newMode}」。`);
+                writeConfig(pMode, './mode.private.js');
+            } else {
+                pMode[rawdata.from] = '';
+                reply(rawdata, true, `已清除单 QQ 模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                writeConfig(pMode, './mode.private.js');
+        } else if (config.gModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.gModeSwitch, 'gu'), '')).text;
+            if (newMode) {
+                gMode[rawdata.group] = newMode;
+                reply(rawdata, true, `已切换单群模式至「${newMode}」。`);
+                writeConfig(config, './mode.group.js');
+            } else {
+                pMode[rawdata.group] = '';
+                reply(rawdata, true, `已清除单群模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                writeConfig(config, './mode.group.js');
+        } else if (config.modeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
             if (newMode) {
                 config.mode = newMode;
-                reply(rawdata, true, `已切换模式至「${newMode}」。`);
+                reply(rawdata, true, `已切换全局模式至「${newMode}」。`);
                 writeConfig(config, './config.js');
             } else {
-                reply(rawdata, true, `当前模式为「${config.mode}」。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                let current = [];
+                if (pMode[rawdata.from]) {
+                    current.push(`当前单 QQ 模式为「${pMode[rawdata.from]}」`);
+                };
+                if (gMode[rawdata.group]) {
+                    current.push(`当前单群模式为「${gMode[rawdata.group]}」`);
+                };
+                current.push(`当前全局模式为「${config.mode}」`);
+                current = `${current.join('，')}。`;
+                reply(rawdata, true, `${current}\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
             };
         } else {
-            switch (config.mode) {
+            let mode;
+            if (pMode[rawdata.from]) {
+                mode = pMode[rawdata.from];
+            } else if (gMode[rawdata.group]) {
+                mode = gMode[rawdata.group];
+            } else {
+                mode = config.mode;
+            };
+            switch (mode) {
                 // 被动打喷
                 case 'passive':
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
@@ -648,16 +687,38 @@ if (config.mode === 'active') {
     });
     // 私聊
     qqbot.on('PrivateMessage', (rawdata) => {
-        if (config.modeSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+        if (config.pModeSwitch && rawdata.raw.search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
+            if (newMode) {
+                pMode[rawdata.from] = newMode;
+                reply(rawdata, false, `已切换单 QQ 模式至「${newMode}」。`);
+                writeConfig(pMode, './mode.private.js');
+            } else {
+                pMode[rawdata.from] = '';
+                reply(rawdata, false, `已清除单 QQ 模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                writeConfig(pMode, './mode.private.js');
+        } else if (config.modeSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
             if (newMode) {
                 config.mode = newMode;
-                reply(rawdata, false, `已切换模式至「${newMode}」。`);
+                reply(rawdata, false, `已切换全局模式至「${newMode}」。`);
                 writeConfig(config, './config.js');
             } else {
-                reply(rawdata, false, `当前模式为「${config.mode}」。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                let current = [];
+                if (pMode[rawdata.from]) {
+                    current.push(`当前单 QQ 模式为「${pMode[rawdata.from]}」`);
+                };
+                current.push(`当前全局模式为「${config.mode}」`);
+                current = `${current.join('，')}。`;
+                reply(rawdata, false, `${current}\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
             };
         } else {
+            let mode;
+            if (pMode[rawdata.from]) {
+                mode = pMode[rawdata.from];
+            } else {
+                mode = config.mode;
+            };
             let question;
             let input;
             switch (config.mode) {
