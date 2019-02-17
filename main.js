@@ -522,7 +522,7 @@ if (config.mode === 'active') {
                 reply(rawdata, true, `已切换单群模式至「${newMode}」。`);
                 writeConfig(gMode, './mode.group.js');
             } else {
-                pMode[rawdata.group] = '';
+                gMode[rawdata.group] = '';
                 reply(rawdata, true, `已清除单群模式。\n${modeList}`);
                 writeConfig(gMode, './mode.group.js');
             };
