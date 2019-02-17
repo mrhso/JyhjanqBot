@@ -501,7 +501,7 @@ if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
 } else {
-    let modeList = '可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound';
+    let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound';
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
         if (config.pModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
