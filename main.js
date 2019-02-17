@@ -501,6 +501,7 @@ if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
 } else {
+    let modeList = '可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound';
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
         if (config.pModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
@@ -511,7 +512,7 @@ if (config.mode === 'active') {
                 writeConfig(pMode, './mode.private.js');
             } else {
                 pMode[rawdata.from] = '';
-                reply(rawdata, true, `已清除单 QQ 模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                reply(rawdata, true, `已清除单 QQ 模式。\n${modeList}`);
                 writeConfig(pMode, './mode.private.js');
             };
         } else if (config.gModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
@@ -522,7 +523,7 @@ if (config.mode === 'active') {
                 writeConfig(gMode, './mode.group.js');
             } else {
                 pMode[rawdata.group] = '';
-                reply(rawdata, true, `已清除单群模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                reply(rawdata, true, `已清除单群模式。\n${modeList}`);
                 writeConfig(gMode, './mode.group.js');
             };
         } else if (config.modeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
@@ -541,7 +542,7 @@ if (config.mode === 'active') {
                 };
                 current.push(`全局模式为「${config.mode}」`);
                 current = `当前${current.join('，')}。`;
-                reply(rawdata, true, `${current}\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                reply(rawdata, true, `${current}\n${modeList}`);
             };
         } else {
             let mode;
@@ -908,7 +909,7 @@ if (config.mode === 'active') {
                 writeConfig(pMode, './mode.private.js');
             } else {
                 pMode[rawdata.from] = '';
-                reply(rawdata, false, `已清除单 QQ 模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                reply(rawdata, false, `已清除单 QQ 模式。\n${modeList}`);
                 writeConfig(pMode, './mode.private.js');
             };
         } else if (config.modeSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
@@ -924,7 +925,7 @@ if (config.mode === 'active') {
                 };
                 current.push(`全局模式为「${config.mode}」`);
                 current = `当前${current.join('，')}。`;
-                reply(rawdata, false, `${current}\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
+                reply(rawdata, false, `${current}\n${modeList}`);
             };
         } else {
             let mode;
