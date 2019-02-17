@@ -513,6 +513,7 @@ if (config.mode === 'active') {
                 pMode[rawdata.from] = '';
                 reply(rawdata, true, `已清除单 QQ 模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
                 writeConfig(pMode, './mode.private.js');
+            };
         } else if (config.gModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.gModeSwitch, 'gu'), '')).text;
             if (newMode) {
@@ -523,6 +524,7 @@ if (config.mode === 'active') {
                 pMode[rawdata.group] = '';
                 reply(rawdata, true, `已清除单群模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
                 writeConfig(gMode, './mode.group.js');
+            };
         } else if (config.modeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
             if (newMode) {
@@ -908,6 +910,7 @@ if (config.mode === 'active') {
                 pMode[rawdata.from] = '';
                 reply(rawdata, false, `已清除单 QQ 模式。\n可切换模式列表：\npassive\nchishoh\nAIxxz\npet\ngong\nkufon\ngt\ngtRound`);
                 writeConfig(pMode, './mode.private.js');
+            };
         } else if (config.modeSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
             if (newMode) {
@@ -932,7 +935,7 @@ if (config.mode === 'active') {
             };
             let question;
             let input;
-            switch (config.mode) {
+            switch (mode) {
                 case 'passive':
                     let random = daapen();
                     reply(rawdata, false, random, { noEscape: true });
