@@ -262,7 +262,12 @@ const AIxxz = (rawdata, question, callback) => {
                     res.on('end', async () => {
                         let chunk = Buffer.concat(chunks).toString();
                         // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
-                        chunk = JSON.parse(chunk.substring(chunk.search(/\{/gu)));
+                        chunk = chunk.substring(chunk.search(/\{/gu));
+                        // 出错的时候可以看到目录「/data/wwwroot」
+                        if (chunk.search(/\/data\/wwwroot/gu) > -1) {
+                            return;
+                        };
+                        chunk = JSON.parse(chunk);
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
                         // 音乐连链接都没返回，所以没有处理的必要
@@ -481,6 +486,10 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
                 });
                 res.on('end', () => {
                     let chunk = Buffer.concat(chunks).toString();
+                    // 如果是 HTML，滤掉
+                    if (chunk.search(/^<!/gu) > -1) {
+                        return;
+                    };
                     // 读入 JSON
                     chunk = JSON.parse(chunk);
                     let output = [];
@@ -505,6 +514,10 @@ const couplet = (text, callback) => {
         });
         res.on('end', () => {
             let chunk = Buffer.concat(chunks).toString();
+            // 如果是 HTML，滤掉
+            if (chunk.search(/^<!/gu) > -1) {
+                return;
+            };
             // 读入 JSON
             chunk = JSON.parse(chunk);
             let output = chunk.output;
