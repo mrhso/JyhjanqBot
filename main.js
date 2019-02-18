@@ -11,7 +11,7 @@ const conLog = (message, isError = false) => {
     let date = new Date();
     let zone = - date.getTimezoneOffset();
     let dateStr = new Date(date.getTime() + 60000 * zone).toISOString();
-    let zoneStr = '';
+    let zoneStr;
     if (zone > 0) {
         zoneStr = `UTC+${zone / 60}`;
     } else if (zone === 0) {
