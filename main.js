@@ -351,8 +351,8 @@ const AIxxz = (rawdata, question, callback) => {
 };
 
 const pet = (user, input, randomDie = undefined) => {
-    let pet = petList[user] || { 'name': '', 'dead': false };
-    let output = '';
+    let pet = petList[user] || { 'name': undefined, 'dead': false };
+    let output;
 
     if (input.search(/^[领領][养養]/gu) > -1 && input.replace(/^[领領][养養] ?/gu, '').length > 0) {
         if (pet.dead) {
@@ -375,7 +375,7 @@ const pet = (user, input, randomDie = undefined) => {
             // 1% 概率触发迫真 GE
             if (random < 0.01) {
                 output = eval(`\`${arrayRandom(petText.goodEnding)}\``);
-                pet.name = '';
+                pet.name = undefined;
                 pet.dead = false;
             } else {
                 output = eval(`\`${arrayRandom(petText.badEnding)}\``);
@@ -540,7 +540,7 @@ if (config.mode === 'active') {
                 reply(rawdata, true, `已切换单 QQ 模式至「${newMode}」。`);
                 writeConfig(pMode, './mode.private.js');
             } else {
-                pMode[rawdata.from] = '';
+                pMode[rawdata.from] = undefined;
                 reply(rawdata, true, `已清除单 QQ 模式。\n${modeList}`);
                 writeConfig(pMode, './mode.private.js');
             };
@@ -551,7 +551,7 @@ if (config.mode === 'active') {
                 reply(rawdata, true, `已切换单群模式至「${newMode}」。`);
                 writeConfig(gMode, './mode.group.js');
             } else {
-                gMode[rawdata.group] = '';
+                gMode[rawdata.group] = undefined;
                 reply(rawdata, true, `已清除单群模式。\n${modeList}`);
                 writeConfig(gMode, './mode.group.js');
             };
@@ -655,7 +655,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单 QQ 源语文至「${newSrc}」。`);
                                 writeConfig(pGt, './gt.private.js');
                             } else {
-                                pGt[rawdata.from].src = '';
+                                pGt[rawdata.from].src = undefined;
                                 reply(rawdata, true, `已清除单 QQ 源语文。`);
                                 writeConfig(pGt, './gt.private.js');
                             };
@@ -667,7 +667,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单 QQ 目标语文至「${newTgt}」。`);
                                 writeConfig(pGt, './gt.private.js');
                             } else {
-                                pGt[rawdata.from].tgt = '';
+                                pGt[rawdata.from].tgt = undefined;
                                 reply(rawdata, true, `已清除单 QQ 目标语文。`);
                                 writeConfig(pGt, './gt.private.js');
                             };
@@ -688,7 +688,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单群源语文至「${newSrc}」。`);
                                 writeConfig(gGt, './gt.group.js');
                             } else {
-                                gGt[rawdata.group].src = '';
+                                gGt[rawdata.group].src = undefined;
                                 reply(rawdata, true, `已清除单群源语文。`);
                                 writeConfig(gGt, './gt.group.js');
                             };
@@ -700,7 +700,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单群目标语文至「${newTgt}」。`);
                                 writeConfig(gGt, './gt.group.js');
                             } else {
-                                gGt[rawdata.group].tgt = '';
+                                gGt[rawdata.group].tgt = undefined;
                                 reply(rawdata, true, `已清除单群目标语文。`);
                                 writeConfig(gGt, './gt.group.js');
                             };
@@ -793,7 +793,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单 QQ 源语文至「${newSrc}」。`);
                                 writeConfig(pGt, './gt.private.js');
                             } else {
-                                pGt[rawdata.from].src = '';
+                                pGt[rawdata.from].src = undefined;
                                 reply(rawdata, true, `已清除单 QQ 源语文。`);
                                 writeConfig(pGt, './gt.private.js');
                             };
@@ -805,7 +805,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单 QQ 目标语文至「${newTgt}」。`);
                                 writeConfig(pGt, './gt.private.js');
                             } else {
-                                pGt[rawdata.from].tgt = '';
+                                pGt[rawdata.from].tgt = undefined;
                                 reply(rawdata, true, `已清除单 QQ 目标语文。`);
                                 writeConfig(pGt, './gt.private.js');
                             };
@@ -826,7 +826,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单群源语文至「${newSrc}」。`);
                                 writeConfig(gGt, './gt.group.js');
                             } else {
-                                gGt[rawdata.group].src = '';
+                                gGt[rawdata.group].src = undefined;
                                 reply(rawdata, true, `已清除单群源语文。`);
                                 writeConfig(gGt, './gt.group.js');
                             };
@@ -838,7 +838,7 @@ if (config.mode === 'active') {
                                 reply(rawdata, true, `已切换单群目标语文至「${newTgt}」。`);
                                 writeConfig(gGt, './gt.group.js');
                             } else {
-                                gGt[rawdata.group].tgt = '';
+                                gGt[rawdata.group].tgt = undefined;
                                 reply(rawdata, true, `已清除单群目标语文。`);
                                 writeConfig(gGt, './gt.group.js');
                             };
@@ -948,7 +948,7 @@ if (config.mode === 'active') {
                 reply(rawdata, false, `已切换单 QQ 模式至「${newMode}」。`);
                 writeConfig(pMode, './mode.private.js');
             } else {
-                pMode[rawdata.from] = '';
+                pMode[rawdata.from] = undefined;
                 reply(rawdata, false, `已清除单 QQ 模式。\n${modeList}`);
                 writeConfig(pMode, './mode.private.js');
             };
@@ -1023,7 +1023,7 @@ if (config.mode === 'active') {
                             reply(rawdata, false, `已切换单 QQ 源语文至「${newSrc}」。`);
                             writeConfig(pGt, './gt.private.js');
                         } else {
-                            pGt[rawdata.from].src = '';
+                            pGt[rawdata.from].src = undefined;
                             reply(rawdata, false, `已清除单 QQ 源语文。`);
                             writeConfig(pGt, './gt.private.js');
                         };
@@ -1035,7 +1035,7 @@ if (config.mode === 'active') {
                             reply(rawdata, false, `已切换单 QQ 目标语文至「${newTgt}」。`);
                             writeConfig(pGt, './gt.private.js');
                         } else {
-                            pGt[rawdata.from].tgt = '';
+                            pGt[rawdata.from].tgt = undefined;
                             reply(rawdata, false, `已清除单 QQ 目标语文。`);
                             writeConfig(pGt, './gt.private.js');
                         };
@@ -1114,7 +1114,7 @@ if (config.mode === 'active') {
                             reply(rawdata, false, `已切换单 QQ 源语文至「${newSrc}」。`);
                             writeConfig(pGt, './gt.private.js');
                         } else {
-                            pGt[rawdata.from].src = '';
+                            pGt[rawdata.from].src = undefined;
                             reply(rawdata, false, `已清除单 QQ 源语文。`);
                             writeConfig(pGt, './gt.private.js');
                         };
@@ -1126,7 +1126,7 @@ if (config.mode === 'active') {
                             reply(rawdata, false, `已切换单 QQ 目标语文至「${newTgt}」。`);
                             writeConfig(pGt, './gt.private.js');
                         } else {
-                            pGt[rawdata.from].tgt = '';
+                            pGt[rawdata.from].tgt = undefined;
                             reply(rawdata, false, `已清除单 QQ 目标语文。`);
                             writeConfig(pGt, './gt.private.js');
                         };
