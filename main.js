@@ -215,7 +215,8 @@ const daapenActive = async () => {
 const jinkohChishoh = (question) => {
     let answer = question;
 
-    answer = answer.replace(/([啊吗嗎吧呢的]+)?([？。！~]|$)/gu, '！')
+    answer = answer.replace(/([^？。！])$/gu, '$1？')
+                   .replace(/^/gu, '\uD800').replace(/([^\uD800？。！])[啊吗嗎吧呢的]？/gu, '$1！').replace(/\uD800/gu, '')
                    .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
                    .replace(/(.)[不没沒]\1/gu, '$1')
                    .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
