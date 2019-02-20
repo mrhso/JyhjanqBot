@@ -351,7 +351,7 @@ const AIxxz = (rawdata, question, callback) => {
 };
 
 const pet = (user, input, randomDie = undefined) => {
-    let pet = petList[user] || { 'name': undefined, 'dead': false };
+    let pet = petList[user] || {};
     let output;
 
     if (input.search(/^[领領][养養]/gu) > -1 && input.replace(/^[领領][养養] ?/gu, '').length > 0) {
@@ -376,7 +376,7 @@ const pet = (user, input, randomDie = undefined) => {
             if (random < 0.01) {
                 output = eval(`\`${arrayRandom(petText.goodEnding)}\``);
                 pet.name = undefined;
-                pet.dead = false;
+                pet.dead = undefined;
             } else {
                 output = eval(`\`${arrayRandom(petText.badEnding)}\``);
                 pet.dead = true;
