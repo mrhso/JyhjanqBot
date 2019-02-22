@@ -1,7 +1,6 @@
 'use strict';
 
 const QQBot = require('./lib/QQBot.js');
-const URL = require('url').URL;
 const http = require('http');
 const https = require('https');
 const path = require('path');
