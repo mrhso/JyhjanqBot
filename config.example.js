@@ -46,7 +46,7 @@ module.exports = {
     "pModeSwitch": "",                                   // modeSwitch 单 QQ 版
     "pGtSrcSwitch": "",                                  // gtSrcSwitch 单 QQ 版
     "pGtTgtSwitch": "",                                  // gtTgtSwitch 单 QQ 版
-    "pGtSwapSwitch": ""                                  // gtSwapSwitch 单 QQ 版
+    "pGtSwapSwitch": "",                                 // gtSwapSwitch 单 QQ 版
     "langSwitch": "",                                    // 小信子语文切换
     "citySwitch": "",                                    // 小信子城市切换
     "gLangSwitch": "",                                   // langSwitch 单群版
