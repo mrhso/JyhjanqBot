@@ -493,13 +493,12 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
                     };
                     // 读入 JSON
                     chunk = JSON.parse(chunk);
-                    let output = [];
+                    let output = '';
                     for (let result of chunk [0]) {
                         if (result[0] !== null) {
-                            output.push(result[0]);
+                            output += result[0];
                         };
                     };
-                    output = output.join('');
                     callback(output);
                 });
             });
