@@ -104,6 +104,19 @@ try {
     conLog('Failed to load gt.group.js', true);
 };
 
+let pAIxxz = {};
+let gAIxxz = {};
+try {
+    pAIxxz = require('./AIxxz.private.js');
+} catch (ex) {
+    conLog('Failed to load AIxxz.private.js', true);
+};
+try {
+    gAIxxz = require('./AIxxz.group.js');
+} catch (ex) {
+    conLog('Failed to load AIxxz.group.js', true);
+};
+
 const sleep = (ms) => {
     return new Promise(resolve => setTimeout(resolve, ms));
 };
@@ -228,7 +241,7 @@ const jinkohChishoh = (question) => {
     return answer;
 };
 
-const AIxxz = (rawdata, question, callback) => {
+const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
     if (rawdata.extra.images.length === 0) {
         let reqUK = http.request({ host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } }, (res) => {
             // 用数组装入 chunk
@@ -241,19 +254,6 @@ const AIxxz = (rawdata, question, callback) => {
             res.on('end', () => {
                 // 将 chunk 合并起来，读为 JSON
                 let chunk = JSON.parse(Buffer.concat(chunks).toString());
-                // 取得 Userkey
-                let uk = chunk.data.UniqueDeviceID.uk;
-                // 定义 UID 为 QQ 号
-                let user = rawdata.from;
-                // 昵称
-                let nickname;
-                if (config.nickname) {
-                    nickname = config.nickname;
-                } else if (rawdata.from === 80000000) {
-                    nickname = rawdata.user.groupCard;
-                } else {
-                    nickname = rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString();
-                };
                 // 请求回答
                 let reqAnswer = http.request({ host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } }, (res) => {
                     let chunks = [];
@@ -319,7 +319,7 @@ const AIxxz = (rawdata, question, callback) => {
                             // 处理小信子返回的时间，注意时区为 UTC+8
                             let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || '08:00:00'} UTC+0800`);
                             let remindMessage = chunk.semantic.message;
-                            if (config.lang === 'zh_TW' || config.lang === 'zh_HK') {
+                            if (lang === 'zh_TW' || lang === 'zh_HK') {
                                 remindMessage = `提醒時間到了！${remindMessage}`;
                             } else {
                                 remindMessage = `提醒时间到了！${remindMessage}`;
@@ -331,7 +331,7 @@ const AIxxz = (rawdata, question, callback) => {
                         };
                     });
                 });
-                reqAnswer.write(`app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(config.devid || 'UniqueDeviceID')}&uk=${encodeURIComponent(uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(config.lang || 'zh_CN')}&nickname=${encodeURIComponent(nickname)}&user=${encodeURIComponent(user)}&city=${encodeURIComponent(config.city || '')}`);
+                reqAnswer.write(`app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(config.devid || 'UniqueDeviceID')}&uk=${encodeURIComponent(chunk.data.UniqueDeviceID.uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&user=${encodeURIComponent(rawdata.from)}&city=${encodeURIComponent(city)}`);
                 reqAnswer.end();
             });
         });
@@ -339,7 +339,7 @@ const AIxxz = (rawdata, question, callback) => {
         reqUK.end();
     } else if (rawdata.extra.images.join(',').search(/\.gif/gu) > -1) {
         let answer;
-        if (config.lang === 'zh_TW' || config.lang === 'zh_HK') {
+        if (lang === 'zh_TW' || lang === 'zh_HK') {
             answer = '那就不曉得了。';
         } else {
             answer = '那就不晓得了。';
@@ -604,10 +604,113 @@ if (config.mode === 'active') {
                 // 小信子，真·人工池沼
                 case 'AIxxz':
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let question = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '')).text;
-                        AIxxz(rawdata, question, (answer) => {
-                            reply(rawdata, answer);
-                        });
+                        let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                        if (config.pLangSwitch && input.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
+                            pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
+                            let newLang = qqbot.parseMessage(input.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
+                            if (newLang) {
+                                pAIxxz[rawdata.from].lang = newLang;
+                                reply(rawdata, `已切换单 QQ 语文至「${newLang}」。`);
+                                writeConfig(pAIxxz, './AIxxz.private.js');
+                            } else {
+                                pAIxxz[rawdata.from].lang = undefined;
+                                reply(rawdata, `已清除单 QQ 语文。`);
+                                writeConfig(pAIxxz, './AIxxz.private.js');
+                            };
+                        } else if (config.pCitySwitch && input.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
+                            pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
+                            let newCity = qqbot.parseMessage(input.replace(new RegExp(config.pCitySwitch, 'gu'), '')).text;
+                            if (newCity) {
+                                pAIxxz[rawdata.from].city = newCity;
+                                reply(rawdata, `已切换单 QQ 城市至「${newCity}」。`);
+                                writeConfig(pAIxxz, './AIxxz.private.js');
+                            } else {
+                                pAIxxz[rawdata.from].city = undefined;
+                                reply(rawdata, `已清除单 QQ 城市。`);
+                                writeConfig(pAIxxz, './AIxxz.private.js');
+                            };
+                        } else if (config.gLangSwitch && input.search(new RegExp(config.gLangSwitch, 'gu')) > -1) {
+                            gAIxxz[rawdata.group] = gAIxxz[rawdata.group] || {};
+                            let newLang = qqbot.parseMessage(input.replace(new RegExp(config.gLangSwitch, 'gu'), '')).text;
+                            if (newLang) {
+                                gAIxxz[rawdata.group].lang = newLang;
+                                reply(rawdata, `已切换单群语文至「${newLang}」。`);
+                                writeConfig(gAIxxz, './AIxxz.group.js');
+                            } else {
+                                gAIxxz[rawdata.group].lang = undefined;
+                                reply(rawdata, `已清除单群语文。`);
+                                writeConfig(gAIxxz, './AIxxz.group.js');
+                            };
+                        } else if (config.gCitySwitch && input.search(new RegExp(config.gCitySwitch, 'gu')) > -1) {
+                            gAIxxz[rawdata.group] = gAIxxz[rawdata.group] || {};
+                            let newCity = qqbot.parseMessage(input.replace(new RegExp(config.gCitySwitch, 'gu'), '')).text;
+                            if (newCity) {
+                                gAIxxz[rawdata.group].city = newCity;
+                                reply(rawdata, `已切换单群城市至「${newCity}」。`);
+                                writeConfig(gAIxxz, './AIxxz.group.js');
+                            } else {
+                                gAIxxz[rawdata.group].city = undefined;
+                                reply(rawdata, `已清除单群城市。`);
+                                writeConfig(gAIxxz, './AIxxz.group.js');
+                            };
+                        } else if (config.langSwitch && input.search(new RegExp(config.langSwitch, 'gu')) > -1) {
+                            let newLang = qqbot.parseMessage(input.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
+                            if (newLang) {
+                                config.lang = newLang;
+                                reply(rawdata, `已切换全局语文至「${newLang}」。`);
+                                writeConfig(config, './config.js');
+                            } else {
+                                let current = [];
+                                if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].lang) {
+                                    current.push(`单 QQ 语文为「${pAIxxz[rawdata.from].lang}」`);
+                                };
+                                if (gAIxxz[rawdata.group] && gAIxxz[rawdata.group].lang) {
+                                    current.push(`单群语文为「${gAIxxz[rawdata.group].lang}」`);
+                                };
+                                current.push(`全局语文为「${config.lang}」`);
+                                current = `当前${current.join('，')}。`;
+                                reply(rawdata, current);
+                            };
+                        } else if (config.citySwitch && input.search(new RegExp(config.citySwitch, 'gu')) > -1) {
+                            let newCity = qqbot.parseMessage(input.replace(new RegExp(config.citySwitch, 'gu'), '')).text;
+                            if (newCity) {
+                                config.city = newCity;
+                                reply(rawdata, `已切换全局城市至「${newCity}」。`);
+                                writeConfig(config, './config.js');
+                            } else {
+                                let current = [];
+                                if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].city) {
+                                    current.push(`单 QQ 城市为「${pAIxxz[rawdata.from].city}」`);
+                                };
+                                if (gAIxxz[rawdata.group] && gAIxxz[rawdata.group].city) {
+                                    current.push(`单群城市为「${gAIxxz[rawdata.group].city}」`);
+                                };
+                                current.push(`全局语文为「${config.city}」`);
+                                current = `当前${current.join('，')}。`;
+                                reply(rawdata, current);
+                            };
+                        } else {
+                            let lang;
+                            let city;
+                            if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].lang) {
+                                lang = pAIxxz[rawdata.from].lang;
+                            } else if (gAIxxz[rawdata.group] && gAIxxz[rawdata.group].lang) {
+                                lang = gAIxxz[rawdata.group].lang;
+                            } else {
+                                lang = config.lang || 'zh-CN';
+                            };
+                            if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].city) {
+                                city = pAIxxz[rawdata.from].city;
+                            } else if (gAIxxz[rawdata.group] && gAIxxz[rawdata.group].city) {
+                                city = gAIxxz[rawdata.group].city;
+                            } else {
+                                city = config.city || '';
+                            };
+                            question = qqbot.parseMessage(question).text;
+                            AIxxz(rawdata, question, lang, city, (answer) => {
+                                reply(rawdata, answer);
+                            });
+                        };
                     };
                     break;
 
@@ -616,7 +719,7 @@ if (config.mode === 'active') {
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
                         let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
                         let output = pet(rawdata.from, input);
-                        if(output) {
+                        if (output) {
                             reply(rawdata, output, { noEscape: true });
                         };
                     // 即使没有 at 机器人，也有 0.5% 概率触发随机死亡
@@ -989,16 +1092,85 @@ if (config.mode === 'active') {
                     break;
 
                 case 'AIxxz':
-                    question = rawdata.text;
-                    AIxxz(rawdata, question, (answer) => {
-                        reply(rawdata, answer);
-                    });
+                    question = rawdata.raw;
+                    if (config.pLangSwitch && input.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
+                        pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
+                        let newLang = qqbot.parseMessage(input.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
+                        if (newLang) {
+                            pAIxxz[rawdata.from].lang = newLang;
+                            reply(rawdata, `已切换单 QQ 语文至「${newLang}」。`);
+                            writeConfig(pAIxxz, './AIxxz.private.js');
+                        } else {
+                            pAIxxz[rawdata.from].lang = undefined;
+                            reply(rawdata, `已清除单 QQ 语文。`);
+                            writeConfig(pAIxxz, './AIxxz.private.js');
+                        };
+                    } else if (config.pCitySwitch && input.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
+                        pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
+                        let newCity = qqbot.parseMessage(input.replace(new RegExp(config.pCitySwitch, 'gu'), '')).text;
+                        if (newCity) {
+                            pAIxxz[rawdata.from].city = newCity;
+                            reply(rawdata, `已切换单 QQ 城市至「${newCity}」。`);
+                            writeConfig(pAIxxz, './AIxxz.private.js');
+                        } else {
+                            pAIxxz[rawdata.from].city = undefined;
+                            reply(rawdata, `已清除单 QQ 城市。`);
+                            writeConfig(pAIxxz, './AIxxz.private.js');
+                        };
+                    } else if (config.langSwitch && input.search(new RegExp(config.langSwitch, 'gu')) > -1) {
+                        let newLang = qqbot.parseMessage(input.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
+                        if (newLang) {
+                            config.lang = newLang;
+                            reply(rawdata, `已切换全局语文至「${newLang}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].lang) {
+                                current.push(`单 QQ 语文为「${pAIxxz[rawdata.from].lang}」`);
+                            };
+                            current.push(`全局语文为「${config.lang}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.citySwitch && input.search(new RegExp(config.citySwitch, 'gu')) > -1) {
+                        let newCity = qqbot.parseMessage(input.replace(new RegExp(config.citySwitch, 'gu'), '')).text;
+                        if (newCity) {
+                            config.city = newCity;
+                            reply(rawdata, `已切换全局城市至「${newCity}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].city) {
+                                current.push(`单 QQ 城市为「${pAIxxz[rawdata.from].city}」`);
+                            };
+                            current.push(`全局语文为「${config.city}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else {
+                        let lang;
+                        let city;
+                        if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].lang) {
+                            lang = pAIxxz[rawdata.from].lang;
+                        } else {
+                            lang = config.lang || 'zh-CN';
+                        };
+                        if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].city) {
+                            city = pAIxxz[rawdata.from].city;
+                        } else {
+                            city = config.city || '';
+                        };
+                        question = qqbot.parseMessage(question).text;
+                        AIxxz(rawdata, question, lang, city, (answer) => {
+                            reply(rawdata, answer);
+                        });
+                    };
                     break;
 
                 case 'pet':
                     input = rawdata.raw;
                     let output = pet(rawdata.from, input);
-                    if(output) {
+                    if (output) {
                         reply(rawdata, output, { noEscape: true });
                     };
                     break;

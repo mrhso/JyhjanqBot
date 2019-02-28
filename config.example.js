@@ -47,4 +47,10 @@ module.exports = {
     "pGtSrcSwitch": "",                                  // gtSrcSwitch 单 QQ 版
     "pGtTgtSwitch": "",                                  // gtTgtSwitch 单 QQ 版
     "pGtSwapSwitch": ""                                  // gtSwapSwitch 单 QQ 版
+    "langSwitch": "",                                    // 小信子语文切换
+    "citySwitch": "",                                    // 小信子城市切换
+    "gLangSwitch": "",                                   // langSwitch 单群版
+    "gCitySwitch": "",                                   // citySwitch 单群版
+    "pLangSwitch": "",                                   // langSwitch 单 QQ 版
+    "pCitySwitch": ""                                    // citySwitch 单 QQ 版
 };
