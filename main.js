@@ -605,9 +605,9 @@ if (config.mode === 'active') {
                 case 'AIxxz':
                     if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
                         let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
-                        if (config.pLangSwitch && input.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
+                        if (config.pLangSwitch && question.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
                             pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
-                            let newLang = qqbot.parseMessage(input.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
+                            let newLang = qqbot.parseMessage(question.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
                             if (newLang) {
                                 pAIxxz[rawdata.from].lang = newLang;
                                 reply(rawdata, `已切换单 QQ 语文至「${newLang}」。`);
@@ -617,9 +617,9 @@ if (config.mode === 'active') {
                                 reply(rawdata, `已清除单 QQ 语文。`);
                                 writeConfig(pAIxxz, './AIxxz.private.js');
                             };
-                        } else if (config.pCitySwitch && input.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
+                        } else if (config.pCitySwitch && question.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
                             pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
-                            let newCity = qqbot.parseMessage(input.replace(new RegExp(config.pCitySwitch, 'gu'), '')).text;
+                            let newCity = qqbot.parseMessage(question.replace(new RegExp(config.pCitySwitch, 'gu'), '')).text;
                             if (newCity) {
                                 pAIxxz[rawdata.from].city = newCity;
                                 reply(rawdata, `已切换单 QQ 城市至「${newCity}」。`);
@@ -629,9 +629,9 @@ if (config.mode === 'active') {
                                 reply(rawdata, `已清除单 QQ 城市。`);
                                 writeConfig(pAIxxz, './AIxxz.private.js');
                             };
-                        } else if (config.gLangSwitch && input.search(new RegExp(config.gLangSwitch, 'gu')) > -1) {
+                        } else if (config.gLangSwitch && question.search(new RegExp(config.gLangSwitch, 'gu')) > -1) {
                             gAIxxz[rawdata.group] = gAIxxz[rawdata.group] || {};
-                            let newLang = qqbot.parseMessage(input.replace(new RegExp(config.gLangSwitch, 'gu'), '')).text;
+                            let newLang = qqbot.parseMessage(question.replace(new RegExp(config.gLangSwitch, 'gu'), '')).text;
                             if (newLang) {
                                 gAIxxz[rawdata.group].lang = newLang;
                                 reply(rawdata, `已切换单群语文至「${newLang}」。`);
@@ -641,9 +641,9 @@ if (config.mode === 'active') {
                                 reply(rawdata, `已清除单群语文。`);
                                 writeConfig(gAIxxz, './AIxxz.group.js');
                             };
-                        } else if (config.gCitySwitch && input.search(new RegExp(config.gCitySwitch, 'gu')) > -1) {
+                        } else if (config.gCitySwitch && question.search(new RegExp(config.gCitySwitch, 'gu')) > -1) {
                             gAIxxz[rawdata.group] = gAIxxz[rawdata.group] || {};
-                            let newCity = qqbot.parseMessage(input.replace(new RegExp(config.gCitySwitch, 'gu'), '')).text;
+                            let newCity = qqbot.parseMessage(question.replace(new RegExp(config.gCitySwitch, 'gu'), '')).text;
                             if (newCity) {
                                 gAIxxz[rawdata.group].city = newCity;
                                 reply(rawdata, `已切换单群城市至「${newCity}」。`);
@@ -653,8 +653,8 @@ if (config.mode === 'active') {
                                 reply(rawdata, `已清除单群城市。`);
                                 writeConfig(gAIxxz, './AIxxz.group.js');
                             };
-                        } else if (config.langSwitch && input.search(new RegExp(config.langSwitch, 'gu')) > -1) {
-                            let newLang = qqbot.parseMessage(input.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
+                        } else if (config.langSwitch && question.search(new RegExp(config.langSwitch, 'gu')) > -1) {
+                            let newLang = qqbot.parseMessage(question.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
                             if (newLang) {
                                 config.lang = newLang;
                                 reply(rawdata, `已切换全局语文至「${newLang}」。`);
@@ -671,8 +671,8 @@ if (config.mode === 'active') {
                                 current = `当前${current.join('，')}。`;
                                 reply(rawdata, current);
                             };
-                        } else if (config.citySwitch && input.search(new RegExp(config.citySwitch, 'gu')) > -1) {
-                            let newCity = qqbot.parseMessage(input.replace(new RegExp(config.citySwitch, 'gu'), '')).text;
+                        } else if (config.citySwitch && question.search(new RegExp(config.citySwitch, 'gu')) > -1) {
+                            let newCity = qqbot.parseMessage(question.replace(new RegExp(config.citySwitch, 'gu'), '')).text;
                             if (newCity) {
                                 config.city = newCity;
                                 reply(rawdata, `已切换全局城市至「${newCity}」。`);
@@ -1093,9 +1093,9 @@ if (config.mode === 'active') {
 
                 case 'AIxxz':
                     question = rawdata.raw;
-                    if (config.pLangSwitch && input.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
+                    if (config.pLangSwitch && question.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
                         pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
-                        let newLang = qqbot.parseMessage(input.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
+                        let newLang = qqbot.parseMessage(question.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
                         if (newLang) {
                             pAIxxz[rawdata.from].lang = newLang;
                             reply(rawdata, `已切换单 QQ 语文至「${newLang}」。`);
@@ -1105,9 +1105,9 @@ if (config.mode === 'active') {
                             reply(rawdata, `已清除单 QQ 语文。`);
                             writeConfig(pAIxxz, './AIxxz.private.js');
                         };
-                    } else if (config.pCitySwitch && input.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
+                    } else if (config.pCitySwitch && question.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
                         pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
-                        let newCity = qqbot.parseMessage(input.replace(new RegExp(config.pCitySwitch, 'gu'), '')).text;
+                        let newCity = qqbot.parseMessage(question.replace(new RegExp(config.pCitySwitch, 'gu'), '')).text;
                         if (newCity) {
                             pAIxxz[rawdata.from].city = newCity;
                             reply(rawdata, `已切换单 QQ 城市至「${newCity}」。`);
@@ -1117,8 +1117,8 @@ if (config.mode === 'active') {
                             reply(rawdata, `已清除单 QQ 城市。`);
                             writeConfig(pAIxxz, './AIxxz.private.js');
                         };
-                    } else if (config.langSwitch && input.search(new RegExp(config.langSwitch, 'gu')) > -1) {
-                        let newLang = qqbot.parseMessage(input.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
+                    } else if (config.langSwitch && question.search(new RegExp(config.langSwitch, 'gu')) > -1) {
+                        let newLang = qqbot.parseMessage(question.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
                         if (newLang) {
                             config.lang = newLang;
                             reply(rawdata, `已切换全局语文至「${newLang}」。`);
@@ -1132,8 +1132,8 @@ if (config.mode === 'active') {
                             current = `当前${current.join('，')}。`;
                             reply(rawdata, current);
                         };
-                    } else if (config.citySwitch && input.search(new RegExp(config.citySwitch, 'gu')) > -1) {
-                        let newCity = qqbot.parseMessage(input.replace(new RegExp(config.citySwitch, 'gu'), '')).text;
+                    } else if (config.citySwitch && question.search(new RegExp(config.citySwitch, 'gu')) > -1) {
+                        let newCity = qqbot.parseMessage(question.replace(new RegExp(config.citySwitch, 'gu'), '')).text;
                         if (newCity) {
                             config.city = newCity;
                             reply(rawdata, `已切换全局城市至「${newCity}」。`);
