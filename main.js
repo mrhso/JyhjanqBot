@@ -225,20 +225,16 @@ const daapenActive = async () => {
 };
 
 const jinkohChishoh = (question) => {
-    let answer = question;
-
-    answer = answer.replace(/([^？。！])$/gu, '$1？')
-                   .replace(/^/gu, '\uD800').replace(/([^\uD800？。！])[啊吗嗎吧呢的]？/gu, '$1！').replace(/\uD800/gu, '')
-                   .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
-                   .replace(/(.)[不没沒]\1/gu, '$1')
-                   .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
-                   .replace(/哪里/gu, '台湾').replace(/哪[裏裡]/gu, '台灣')
-                   .replace(/[谁誰]/gu, '蔡英文')
-                   .replace(/竟然/gu, '\uD800').replace(/究竟|到底/gu, '就').replace(/\uD800/gu, '竟然')
-                   .replace(/为什么/gu, '因为非常大颗').replace(/為什麼/gu, '因為非常大顆')
-                   .replace(/什么/gu, '竞选').replace(/什麼/gu, '競選');
-
-    return answer;
+    return question.replace(/([^？。！])$/gu, '$1？')
+    .replace(/^/gu, '\uD800').replace(/([^\uD800？。！])[啊吗嗎吧呢的]？/gu, '$1！').replace(/\uD800/gu, '')
+    .replace(/我/gu, '\uD800').replace(/[你您]/gu, '我').replace(/\uD800/gu, '你')
+    .replace(/(.)[不没沒]\1/gu, '$1')
+    .replace(/难道/gu, '当然').replace(/難道/gu, '當然')
+    .replace(/哪里/gu, '台湾').replace(/哪[裏裡]/gu, '台灣')
+    .replace(/[谁誰]/gu, '蔡英文')
+    .replace(/竟然/gu, '\uD800').replace(/究竟|到底/gu, '就').replace(/\uD800/gu, '竟然')
+    .replace(/为什么/gu, '因为非常大颗').replace(/為什麼/gu, '因為非常大顆')
+    .replace(/什么/gu, '竞选').replace(/什麼/gu, '競選');
 };
 
 const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
