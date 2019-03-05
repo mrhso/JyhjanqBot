@@ -173,20 +173,25 @@ const reply = async (rawdata, message, options) => {
         // 这里要注意，数组即使为空也为真值，这与空字符串不同
         if (qqbot.parseMessage(message).extra.ats.length > 0) {
             let conout = message;
-            let processed = false;
+            let promises = [];
             for (let at of qqbot.parseMessage(message).extra.ats) {
-                qqbot.groupMemberInfo(rawdata.group, at);
-            };
-            qqbot.on('GroupMemberInfo', (info) => {
-                conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
-                if (!processed && conout.search(/\[CQ:at,qq=\d*\]/gu === -1) && rawdata.from === 80000000) {
-                    conLog(`Output: ${qqbot.parseMessage(conout).text}`);
-                    processed = true;
-                } else if (!processed && conout.search(/\[CQ:at,qq=\d*\]/gu === -1)) {
-                    conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
-                    processed = true;
+                if (at === rawdata.from) {
+                    promises.push(Promise.resolve(rawdata.user));
+                } else {
+                    promises.push(qqbot.groupMemberInfo(rawdata.group, at).catch(_ => {}));
                 };
-            });
+            };
+            Promise.all(promises).then((infos) => {
+                for (let info of infos) {
+                    conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
+                };
+                conout = qqbot.parseMessage(conout).text;
+                if (rawdata.from === 80000000) {
+                    conLog(`Output: ${qqbot.parseMessage(conout).text}`);
+                } else {
+                    conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
+                };
+            }).catch(_ => {});
         } else if (rawdata.from === 80000000) {
             conLog(`Output: ${qqbot.parseMessage(message).text}`);
         } else {
@@ -528,9 +533,10 @@ if (config.mode === 'active') {
 } else {
     let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet';
     // 群聊
-    qqbot.on('GroupMessage', (rawdata) => {
-        if (config.pModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
-            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
+    qqbot.on('GroupMessage', async (rawdata) => {
+        let botQQ = await qqbot.loginQQ();
+        if (config.pModeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
             if (newMode) {
                 pMode[rawdata.from] = newMode;
                 reply(rawdata, `已切换单 QQ 模式至「${newMode}」。`);
@@ -540,8 +546,8 @@ if (config.mode === 'active') {
                 reply(rawdata, `已清除单 QQ 模式。\n${modeList}`);
                 writeConfig(pMode, './mode.private.js');
             };
-        } else if (config.gModeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
-            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.gModeSwitch, 'gu'), '')).text;
+        } else if (config.gModeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.gModeSwitch, 'gu'), '')).text;
             if (newMode) {
                 gMode[rawdata.group] = newMode;
                 reply(rawdata, `已切换单群模式至「${newMode}」。`);
@@ -551,8 +557,8 @@ if (config.mode === 'active') {
                 reply(rawdata, `已清除单群模式。\n${modeList}`);
                 writeConfig(gMode, './mode.group.js');
             };
-        } else if (config.modeSwitch && rawdata.extra.ats.indexOf(qqbot.qq) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
-            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
+        } else if (config.modeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+            let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
             if (newMode) {
                 config.mode = newMode;
                 reply(rawdata, `已切换全局模式至「${newMode}」。`);
@@ -581,7 +587,7 @@ if (config.mode === 'active') {
             switch (mode) {
                 // 被动打喷
                 case 'passive':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
                         let random = daapen();
                         reply(rawdata, random, { noEscape: true });
                     };
@@ -590,8 +596,8 @@ if (config.mode === 'active') {
                 // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
                 // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
                 case 'chishoh':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                        let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         let answer = jinkohChishoh(question);
                         reply(rawdata, answer, { noEscape: true });
                     };
@@ -599,8 +605,8 @@ if (config.mode === 'active') {
 
                 // 小信子，真·人工池沼
                 case 'AIxxz':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                        let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         if (config.pLangSwitch && question.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
                             pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
                             let newLang = qqbot.parseMessage(question.replace(new RegExp(config.pLangSwitch, 'gu'), '')).text;
@@ -712,8 +718,8 @@ if (config.mode === 'active') {
 
                 // 某致郁游戏，复活一时爽，一直复活一直爽
                 case 'pet':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
-                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         let output = pet(rawdata.from, input);
                         if (output) {
                             reply(rawdata, output, { noEscape: true });
@@ -728,7 +734,7 @@ if (config.mode === 'active') {
 
                 // AlphaGong 龚诗生成器
                 case 'gong':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
                         let gong = alphaGong();
                         reply(rawdata, gong);
                     };
@@ -736,7 +742,7 @@ if (config.mode === 'active') {
 
                 // AlphaKufon Zero 迫真古风生成器
                 case 'kufon':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
                         let kufon = alphaKufonZero();
                         reply(rawdata, kufon);
                     };
@@ -744,8 +750,8 @@ if (config.mode === 'active') {
 
                 // Google 翻译
                 case 'gt':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
                             pGt[rawdata.from] = pGt[rawdata.from] || {};
                             let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.pGtSrcSwitch, 'gu'), '')).text;
@@ -882,8 +888,8 @@ if (config.mode === 'active') {
                 // Google 来回翻译，翻译过去再翻译回来
                 // 一个来回就面目全非了 www
                 case 'gtRound':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '');
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
                             pGt[rawdata.from] = pGt[rawdata.from] || {};
                             let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.pGtSrcSwitch, 'gu'), '')).text;
@@ -1022,8 +1028,8 @@ if (config.mode === 'active') {
                 // 对对联
                 // 就是那个 https://ai.binwang.me/couplet/，好像很火的样子
                 case 'couplet':
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
-                        let input = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${qqbot.qq}\\] ?`, 'gu'), '')).text;
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                        let input = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
                         couplet(input, (output) => {
                             reply(rawdata, output);
                         });
@@ -1031,7 +1037,7 @@ if (config.mode === 'active') {
                     break;
 
                 default:
-                    if (rawdata.extra.ats.indexOf(qqbot.qq) > -1) {
+                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
                         reply(rawdata, '当前模式不存在，请检查设定。');
                     };
                     break;
@@ -1039,7 +1045,8 @@ if (config.mode === 'active') {
         };
     });
     // 私聊
-    qqbot.on('PrivateMessage', (rawdata) => {
+    qqbot.on('PrivateMessage', async (rawdata) => {
+        let botQQ = await qqbot.loginQQ();
         if (config.pModeSwitch && rawdata.raw.search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
             if (newMode) {
