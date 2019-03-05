@@ -1046,7 +1046,6 @@ if (config.mode === 'active') {
     });
     // 私聊
     qqbot.on('PrivateMessage', async (rawdata) => {
-        let botQQ = await qqbot.loginQQ();
         if (config.pModeSwitch && rawdata.raw.search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
             if (newMode) {
