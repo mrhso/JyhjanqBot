@@ -1,6 +1,7 @@
 'use strict';
 
 const QQBot = require('./lib/QQBot.js');
+const { toLF, toCRLF } = require('ishisashiencoding');
 const http = require('http');
 const https = require('https');
 const path = require('path');
@@ -43,6 +44,15 @@ qqbot.on('Error', (err) => {
 });
 
 qqbot.start();
+
+// 将 Bot 所用到的稳定资讯缓存起来，随 ServerHello 更新
+let botQQ;
+qqbot.on('ServerHello', (rawdata) => {
+    qqbot.loginQQ();
+});
+qqbot.on('LoginQQ', (rawdata) => {
+    botQQ = rawdata;
+});
 
 let penshern = [];
 let penshernCopy = [];
@@ -128,14 +138,6 @@ const arrayRandom = (arr, unique) => {
         arr.splice(index, 1);
     };
     return random;
-};
-
-const toLF = (str) => {
-    return str.replace(/\r\n/gu, '\n').replace(/\r/gu, '\n');
-};
-
-const toCRLF = (str) => {
-    return toLF(str).replace(/\n/gu, '\r\n');
 };
 
 // 覆写设定，不保留注释
@@ -536,8 +538,7 @@ if (config.mode === 'active') {
 } else {
     let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet';
     // 群聊
-    qqbot.on('GroupMessage', async (rawdata) => {
-        let botQQ = await qqbot.loginQQ();
+    qqbot.on('GroupMessage', (rawdata) => {
         if (config.pModeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
             if (newMode) {
