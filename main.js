@@ -151,6 +151,7 @@ const writeConfig = (config, file) => {
 
 const reply = async (rawdata, message, options) => {
     let length;
+    let id;
 
     if (options && options.noEscape) {
         length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ').replace(/&#91;/gu, '[').replace(/&#93;/gu, ']').replace(/&amp;/gu, '&')].length;
@@ -166,9 +167,9 @@ const reply = async (rawdata, message, options) => {
 
     if (rawdata.group) {
         if (rawdata.from === 80000000) {
-            qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
+            id = qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
         } else {
-            qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
+            id = qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
         };
         // 这里要注意，数组即使为空也为真值，这与空字符串不同
         if (qqbot.parseMessage(message).extra.ats.length > 0) {
@@ -183,7 +184,7 @@ const reply = async (rawdata, message, options) => {
             };
             Promise.all(promises).then((infos) => {
                 for (let info of infos) {
-                    conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${info.groupCard || info.name || info.qq.toString()}`);
+                    conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${qqbot.escape(info.groupCard || info.name || info.qq.toString())}`);
                 };
                 conout = qqbot.parseMessage(conout).text;
                 if (rawdata.from === 80000000) {
@@ -198,9 +199,11 @@ const reply = async (rawdata, message, options) => {
             conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
         };
     } else {
-        qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
+        id = qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
         conLog(`Output: ${qqbot.parseMessage(message).text}`);
     };
+
+    return id;
 };
 
 const daapen = () => {
