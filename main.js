@@ -152,60 +152,62 @@ const writeConfig = (config, file) => {
 };
 
 const reply = async (rawdata, message, options) => {
-    let length;
-    let id;
+    if (Object.prototype.toString.call(str) === '[object String]') {
+        let length;
+        let id;
 
-    if (options && options.noEscape) {
-        length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ').replace(/&#91;/gu, '[').replace(/&#93;/gu, ']').replace(/&amp;/gu, '&')].length;
-    } else {
-        length = [...message].length;
-        message = qqbot.escape(message);
-    };
-
-    // 延时
-    if (config.sleep === undefined ? true : config.sleep) {
-        await sleep((config.sleep || 100) * length);
-    };
-
-    if (rawdata.group) {
-        if (rawdata.from === 80000000) {
-            id = qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
+        if (options && options.noEscape) {
+            length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ').replace(/&#91;/gu, '[').replace(/&#93;/gu, ']').replace(/&amp;/gu, '&')].length;
         } else {
-            id = qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
+            length = [...message].length;
+            message = qqbot.escape(message);
         };
-        // 这里要注意，数组即使为空也为真值，这与空字符串不同
-        if (qqbot.parseMessage(message).extra.ats.length > 0) {
-            let conout = message;
-            let promises = [];
-            for (let at of qqbot.parseMessage(message).extra.ats) {
-                if (at === rawdata.from) {
-                    promises.push(Promise.resolve(rawdata.user));
-                } else {
-                    promises.push(qqbot.groupMemberInfo(rawdata.group, at).catch(_ => {}));
-                };
+
+        // 延时
+        if (config.sleep === undefined ? true : config.sleep) {
+            await sleep((config.sleep || 100) * length);
+        };
+
+        if (rawdata.group) {
+            if (rawdata.from === 80000000) {
+                id = qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
+            } else {
+                id = qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
             };
-            Promise.all(promises).then((infos) => {
-                for (let info of infos) {
-                    conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${qqbot.escape(info.groupCard || info.name || info.qq.toString())}`);
+            // 这里要注意，数组即使为空也为真值，这与空字符串不同
+            if (qqbot.parseMessage(message).extra.ats.length > 0) {
+                let conout = message;
+                let promises = [];
+                for (let at of qqbot.parseMessage(message).extra.ats) {
+                    if (at === rawdata.from) {
+                        promises.push(Promise.resolve(rawdata.user));
+                    } else {
+                        promises.push(qqbot.groupMemberInfo(rawdata.group, at).catch(_ => {}));
+                    };
                 };
-                conout = qqbot.parseMessage(conout).text;
-                if (rawdata.from === 80000000) {
-                    conLog(`Output: ${qqbot.parseMessage(conout).text}`);
-                } else {
-                    conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
-                };
-            }).catch(_ => {});
-        } else if (rawdata.from === 80000000) {
-            conLog(`Output: ${qqbot.parseMessage(message).text}`);
+                Promise.all(promises).then((infos) => {
+                    for (let info of infos) {
+                        conout = conout.replace(new RegExp(`\\[CQ:at,qq=${info.qq}\\]`, 'gu'), `@${qqbot.escape(info.groupCard || info.name || info.qq.toString())}`);
+                    };
+                    conout = qqbot.parseMessage(conout).text;
+                    if (rawdata.from === 80000000) {
+                        conLog(`Output: ${qqbot.parseMessage(conout).text}`);
+                    } else {
+                        conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
+                    };
+                }).catch(_ => {});
+            } else if (rawdata.from === 80000000) {
+                conLog(`Output: ${qqbot.parseMessage(message).text}`);
+            } else {
+                conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
+            };
         } else {
-            conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
+            id = qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
+            conLog(`Output: ${qqbot.parseMessage(message).text}`);
         };
-    } else {
-        id = qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
-        conLog(`Output: ${qqbot.parseMessage(message).text}`);
-    };
 
-    return id;
+        return id;
+    };
 };
 
 const daapen = () => {
@@ -725,9 +727,7 @@ if (config.mode === 'active') {
                     if (rawdata.extra.ats.indexOf(botQQ) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
                         let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         let output = pet(rawdata.from, input);
-                        if (output) {
-                            reply(rawdata, output, { noEscape: true });
-                        };
+                        reply(rawdata, output, { noEscape: true });
                     // 即使没有 at 机器人，也有 0.5% 概率触发随机死亡
                     } else if (Math.random() < 0.005) {
                         // 不用送输入了，反正要死
@@ -1176,9 +1176,7 @@ if (config.mode === 'active') {
                 case 'pet':
                     input = rawdata.raw;
                     let output = pet(rawdata.from, input);
-                    if (output) {
-                        reply(rawdata, output, { noEscape: true });
-                    };
+                    reply(rawdata, output, { noEscape: true });
                     break;
 
                 case 'gong':
