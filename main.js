@@ -127,9 +127,7 @@ try {
     conLog('Failed to load AIxxz.group.js', true);
 };
 
-const sleep = (ms) => {
-    return new Promise(resolve => setTimeout(resolve, ms));
-};
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const arrayRandom = (arr, unique) => {
     let index = Math.floor(Math.random() * arr.length);
@@ -417,15 +415,9 @@ const pet = (user, input, randomDie = undefined) => {
     return output;
 };
 
-const alphaGong = () => {
-    let output = eval(`\`${arrayRandom(gongFormat)}\``);
-    return output;
-};
+const alphaGong = () => eval(`\`${arrayRandom(gongFormat)}\``);
 
-const alphaKufonZero = () => {
-    let output = eval(`\`${arrayRandom(kufonFormat)}\``);
-    return output;
-};
+const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
 const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
     // 根据 tkk 获取 tk，高能
