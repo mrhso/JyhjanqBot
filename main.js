@@ -533,7 +533,7 @@ if (config.mode === 'active') {
     let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet';
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
-        if (config.pModeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
+        if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
             if (newMode) {
                 pMode[rawdata.from] = newMode;
@@ -544,7 +544,7 @@ if (config.mode === 'active') {
                 reply(rawdata, `已清除单 QQ 模式。\n${modeList}`);
                 writeConfig(pMode, './mode.private.js');
             };
-        } else if (config.gModeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
+        } else if (config.gModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.gModeSwitch, 'gu'), '')).text;
             if (newMode) {
                 gMode[rawdata.group] = newMode;
@@ -555,7 +555,7 @@ if (config.mode === 'active') {
                 reply(rawdata, `已清除单群模式。\n${modeList}`);
                 writeConfig(gMode, './mode.group.js');
             };
-        } else if (config.modeSwitch && rawdata.extra.ats.indexOf(botQQ) > -1 && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+        } else if (config.modeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
             let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
             if (newMode) {
                 config.mode = newMode;
@@ -585,7 +585,7 @@ if (config.mode === 'active') {
             switch (mode) {
                 // 被动打喷
                 case 'passive':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let random = daapen();
                         reply(rawdata, random, { noEscape: true });
                     };
@@ -594,7 +594,7 @@ if (config.mode === 'active') {
                 // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
                 // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
                 case 'chishoh':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         let answer = jinkohChishoh(question);
                         reply(rawdata, answer, { noEscape: true });
@@ -603,7 +603,7 @@ if (config.mode === 'active') {
 
                 // 小信子，真·人工池沼
                 case 'AIxxz':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         if (config.pLangSwitch && question.search(new RegExp(config.pLangSwitch, 'gu')) > -1) {
                             pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
@@ -716,7 +716,7 @@ if (config.mode === 'active') {
 
                 // 某致郁游戏，复活一时爽，一直复活一直爽
                 case 'pet':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1 || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ) || rawdata.raw.search(/\[CQ:hb,.*?\]/gu) > -1) {
                         let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         let output = pet(rawdata.from, input);
                         reply(rawdata, output, { noEscape: true });
@@ -730,7 +730,7 @@ if (config.mode === 'active') {
 
                 // AlphaGong 龚诗生成器
                 case 'gong':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let gong = alphaGong();
                         reply(rawdata, gong);
                     };
@@ -738,7 +738,7 @@ if (config.mode === 'active') {
 
                 // AlphaKufon Zero 迫真古风生成器
                 case 'kufon':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let kufon = alphaKufonZero();
                         reply(rawdata, kufon);
                     };
@@ -746,7 +746,7 @@ if (config.mode === 'active') {
 
                 // Google 翻译
                 case 'gt':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
                             pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -884,7 +884,7 @@ if (config.mode === 'active') {
                 // Google 来回翻译，翻译过去再翻译回来
                 // 一个来回就面目全非了 www
                 case 'gtRound':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                         if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
                             pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1024,7 +1024,7 @@ if (config.mode === 'active') {
                 // 对对联
                 // 就是那个 https://ai.binwang.me/couplet/，好像很火的样子
                 case 'couplet':
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         let input = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
                         couplet(input, (output) => {
                             reply(rawdata, output);
@@ -1033,7 +1033,7 @@ if (config.mode === 'active') {
                     break;
 
                 default:
-                    if (rawdata.extra.ats.indexOf(botQQ) > -1) {
+                    if (rawdata.extra.ats.includes(botQQ)) {
                         reply(rawdata, '当前模式不存在，请检查设定。');
                     };
                     break;
