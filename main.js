@@ -1,7 +1,7 @@
 'use strict';
 
 const QQBot = require('./lib/QQBot.js');
-const { toLF, toCRLF } = require('ishisashiencoding');
+const { toLF, toCRLF, TextEncoder } = require('ishisashiencoding');
 const http = require('http');
 const https = require('https');
 const path = require('path');
@@ -371,8 +371,7 @@ const pet = (user, input, randomDie = undefined) => {
             pet.dead = false;
             output = eval(`\`${arrayRandom(petText.adopt)}\``);
         };
-    };
-    if (input.search(/^[喂餵投]食/gu) > -1) {
+    } else if (input.search(/^[喂餵投]食/gu) > -1) {
         if (pet.dead) {
             output = eval(`\`${arrayRandom(petText.dead)}\``);
         } else if (pet.name) {
@@ -520,10 +519,36 @@ const couplet = (text, callback) => {
             } catch (ex) {
                 conLog(ex, true);
             };
-            let output = chunk.output;
-            callback(output);
+            callback(chunk.output);
         });
     });
+};
+
+const charCode = (str) => {
+    const usv = (chr) => {
+        let value = chr.codePointAt().toString(16).toUpperCase();
+        if (value.length < 4) {
+            return `U+${`000${value}`.slice(-4)}`;
+        } else {
+            return `U+${value}`;
+        };
+    };
+
+    const buf2hex = (buf) => Buffer.from(buf).toString('hex').toUpperCase();
+
+    let output = [];
+
+    for (chr of str) {
+        output.push(chr);
+        output.push(`USV：${usv(chr)}`);
+        output.push(`UTF-8：${buf2hex(new TextEncoder('UTF-8').encode(chr))}`);
+        output.push(`UTF-16 BE：${buf2hex(new TextEncoder('UTF-16 BE').encode(chr))}`);
+        output.push(`UTF-32 BE：${buf2hex(new TextEncoder('UTF-32 BE').encode(chr))}`);
+        output.push(`GB 18030-2005：${buf2hex(new TextEncoder('GB 18030-2005').encode(chr))}`);
+        output.push(`UTF-1：${buf2hex(new TextEncoder('UTF-1').encode(chr))}`);
+    };
+
+    return output.join('\n');
 };
 
 if (config.mode === 'active') {
@@ -1032,6 +1057,14 @@ if (config.mode === 'active') {
                     };
                     break;
 
+                case 'code':
+                    if (rawdata.extra.ats.includes(botQQ)) {
+                        let str = rawdata.text;
+                        let code = charCode(str);
+                        reply(rawdata, code);
+                    };
+                    break;
+
                 default:
                     if (rawdata.extra.ats.includes(botQQ)) {
                         reply(rawdata, '当前模式不存在，请检查设定。');
@@ -1370,6 +1403,12 @@ if (config.mode === 'active') {
                     couplet(input, (output) => {
                         reply(rawdata, output);
                     });
+                    break;
+
+                case 'code':
+                    let str = rawdata.text;
+                    let code = charCode(str);
+                    reply(rawdata, code);
                     break;
 
                 default:
