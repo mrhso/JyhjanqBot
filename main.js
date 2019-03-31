@@ -1059,7 +1059,7 @@ if (config.mode === 'active') {
 
                 case 'code':
                     if (rawdata.extra.ats.includes(botQQ)) {
-                        let str = rawdata.text;
+                        let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
                         let code = charCode(str);
                         reply(rawdata, code);
                     };
