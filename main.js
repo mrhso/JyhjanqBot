@@ -538,7 +538,7 @@ const charCode = (str) => {
 
     let output = [];
 
-    for (chr of str) {
+    for (let chr of str) {
         output.push(chr);
         output.push(`USV：${usv(chr)}`);
         output.push(`UTF-8：${buf2hex(new TextEncoder('UTF-8').encode(chr))}`);
