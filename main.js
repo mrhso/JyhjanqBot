@@ -479,7 +479,7 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
             let chunk = Buffer.concat(chunks).toString();
             let tkk = chunk.match(/tkk:'(.*?)'/u)[1];
             let tk = getTk(text, tkk);
-            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl={encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}&q=${encodeURIComponent(text)}`), (res) => {
+            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl=${encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}&q=${encodeURIComponent(text)}`), (res) => {
                 let chunks = [];
                 res.on('data', (chunk) => {
                     chunks.push(chunk);
