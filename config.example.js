@@ -4,6 +4,7 @@
 module.exports = {
     "host": "127.0.0.1",                                 // 酷 Q 所在环境的 IP
     "port": 11235,                                       // 酷 Q 的通信端口
+    "CoolQAirA": false,                                  // 如果是酷 Q Air（A 组），请将其设定为 true
     "mode": "active",                                    // active 为主动打喷模式
                                                          // passive 为被动打喷模式，被 at 及私聊时会打喷
                                                          // chishoh 为人工池沼模式，建议将 sleep 设定为 0，更有人工池沼的感觉
