@@ -33,7 +33,6 @@ const pMode = require('./mode.private.js');
 const gMode = require('./mode.group.js');
 
 let qqbot = new QQBot({
-    CoolQPro: config.CoolQPro,
     host: config.host || '127.0.0.1',
     port: config.port || 11235,
 });
