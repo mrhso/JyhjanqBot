@@ -536,17 +536,27 @@ const charCode = (str) => {
 
     const buf2hex = (buf) => Buffer.from(buf).toString('hex').toUpperCase();
 
+    const getCode = (str, encoding) => {
+        let output = [];
+        for (let chr of str) {
+            if (encoding === 'USV') {
+                output.push(usv(chr));
+            } else {
+                output.push(buf2hex(new TextEncoder(encoding).encode(chr)));
+            };
+        };
+        return output.join(' ');
+    };
+
     let output = [];
 
-    for (let chr of str) {
-        output.push(chr);
-        output.push(`USV：${usv(chr)}`);
-        output.push(`UTF-8：${buf2hex(new TextEncoder('UTF-8').encode(chr))}`);
-        output.push(`UTF-16 BE：${buf2hex(new TextEncoder('UTF-16 BE').encode(chr))}`);
-        output.push(`UTF-32 BE：${buf2hex(new TextEncoder('UTF-32 BE').encode(chr))}`);
-        output.push(`GB 18030-2005：${buf2hex(new TextEncoder('GB 18030-2005').encode(chr))}`);
-        output.push(`UTF-1：${buf2hex(new TextEncoder('UTF-1').encode(chr))}`);
-    };
+    output.push(str);
+    output.push(`USV: ${getCode(str, 'USV')}`);
+    output.push(`UTF-8: ${getCode(str, 'UTF-8')}`);
+    output.push(`UTF-16 BE: ${getCode(str, 'UTF-16 BE')}`);
+    output.push(`UTF-32 BE: ${getCode(str, 'UTF-32 BE')}`);
+    output.push(`GB 18030-2005: ${getCode(str, 'GB 18030-2005')}`);
+    output.push(`UTF-1: ${getCode(str, 'UTF-1')}`);
 
     return output.join('\n');
 };
