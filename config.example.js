@@ -16,6 +16,8 @@ module.exports = {
                                                          // gtRound 为 Google 来回翻译模式，翻译过去再翻译回来
                                                          // couplet 为对对联模式
                                                          // code 为编码查询模式，查询字符之编码
+                                                         // bf 为百度翻译模式
+                                                         // bfRound 为百度来回翻译模式
     "isGroup": true,                                     // 主动打喷模式有效，true 为群，false 为私聊
     "to": "10000",                                       // 主动打喷模式有效，目的 QQ 群号或 QQ 号
     "count": 100,                                        // 主动打喷模式有效，消息总数
@@ -36,6 +38,7 @@ module.exports = {
                                                          // 支持 CQ 码、正则表达式，注意 CQ 码转义、JS 转义、正则表达式转义
                                                          // 例如「^&#91;mode&#93; ?」
     "gtSrc": "auto",                                     // Google 翻译源语文
+                                                         // 这类参数与百度翻译模式共用，下文同
     "gtTgt": "en",                                       // Google 翻译目标语文
     "gtSrcSwitch": "",                                   // Google 翻译源语文切换，用法同 modeSwitch
     "gtTgtSwitch": "",                                   // Google 翻译目标语文切换，用法同 modeSwitch

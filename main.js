@@ -249,7 +249,8 @@ const jinkohChishoh = (question) => {
 
 const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
     if (rawdata.extra.images.length === 0) {
-        let reqUK = http.request({ host: 'get.xiaoxinzi.com', path: '/app_event.php', method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } }, (res) => {
+        let postData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(config.devid || 'UniqueDeviceID')}"]`;
+        let reqUK = http.request(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) } }, (res) => {
             // 用数组装入 chunk
             let chunks = [];
             // 接收 chunk
@@ -261,7 +262,8 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                 // 将 chunk 合并起来，读为 JSON
                 let chunk = JSON.parse(Buffer.concat(chunks).toString());
                 // 请求回答
-                let reqAnswer = http.request({ host: 'ai.xiaoxinzi.com', path: '/api3.php', method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' } }, (res) => {
+                let postData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(config.devid || 'UniqueDeviceID')}&uk=${encodeURIComponent(chunk.data.UniqueDeviceID.uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&user=${encodeURIComponent(rawdata.from)}&city=${encodeURIComponent(city)}`;
+                let reqAnswer = http.request(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) } }, (res) => {
                     let chunks = [];
                     res.on('data', (chunk) => {
                         chunks.push(chunk);
@@ -337,11 +339,11 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                         };
                     });
                 });
-                reqAnswer.write(`app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(config.devid || 'UniqueDeviceID')}&uk=${encodeURIComponent(chunk.data.UniqueDeviceID.uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&user=${encodeURIComponent(rawdata.from)}&city=${encodeURIComponent(city)}`);
+                reqAnswer.write(postData);
                 reqAnswer.end();
             });
         });
-        reqUK.write(`secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(config.devid || 'UniqueDeviceID')}"]`);
+        reqUK.write(postData);
         reqUK.end();
     } else if (rawdata.extra.images.join(',').search(/\.gif/gu) > -1) {
         let answer;
@@ -418,59 +420,61 @@ const alphaGong = () => eval(`\`${arrayRandom(gongFormat)}\``);
 
 const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
-const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
-    // 根据 tkk 获取 tk，高能
-    const getTk = (text, tkk) => {
-        // 我只好用 Nazo 表达我的绝望
-        const nazo = (a, b) => {
-            for (let c = 0; c < b.length - 2; c += 3) {
-                let d = b[c + 2];
-                d = d >= 'a' ? d.codePointAt(0) - 87 : parseInt(d);
-                d = b[c + 1] === '+' ? a >>> d: a << d;
-                a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
-            };
-            return a;
+// 根据 tkk 获取 tk，高能
+// 本来用于 Google 翻译，但百度翻译也是这个算法，只不过不叫 tk 而叫 sign
+const getTk = (text, tkk) => {
+    // 我只好用 Nazo 表达我的绝望
+    const nazo = (a, b) => {
+        for (let c = 0; c < b.length - 2; c += 3) {
+            let d = b[c + 2];
+            d = d >= 'a' ? d.codePointAt(0) - 87 : parseInt(d);
+            d = b[c + 1] === '+' ? a >>> d: a << d;
+            a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
         };
-        let tkkInt = parseInt(tkk.split('.')[0]);
-        let tkkDec = parseInt(tkk.split('.')[1]);
-        let a = [];
-        let b = 0;
-        for (let c = 0; c < text.length; c++) {
-            // 啊啊啊 charCodeAt 必须死，，，
-            // 但是这里因为 non-BMP 结果不同没办法换成 codePointAt
-            let d = text.charCodeAt(c);
-            // 这段代码原文是用 ? : 写的，阅读起来完全就是地狱
-            if (d < 128) {
-                a[b++] = d;
-            } else {
-                if (d < 2048) {
-                    a[b++] = d >> 6 | 192;
-                } else {
-                    if ((d & 64512) === 55296 && c + 1 < text.length && (text.charCodeAt(c + 1) & 64512) === 56320) {
-                        d = 65536 + ((d & 1023) << 10) + (text.charCodeAt(++c) & 1023);
-                        a[b++] = d >> 18 | 240;
-                        a[b++] = d >> 12 & 63 | 128;
-                    } else {
-                        a[b++] = d >> 12 | 224;
-                    };
-                    a[b++] = d >> 6 & 63 | 128;
-                };
-                a[b++] = d & 63 | 128;
-            };
-        };
-        let e = tkkInt;
-        for (b = 0; b < a.length; b++) {
-            e += a[b];
-            e = nazo(e, '+-a^+6');
-        };
-        e = nazo(e, '+-3^+b+-f');
-        e ^= tkkDec;
-        0 > e && (e = (e & 2147483647) + 2147483648);
-        e %= 1E6;
-        return (`${e}.${e ^ tkkInt}`);
+        return a;
     };
+    let tkkInt = parseInt(tkk.split('.')[0]);
+    let tkkDec = parseInt(tkk.split('.')[1]);
+    let a = [];
+    let b = 0;
+    for (let c = 0; c < text.length; c++) {
+        // 啊啊啊 charCodeAt 必须死，，，
+        // 但是这里因为 non-BMP 结果不同没办法换成 codePointAt
+        let d = text.charCodeAt(c);
+        // 这段代码原文是用 ? : 写的，阅读起来完全就是地狱
+        if (d < 128) {
+            a[b++] = d;
+        } else {
+            if (d < 2048) {
+                a[b++] = d >> 6 | 192;
+            } else {
+                if ((d & 64512) === 55296 && c + 1 < text.length && (text.charCodeAt(c + 1) & 64512) === 56320) {
+                    d = 65536 + ((d & 1023) << 10) + (text.charCodeAt(++c) & 1023);
+                    a[b++] = d >> 18 | 240;
+                    a[b++] = d >> 12 & 63 | 128;
+                } else {
+                    a[b++] = d >> 12 | 224;
+                };
+                a[b++] = d >> 6 & 63 | 128;
+            };
+            a[b++] = d & 63 | 128;
+        };
+    };
+    let e = tkkInt;
+    for (b = 0; b < a.length; b++) {
+        e += a[b];
+        e = nazo(e, '+-a^+6');
+    };
+    e = nazo(e, '+-3^+b+-f');
+    e ^= tkkDec;
+    0 > e && (e = (e & 2147483647) + 2147483648);
+    e %= 1E6;
+    return (`${e}.${e ^ tkkInt}`);
+};
+
+const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
     // 开始请求
-    https.get(new URL('https://translate.google.cn'), (res) => {
+    https.get(new URL('https://translate.google.cn/'), (res) => {
         let chunks = [];
         res.on('data', (chunk) => {
             chunks.push(chunk);
@@ -493,12 +497,64 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
                         conLog(ex, true);
                     };
                     let output = '';
-                    for (let result of chunk [0]) {
+                    for (let result of chunk[0]) {
                         if (result[0] !== null) {
                             output += result[0];
                         };
                     };
                     callback(output);
+                });
+            });
+        });
+    });
+};
+
+const baiduFanyi = (text, src = 'auto', tgt = 'en', callback) => {
+    // 开始请求
+    https.get(new URL('https://fanyi.baidu.com/'), (res) => {
+        let chunks = [];
+        res.on('data', (chunk) => {
+            chunks.push(chunk);
+        });
+        res.on('end', () => {
+            // 百度翻译最坑的一点在于要带 Cookie 请求，得到的 Token 才有效，所以要先拿到 Cookie 再重新请求
+            let cookie = res.headers['set-cookie'];
+            https.get(new URL('https://fanyi.baidu.com/'), { headers: { 'Cookie': cookie } }, (res) => {
+                let chunks = [];
+                res.on('data', (chunk) => {
+                    chunks.push(chunk);
+                });
+                res.on('end', () => {
+                    let chunk = Buffer.concat(chunks).toString();
+                    let token = chunk.match(/token: '(.*?)'/u)[1];
+                    // gtk 就是 Google 翻译的 tkk
+                    let gtk = chunk.match(/gtk = '(.*?)'/u)[1];
+                    // sign 就是 Google 翻译的 tk
+                    let sign = getTk(text, gtk);
+                    let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
+                    let req = https.request(new URL('https://fanyi.baidu.com/v2transapi'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData), 'Cookie': cookie } }, (res) => {
+                        let chunks = [];
+                        res.on('data', (chunk) => {
+                            chunks.push(chunk);
+                        });
+                        res.on('end', () => {
+                            let chunk = Buffer.concat(chunks).toString();
+                            // 读入 JSON
+                            try {
+                                chunk = JSON.parse(chunk);
+                            } catch (ex) {
+                                conLog(ex, true);
+                            };
+                            let output = [];
+                            for (let result of chunk.trans_result.data) {
+                                output.push(result.dst);
+                            };
+                            output = output.join('\n');
+                            callback(output);
+                        });
+                    });
+                    req.write(postData);
+                    req.end();
                 });
             });
         });
@@ -565,7 +621,7 @@ if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
 } else {
-    let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code';
+    let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound';
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
         if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
@@ -1075,6 +1131,282 @@ if (config.mode === 'active') {
                     };
                     break;
 
+                // 百度翻译
+                case 'bf':
+                    if (rawdata.extra.ats.includes(botQQ)) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
+                        if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
+                            pGt[rawdata.from] = pGt[rawdata.from] || {};
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.pGtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                pGt[rawdata.from].src = newSrc;
+                                reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
+                                writeConfig(pGt, './gt.private.js');
+                            } else {
+                                pGt[rawdata.from].src = undefined;
+                                reply(rawdata, `已清除单 QQ 源语文。`);
+                                writeConfig(pGt, './gt.private.js');
+                            };
+                        } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
+                            pGt[rawdata.from] = pGt[rawdata.from] || {};
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.pGtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                pGt[rawdata.from].tgt = newTgt;
+                                reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
+                                writeConfig(pGt, './gt.private.js');
+                            } else {
+                                pGt[rawdata.from].tgt = undefined;
+                                reply(rawdata, `已清除单 QQ 目标语文。`);
+                                writeConfig(pGt, './gt.private.js');
+                            };
+                        } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
+                            pGt[rawdata.from] = pGt[rawdata.from] || {};
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newSrc = pGt[rawdata.from].tgt || gGt[rawdata.group].tgt || config.gtTgt;
+                            let newTgt = pGt[rawdata.from].src || gGt[rawdata.group].src || config.gtSrc;
+                            pGt[rawdata.from].src = newSrc;
+                            pGt[rawdata.from].tgt = newTgt;
+                            reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
+                            writeConfig(pGt, './gt.private.js');
+                        } else if (config.gGtSrcSwitch && input.search(new RegExp(config.gGtSrcSwitch, 'gu')) > -1) {
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gGtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                gGt[rawdata.group].src = newSrc;
+                                reply(rawdata, `已切换单群源语文至「${newSrc}」。`);
+                                writeConfig(gGt, './gt.group.js');
+                            } else {
+                                gGt[rawdata.group].src = undefined;
+                                reply(rawdata, `已清除单群源语文。`);
+                                writeConfig(gGt, './gt.group.js');
+                            };
+                        } else if (config.gGtTgtSwitch && input.search(new RegExp(config.gGtTgtSwitch, 'gu')) > -1) {
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gGtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                gGt[rawdata.group].tgt = newTgt;
+                                reply(rawdata, `已切换单群目标语文至「${newTgt}」。`);
+                                writeConfig(gGt, './gt.group.js');
+                            } else {
+                                gGt[rawdata.group].tgt = undefined;
+                                reply(rawdata, `已清除单群目标语文。`);
+                                writeConfig(gGt, './gt.group.js');
+                            };
+                        } else if (config.gGtSwapSwitch && input.search(new RegExp(config.gGtSwapSwitch, 'gu')) > -1) {
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newSrc = gGt[rawdata.group].tgt || config.gtTgt;
+                            let newTgt = gGt[rawdata.group].src || config.gtSrc;
+                            gGt[rawdata.group].src = newSrc;
+                            gGt[rawdata.group].tgt = newTgt;
+                            reply(rawdata, `已交换单群源语文与单群目标语文。\n现在单群源语文为「${newSrc}」，单群目标语文为「${newTgt}」。`);
+                            writeConfig(gGt, './gt.group.js');
+                        } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                config.gtSrc = newSrc;
+                                reply(rawdata, `已切换全局源语文至「${newSrc}」。`);
+                                writeConfig(config, './config.js');
+                            } else {
+                                let current = [];
+                                if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                                    current.push(`单 QQ 源语文为「${pGt[rawdata.from].src}」`);
+                                };
+                                if (gGt[rawdata.group] && gGt[rawdata.group].src) {
+                                    current.push(`单群源语文为「${gGt[rawdata.group].src}」`);
+                                };
+                                current.push(`全局源语文为「${config.gtSrc}」`);
+                                current = `当前${current.join('，')}。`;
+                                reply(rawdata, current);
+                            };
+                        } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                config.gtTgt = newTgt;
+                                reply(rawdata, `已切换全局目标语文至「${newTgt}」。`);
+                                writeConfig(config, './config.js');
+                            } else {
+                                let current = [];
+                                if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                                    current.push(`单 QQ 目标语文为「${pGt[rawdata.from].tgt}」`);
+                                };
+                                if (gGt[rawdata.group] && gGt[rawdata.group].tgt) {
+                                    current.push(`单群目标语文为「${gGt[rawdata.group].tgt}」`);
+                                };
+                                current.push(`全局目标语文为「${config.gtTgt}」`);
+                                current = `当前${current.join('，')}。`;
+                                reply(rawdata, current);
+                            };
+                        } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
+                            let newSrc = config.gtTgt;
+                            let newTgt = config.gtSrc;
+                            config.gtSrc = newSrc;
+                            config.gtTgt = newTgt;
+                            reply(rawdata, `已交换全局源语文与全局目标语文。\n现在全局源语文为「${newSrc}」，全局目标语文为「${newTgt}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let src;
+                            let tgt;
+                            if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                                src = pGt[rawdata.from].src;
+                            } else if (gGt[rawdata.group] && gGt[rawdata.group].src) {
+                                src = gGt[rawdata.group].src;
+                            } else {
+                                src = config.gtSrc || 'auto';
+                            };
+                            if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                                tgt = pGt[rawdata.from].tgt;
+                            } else if (gGt[rawdata.group] && gGt[rawdata.group].tgt) {
+                                tgt = gGt[rawdata.group].tgt;
+                            } else {
+                                tgt = config.gtTgt || 'en';
+                            };
+                            input = qqbot.parseMessage(input).text;
+                            baiduFanyi(input, src, tgt, (output) => {
+                                reply(rawdata, output);
+                            });
+                        };
+                    };
+                    break;
+
+                // 百度来回翻译
+                case 'bfRound':
+                    if (rawdata.extra.ats.includes(botQQ)) {
+                        let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
+                        if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
+                            pGt[rawdata.from] = pGt[rawdata.from] || {};
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.pGtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                pGt[rawdata.from].src = newSrc;
+                                reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
+                                writeConfig(pGt, './gt.private.js');
+                            } else {
+                                pGt[rawdata.from].src = undefined;
+                                reply(rawdata, `已清除单 QQ 源语文。`);
+                                writeConfig(pGt, './gt.private.js');
+                            };
+                        } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
+                            pGt[rawdata.from] = pGt[rawdata.from] || {};
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.pGtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                pGt[rawdata.from].tgt = newTgt;
+                                reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
+                                writeConfig(pGt, './gt.private.js');
+                            } else {
+                                pGt[rawdata.from].tgt = undefined;
+                                reply(rawdata, `已清除单 QQ 目标语文。`);
+                                writeConfig(pGt, './gt.private.js');
+                            };
+                        } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
+                            pGt[rawdata.from] = pGt[rawdata.from] || {};
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newSrc = pGt[rawdata.from].tgt || gGt[rawdata.group].tgt || config.gtTgt;
+                            let newTgt = pGt[rawdata.from].src || gGt[rawdata.group].src || config.gtSrc;
+                            pGt[rawdata.from].src = newSrc;
+                            pGt[rawdata.from].tgt = newTgt;
+                            reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
+                            writeConfig(pGt, './gt.private.js');
+                        } else if (config.gGtSrcSwitch && input.search(new RegExp(config.gGtSrcSwitch, 'gu')) > -1) {
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gGtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                gGt[rawdata.group].src = newSrc;
+                                reply(rawdata, `已切换单群源语文至「${newSrc}」。`);
+                                writeConfig(gGt, './gt.group.js');
+                            } else {
+                                gGt[rawdata.group].src = undefined;
+                                reply(rawdata, `已清除单群源语文。`);
+                                writeConfig(gGt, './gt.group.js');
+                            };
+                        } else if (config.gGtTgtSwitch && input.search(new RegExp(config.gGtTgtSwitch, 'gu')) > -1) {
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gGtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                gGt[rawdata.group].tgt = newTgt;
+                                reply(rawdata, `已切换单群目标语文至「${newTgt}」。`);
+                                writeConfig(gGt, './gt.group.js');
+                            } else {
+                                gGt[rawdata.group].tgt = undefined;
+                                reply(rawdata, `已清除单群目标语文。`);
+                                writeConfig(gGt, './gt.group.js');
+                            };
+                        } else if (config.gGtSwapSwitch && input.search(new RegExp(config.gGtSwapSwitch, 'gu')) > -1) {
+                            gGt[rawdata.group] = gGt[rawdata.group] || {};
+                            let newSrc = gGt[rawdata.group].tgt || config.gtTgt;
+                            let newTgt = gGt[rawdata.group].src || config.gtSrc;
+                            gGt[rawdata.group].src = newSrc;
+                            gGt[rawdata.group].tgt = newTgt;
+                            reply(rawdata, `已交换单群源语文与单群目标语文。\n现在单群源语文为「${newSrc}」，单群目标语文为「${newTgt}」。`);
+                            writeConfig(gGt, './gt.group.js');
+                        } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
+                            let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
+                            if (newSrc) {
+                                config.gtSrc = newSrc;
+                                reply(rawdata, `已切换全局源语文至「${newSrc}」。`);
+                                writeConfig(config, './config.js');
+                            } else {
+                                let current = [];
+                                if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                                    current.push(`单 QQ 源语文为「${pGt[rawdata.from].src}」`);
+                                };
+                                if (gGt[rawdata.group] && gGt[rawdata.group].src) {
+                                    current.push(`单群源语文为「${gGt[rawdata.group].src}」`);
+                                };
+                                current.push(`全局源语文为「${config.gtSrc}」`);
+                                current = `当前${current.join('，')}。`;
+                                reply(rawdata, current);
+                            };
+                        } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
+                            let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
+                            if (newTgt) {
+                                config.gtTgt = newTgt;
+                                reply(rawdata, `已切换全局目标语文至「${newTgt}」。`);
+                                writeConfig(config, './config.js');
+                            } else {
+                                let current = [];
+                                if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                                    current.push(`单 QQ 目标语文为「${pGt[rawdata.from].tgt}」`);
+                                };
+                                if (gGt[rawdata.group] && gGt[rawdata.group].tgt) {
+                                    current.push(`单群目标语文为「${gGt[rawdata.group].tgt}」`);
+                                };
+                                current.push(`全局目标语文为「${config.gtTgt}」`);
+                                current = `当前${current.join('，')}。`;
+                                reply(rawdata, current);
+                            };
+                        } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
+                            let newSrc = config.gtTgt;
+                            let newTgt = config.gtSrc;
+                            config.gtSrc = newSrc;
+                            config.gtTgt = newTgt;
+                            reply(rawdata, `已交换全局源语文与全局目标语文。\n现在全局源语文为「${newSrc}」，全局目标语文为「${newTgt}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let src;
+                            let tgt;
+                            if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                                src = pGt[rawdata.from].src;
+                            } else if (gGt[rawdata.group] && gGt[rawdata.group].src) {
+                                src = gGt[rawdata.group].src;
+                            } else {
+                                src = config.gtSrc || 'auto';
+                            };
+                            if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                                tgt = pGt[rawdata.from].tgt;
+                            } else if (gGt[rawdata.group] && gGt[rawdata.group].tgt) {
+                                tgt = gGt[rawdata.group].tgt;
+                            } else {
+                                tgt = config.gtTgt || 'en';
+                            };
+                            input = qqbot.parseMessage(input).text;
+                            baiduFanyi(input, src, tgt, (output) => {
+                                baiduFanyi(output, tgt, src, (output) => {
+                                    reply(rawdata, output);
+                                });
+                            });
+                        };
+                    };
+                    break;
+
                 default:
                     if (rawdata.extra.ats.includes(botQQ)) {
                         reply(rawdata, '当前模式不存在，请检查设定。');
@@ -1419,6 +1751,190 @@ if (config.mode === 'active') {
                     let str = rawdata.text;
                     let code = charCode(str);
                     reply(rawdata, code);
+                    break;
+
+                case 'bf':
+                    input = rawdata.raw;
+                    if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
+                        pGt[rawdata.from] = pGt[rawdata.from] || {};
+                        let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.pGtSrcSwitch, 'gu'), '')).text;
+                        if (newSrc) {
+                            pGt[rawdata.from].src = newSrc;
+                            reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
+                            writeConfig(pGt, './gt.private.js');
+                        } else {
+                            pGt[rawdata.from].src = undefined;
+                            reply(rawdata, `已清除单 QQ 源语文。`);
+                            writeConfig(pGt, './gt.private.js');
+                        };
+                    } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
+                        pGt[rawdata.from] = pGt[rawdata.from] || {};
+                        let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.pGtTgtSwitch, 'gu'), '')).text;
+                        if (newTgt) {
+                            pGt[rawdata.from].tgt = newTgt;
+                            reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
+                            writeConfig(pGt, './gt.private.js');
+                        } else {
+                            pGt[rawdata.from].tgt = undefined;
+                            reply(rawdata, `已清除单 QQ 目标语文。`);
+                            writeConfig(pGt, './gt.private.js');
+                        };
+                    } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
+                        pGt[rawdata.from] = pGt[rawdata.from] || {};
+                        let newSrc = pGt[rawdata.from].tgt || config.gtTgt;
+                        let newTgt = pGt[rawdata.from].src || config.gtSrc;
+                        pGt[rawdata.from].src = newSrc;
+                        pGt[rawdata.from].tgt = newTgt;
+                        reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
+                        writeConfig(pGt, './gt.private.js');
+                    } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
+                        let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
+                        if (newSrc) {
+                            config.gtSrc = newSrc;
+                            reply(rawdata, `已切换全局源语文至「${newSrc}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                                current.push(`单 QQ 源语文为「${pGt[rawdata.from].src}」`);
+                            };
+                            current.push(`全局源语文为「${config.gtSrc}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
+                        let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
+                        if (newTgt) {
+                            config.gtTgt = newTgt;
+                            reply(rawdata, `已切换全局目标语文至「${newTgt}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                                current.push(`单 QQ 目标语文为「${pGt[rawdata.from].tgt}」`);
+                            };
+                            current.push(`全局目标语文为「${config.gtTgt}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
+                        let newSrc = config.gtTgt;
+                        let newTgt = config.gtSrc;
+                        config.gtSrc = newSrc;
+                        config.gtTgt = newTgt;
+                        reply(rawdata, `已交换全局源语文与全局目标语文。\n现在全局源语文为「${newSrc}」，全局目标语文为「${newTgt}」。`);
+                        writeConfig(config, './config.js');
+                    } else {
+                        let src;
+                        let tgt;
+                        if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                            src = pGt[rawdata.from].src;
+                        } else {
+                            src = config.gtSrc || 'auto';
+                        };
+                        if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                            tgt = pGt[rawdata.from].tgt;
+                        } else {
+                            tgt = config.gtTgt || 'en';
+                        };
+                        input = qqbot.parseMessage(input).text;
+                        baiduFanyi(input, src, tgt, (output) => {
+                            reply(rawdata, output);
+                        });
+                    };
+                    break;
+
+                case 'bfRound':
+                    input = rawdata.raw;
+                    if (config.pGtSrcSwitch && input.search(new RegExp(config.pGtSrcSwitch, 'gu')) > -1) {
+                        pGt[rawdata.from] = pGt[rawdata.from] || {};
+                        let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.pGtSrcSwitch, 'gu'), '')).text;
+                        if (newSrc) {
+                            pGt[rawdata.from].src = newSrc;
+                            reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
+                            writeConfig(pGt, './gt.private.js');
+                        } else {
+                            pGt[rawdata.from].src = undefined;
+                            reply(rawdata, `已清除单 QQ 源语文。`);
+                            writeConfig(pGt, './gt.private.js');
+                        };
+                    } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
+                        pGt[rawdata.from] = pGt[rawdata.from] || {};
+                        let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.pGtTgtSwitch, 'gu'), '')).text;
+                        if (newTgt) {
+                            pGt[rawdata.from].tgt = newTgt;
+                            reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
+                            writeConfig(pGt, './gt.private.js');
+                        } else {
+                            pGt[rawdata.from].tgt = undefined;
+                            reply(rawdata, `已清除单 QQ 目标语文。`);
+                            writeConfig(pGt, './gt.private.js');
+                        };
+                    } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
+                        pGt[rawdata.from] = pGt[rawdata.from] || {};
+                        let newSrc = pGt[rawdata.from].tgt || config.gtTgt;
+                        let newTgt = pGt[rawdata.from].src || config.gtSrc;
+                        pGt[rawdata.from].src = newSrc;
+                        pGt[rawdata.from].tgt = newTgt;
+                        reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
+                        writeConfig(pGt, './gt.private.js');
+                    } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
+                        let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
+                        if (newSrc) {
+                            config.gtSrc = newSrc;
+                            reply(rawdata, `已切换全局源语文至「${newSrc}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                                current.push(`单 QQ 源语文为「${pGt[rawdata.from].src}」`);
+                            };
+                            current.push(`全局源语文为「${config.gtSrc}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.gtTgtSwitch && input.search(new RegExp(config.gtTgtSwitch, 'gu')) > -1) {
+                        let newTgt = qqbot.parseMessage(input.replace(new RegExp(config.gtTgtSwitch, 'gu'), '')).text;
+                        if (newTgt) {
+                            config.gtTgt = newTgt;
+                            reply(rawdata, `已切换全局目标语文至「${newTgt}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                                current.push(`单 QQ 目标语文为「${pGt[rawdata.from].tgt}」`);
+                            };
+                            current.push(`全局目标语文为「${config.gtTgt}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.gtSwapSwitch && input.search(new RegExp(config.gtSwapSwitch, 'gu')) > -1) {
+                        let newSrc = config.gtTgt;
+                        let newTgt = config.gtSrc;
+                        config.gtSrc = newSrc;
+                        config.gtTgt = newTgt;
+                        reply(rawdata, `已交换全局源语文与全局目标语文。\n现在全局源语文为「${newSrc}」，全局目标语文为「${newTgt}」。`);
+                        writeConfig(config, './config.js');
+                    } else {
+                        let src;
+                        let tgt;
+                        if (pGt[rawdata.from] && pGt[rawdata.from].src) {
+                            src = pGt[rawdata.from].src;
+                        } else {
+                            src = config.gtSrc || 'auto';
+                        };
+                        if (pGt[rawdata.from] && pGt[rawdata.from].tgt) {
+                            tgt = pGt[rawdata.from].tgt;
+                        } else {
+                            tgt = config.gtTgt || 'en';
+                        };
+                        input = qqbot.parseMessage(input).text;
+                        baiduFanyi(input, src, tgt, (output) => {
+                            baiduFanyi(output, tgt, src, (output) => {
+                                reply(rawdata, output);
+                            });
+                        });
+                    };
                     break;
 
                 default:
