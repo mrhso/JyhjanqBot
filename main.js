@@ -420,59 +420,59 @@ const alphaGong = () => eval(`\`${arrayRandom(gongFormat)}\``);
 
 const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
-// 根据 tkk 获取 tk，高能
-// 本来用于 Google 翻译，但百度翻译也是这个算法，只不过不叫 tk 而叫 sign
-const getTk = (text, tkk) => {
-    // 我只好用 Nazo 表达我的绝望
-    const nazo = (a, b) => {
-        for (let c = 0; c < b.length - 2; c += 3) {
-            let d = b[c + 2];
-            d = d >= 'a' ? d.codePointAt(0) - 87 : parseInt(d);
-            d = b[c + 1] === '+' ? a >>> d: a << d;
-            a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
-        };
-        return a;
-    };
-    let tkkInt = parseInt(tkk.split('.')[0]);
-    let tkkDec = parseInt(tkk.split('.')[1]);
-    let a = [];
-    let b = 0;
-    for (let c = 0; c < text.length; c++) {
-        // 啊啊啊 charCodeAt 必须死，，，
-        // 但是这里因为 non-BMP 结果不同没办法换成 codePointAt
-        let d = text.charCodeAt(c);
-        // 这段代码原文是用 ? : 写的，阅读起来完全就是地狱
-        if (d < 128) {
-            a[b++] = d;
-        } else {
-            if (d < 2048) {
-                a[b++] = d >> 6 | 192;
-            } else {
-                if ((d & 64512) === 55296 && c + 1 < text.length && (text.charCodeAt(c + 1) & 64512) === 56320) {
-                    d = 65536 + ((d & 1023) << 10) + (text.charCodeAt(++c) & 1023);
-                    a[b++] = d >> 18 | 240;
-                    a[b++] = d >> 12 & 63 | 128;
-                } else {
-                    a[b++] = d >> 12 | 224;
-                };
-                a[b++] = d >> 6 & 63 | 128;
-            };
-            a[b++] = d & 63 | 128;
-        };
-    };
-    let e = tkkInt;
-    for (b = 0; b < a.length; b++) {
-        e += a[b];
-        e = nazo(e, '+-a^+6');
-    };
-    e = nazo(e, '+-3^+b+-f');
-    e ^= tkkDec;
-    0 > e && (e = (e & 2147483647) + 2147483648);
-    e %= 1E6;
-    return (`${e}.${e ^ tkkInt}`);
-};
-
 const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
+    // 根据 tkk 获取 tk，高能
+    const getTk = (text, tkk) => {
+        // 我只好用 Nazo 表达我的绝望
+        const nazo = (a, b) => {
+            for (let c = 0; c < b.length - 2; c += 3) {
+                let d = b[c + 2];
+                // 啊啊啊 charCodeAt 必须死，，，
+                // 但原文如此，我也没办法
+                d = d >= 'a' ? d.charCodeAt(0) - 87 : parseInt(d);
+                d = b[c + 1] === '+' ? a >>> d : a << d;
+                a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
+            };
+            return a;
+        };
+        let tkkInt = parseInt(tkk.split('.')[0]);
+        let tkkDec = parseInt(tkk.split('.')[1]);
+        let a = [];
+        let b = 0;
+        for (let c = 0; c < text.length; c++) {
+            let d = text.charCodeAt(c);
+            // 这段代码原文是用 ? : 写的，阅读起来完全就是地狱
+            if (d < 128) {
+                a[b++] = d;
+            } else {
+                if (d < 2048) {
+                    a[b++] = d >> 6 | 192;
+                } else {
+                    if ((d & 64512) === 55296 && c + 1 < text.length && (text.charCodeAt(c + 1) & 64512) === 56320) {
+                        d = 65536 + ((d & 1023) << 10) + (text.charCodeAt(++c) & 1023);
+                        a[b++] = d >> 18 | 240;
+                        a[b++] = d >> 12 & 63 | 128;
+                    } else {
+                        a[b++] = d >> 12 | 224;
+                    };
+                    a[b++] = d >> 6 & 63 | 128;
+                };
+                a[b++] = d & 63 | 128;
+            };
+        };
+        let e = tkkInt;
+        for (b = 0; b < a.length; b++) {
+            e += a[b];
+            e = nazo(e, '+-a^+6');
+        };
+        e = nazo(e, '+-3^+b+-f');
+        e ^= tkkDec;
+        if (e < 0) {
+            e = (e & 2147483647) + 2147483648;
+        };
+        e %= 1E6;
+        return `${e}.${e ^ tkkInt}`;
+    };
     // 开始请求
     https.get(new URL('https://translate.google.cn/'), (res) => {
         let chunks = [];
@@ -510,6 +510,76 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
 };
 
 const baiduFanyi = (text, src = 'auto', tgt = 'en', callback) => {
+    // 百度翻译的 sign 算法源于 Google 翻译，但更为キチガイ
+    const getSign = (text, gtk) => {
+        const nazo = (a, b) => {
+            for (let c = 0; c < b.length - 2; c += 3) {
+                let d = b[c + 2];
+                d = d >= 'a' ? d.charCodeAt(0) - 87 : parseInt(d);
+                d = b[c + 1] === '+' ? a >>> d : a << d;
+                a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
+            };
+            return a;
+        };
+        let gtkInt = parseInt(gtk.split('.')[0]);
+        let gtkDec = parseInt(gtk.split('.')[1]);
+        let a = text.match(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g);
+        if (a === null) {
+            let b = text.length;
+            if (b > 30) {
+                text = text.substr(0, 10) + text.substr(Math.floor(b / 2) - 5, 10) + text.substr(-10, 10);
+            };
+        } else {
+            let c = [];
+            for (let d = text.split(/[\uD800-\uDBFF][\uDC00-\uDFFF]/), e = 0, f = d.length; f > e; e++) {
+                if (d[e] !== '') {
+                    // 此处 split 也不好用 [...] 代替，因为 non-BMP 两者存在差异
+                    c.push.apply(c, [...d[e].split('')]);
+                };
+                if (e !== f - 1) {
+                    c.push(a[e]);
+                };
+            };
+            let g = c.length;
+            if (g > 30) {
+                text = c.slice(0, 10).join('') + c.slice(Math.floor(g / 2) - 5, Math.floor(g / 2) + 5).join('') + c.slice(-10).join('');
+            };
+        };
+        let h = [];
+        for (let i = 0, j = 0; j < text.length; j++) {
+            let k = text.charCodeAt(j);
+            if (k < 128) {
+                h[i++] = k;
+            } else {
+                if (k < 2048) {
+                    h[i++] = k >> 6 | 192;
+                } else {
+                    if ((k & 64512) === 55296 && j + 1 < text.length && (text.charCodeAt(j + 1) & 64512) === 56320) {
+                        k = 65536 + ((k & 1023) << 10) + (text.charCodeAt(++j) & 1023);
+                        h[i++] = k >> 18 | 240;
+                        h[i++] = k >> 12 & 63 | 128;
+                    } else {
+                        h[i++] = k >> 12 | 224;
+                    };
+                    h[i++] = k >> 6 & 63 | 128;
+                };
+                h[i++] = 63 & k | 128;
+            };
+        };
+        let l = gtkInt;
+        let m;
+        for (m = 0; m < h.length; m++) {
+            l += h[m];
+            l = nazo(l, '+-a^+6');
+        };
+        l = nazo(l, '+-3^+b+-f');
+        l ^= gtkDec;
+        if (l < 0) {
+            l = (2147483647 & l) + 2147483648;
+        };
+        l %= 1e6;
+        return `${l}.${l ^ gtkInt}`;
+    };
     // 开始请求
     https.get(new URL('https://fanyi.baidu.com/'), (res) => {
         let chunks = [];
@@ -527,10 +597,10 @@ const baiduFanyi = (text, src = 'auto', tgt = 'en', callback) => {
                 res.on('end', () => {
                     let chunk = Buffer.concat(chunks).toString();
                     let token = chunk.match(/token: '(.*?)'/u)[1];
-                    // gtk 就是 Google 翻译的 tkk
+                    // gtk 类似于 Google 翻译的 tkk
                     let gtk = chunk.match(/gtk = '(.*?)'/u)[1];
-                    // sign 就是 Google 翻译的 tk
-                    let sign = getTk(text, gtk);
+                    // sign 类似于 Google 翻译的 tk
+                    let sign = getSign(text, gtk);
                     let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
                     let req = https.request(new URL('https://fanyi.baidu.com/v2transapi'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData), 'Cookie': cookie } }, (res) => {
                         let chunks = [];
