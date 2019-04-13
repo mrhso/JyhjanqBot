@@ -9,7 +9,7 @@ const fs = require('fs');
 
 const conLog = (message, isError = false) => {
     let date = new Date();
-    let zone = - date.getTimezoneOffset();
+    let zone = -date.getTimezoneOffset();
     let dateStr = new Date(date.getTime() + 60000 * zone).toISOString();
     let zoneStr;
     if (zone > 0) {
