@@ -54,13 +54,13 @@ qqbot.on('LoginQQ', (rawdata) => {
     botQQ = rawdata;
 });
 
-let penshern = [];
+/* let penshern = [];
 let penshernCopy = [];
 try {
     penshern = require('./text/text.js');
 } catch (ex) {
     conLog('Failed to load text.js', true);
-};
+}; */
 
 let petText = {};
 let petList = {};
@@ -168,12 +168,12 @@ try {
     conLog('Failed to load 全唐诗.txt', true);
 };
 try {
-    pPoem = require('./poem.private.js');
+    pPoem = require('./data/poem.private.js');
 } catch (ex) {
     conLog('Failed to load poem.private.js', true);
 };
 try {
-    gPoem = require('./poem.group.js');
+    gPoem = require('./data/poem.group.js');
 } catch (ex) {
     conLog('Failed to load poem.group.js', true);
 };
@@ -259,7 +259,7 @@ const reply = async (rawdata, message, options) => {
     };
 };
 
-const daapen = () => {
+/* const daapen = () => {
     // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
     if (penshernCopy.length === 0) {
         penshernCopy.push(...penshern);
@@ -267,9 +267,9 @@ const daapen = () => {
     let random = arrayRandom(penshernCopy, config.unique);
     // 返回回答
     return random;
-};
+}; */
 
-const daapenActive = async () => {
+/* const daapenActive = async () => {
     for (let i = 1; i <= (config.count || 100); i ++) {
         let random = daapen();
         // 延时不放在 for 里不行，所以没办法把发送部分封入函数
@@ -283,7 +283,7 @@ const daapenActive = async () => {
         };
         conLog(`Output: ${random}`);
     };
-};
+}; */
 
 const jinkohChishoh = (question) => {
     return question.replace(/([^？。！])$/gu, '$1？')
@@ -923,11 +923,11 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
     return [ask, resp];
 };
 
-if (config.mode === 'active') {
+/* if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
-} else {
-    let modeList = '可切换模式列表：passive、chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound';
+} else { */
+    let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound';
     // 群聊
     qqbot.on('GroupMessage', (rawdata) => {
         if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
@@ -981,12 +981,12 @@ if (config.mode === 'active') {
             };
             switch (mode) {
                 // 被动打喷
-                case 'passive':
+                /* case 'passive':
                     if (rawdata.extra.ats.includes(botQQ)) {
                         let random = daapen();
                         reply(rawdata, random, { noEscape: true });
                     };
-                    break;
+                    break; */
 
                 // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
                 // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
@@ -1759,10 +1759,10 @@ if (config.mode === 'active') {
             let question;
             let input;
             switch (mode) {
-                case 'passive':
+                /* case 'passive':
                     let random = daapen();
                     reply(rawdata, random, { noEscape: true });
-                    break;
+                    break; */
 
                 case 'chishoh':
                     question = rawdata.raw;
@@ -2249,4 +2249,4 @@ if (config.mode === 'active') {
             };
         };
     });
-};
+// };
