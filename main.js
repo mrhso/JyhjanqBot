@@ -1743,10 +1743,10 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                     } else if (config.pTwogramSwitch && input.search(new RegExp(config.pTwogramSwitch, 'gu')) > -1) {
                         pPoem[rawdata.from] = pPoem[rawdata.from] || {};
-                        let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase());
-                        if (twogram !== '') {
-                            pPoem[rawdata.from].twogram = Boolean(twogram);
-                            reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(twogram)}」。`);
+                        let twogram = qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase();
+                        if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
+                            pPoem[rawdata.from].twogram = Boolean(JSON.parse(twogram));
+                            reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                             writeConfig(pPoem, './data/poem.private.js');
                         } else {
                             pPoem[rawdata.from].twogram = undefined;
@@ -1779,10 +1779,10 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                     } else if (config.gTwogramSwitch && input.search(new RegExp(config.gTwogramSwitch, 'gu')) > -1) {
                         gPoem[rawdata.group] = gPoem[rawdata.group] || {};
-                        let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.gTwogramSwitch, 'gu'), '')).text.toLowerCase());
-                        if (twogram !== '') {
-                            gPoem[rawdata.group].twogram = Boolean(twogram);
-                            reply(rawdata, `已更改单群 2gram 至「${Boolean(twogram)}」。`);
+                        let twogram = qqbot.parseMessage(input.replace(new RegExp(config.gTwogramSwitch, 'gu'), '')).text.toLowerCase();
+                        if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
+                            gPoem[rawdata.group].twogram = Boolean(JSON.parse(twogram));
+                            reply(rawdata, `已更改单群 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                             writeConfig(gPoem, './data/poem.group.js');
                         } else {
                             gPoem[rawdata.group].twogram = undefined;
@@ -1827,9 +1827,9 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                     } else if (config.twogramSwitch && input.search(new RegExp(config.twogramSwitch, 'gu')) > -1) {
                         let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase());
-                        if (twogram !== '') {
-                            config.twogram = Boolean(twogram);
-                            reply(rawdata, `已更改全局 2gram 至「${Boolean(twogram)}」。`);
+                        if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
+                            config.twogram = Boolean(JSON.parse(twogram));
+                            reply(rawdata, `已更改全局 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                             writeConfig(config, './config.js');
                         } else {
                             let current = [];
@@ -2444,9 +2444,9 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                 } else if (config.pTwogramSwitch && input.search(new RegExp(config.pTwogramSwitch, 'gu')) > -1) {
                     pPoem[rawdata.from] = pPoem[rawdata.from] || {};
                     let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase());
-                    if (twogram !== '') {
-                        pPoem[rawdata.from].twogram = Boolean(twogram);
-                        reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(twogram)}」。`);
+                    if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
+                        pPoem[rawdata.from].twogram = Boolean(JSON.parse(twogram));
+                        reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                         writeConfig(pPoem, './data/poem.private.js');
                     } else {
                         pPoem[rawdata.from].twogram = undefined;
@@ -2485,9 +2485,9 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     };
                 } else if (config.twogramSwitch && input.search(new RegExp(config.twogramSwitch, 'gu')) > -1) {
                     let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase());
-                    if (twogram !== '') {
-                        config.twogram = Boolean(twogram);
-                        reply(rawdata, `已更改全局 2gram 至「${Boolean(twogram)}」。`);
+                    if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
+                        config.twogram = Boolean(JSON.parse(twogram));
+                        reply(rawdata, `已更改全局 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                         writeConfig(config, './config.js');
                     } else {
                         let current = [];
