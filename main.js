@@ -127,6 +127,45 @@ try {
     conLog('Failed to load AIxxz.group.js', true);
 };
 
+const poems = [];
+const allPairs = [];
+try {
+    const originalText = toLF(fs.readFileSync('./全唐诗.txt').toString());
+
+    originalText.replace(/卷(\d+)_(\d+) 【((?:.|\n)+?)】((?:.|\n)*?) \n\n((?:.|\n)+?)\n+ +/gmu, (_, fold, order, title, poet, poem) => {
+        poems.push({
+            title: title,
+            poet: poet,
+            poem: poem.replace(/\n/gu, '').replace(/[，。]$/gu, '').split(/[，。]/gu),
+            fold: fold,
+            order: order,
+        });
+    });
+
+    const getPairs = (poem) => {
+        let output = [];
+        let offset = 0;
+        let pairNum = Math.floor(poem.poem.length / 2);
+        while (offset < pairNum) {
+            let upper = [...poem.poem[offset * 2]];
+            let lower = [...poem.poem[offset * 2 + 1]];
+            if (upper.length === lower.length) {
+                upper.forEach((value, index) => {
+                    output.push([value, lower[index]]);
+                });
+            };
+            offset += 1;
+        };
+        return output;
+    };
+
+    for (let poem of poems) {
+        allPairs.push(...getPairs(poem));
+    };
+} catch (ex) {
+    conLog('Failed to load 全唐诗.txt', true);
+};
+
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 const arrayRandom = (arr, unique) => {
@@ -685,6 +724,191 @@ const charCode = (str) => {
     output.push(`UTF-1: ${getCode(str, 'UTF-1')}`);
 
     return output.join('\n');
+};
+
+// 移植自 https://github.com/Lo-Aidas/MathematicaToys/blob/master/verseGen.nb
+const verseGen = (begin, length, r = 30, twogram = false) => {
+    // 首先是函数准备阶段
+    const getUpperPair = (ch) => {
+        let output = [];
+        for (let pair of allPairs) {
+            if (pair[1] === ch) {
+                output.push(pair[0]);
+            };
+        };
+        return output;
+    };
+
+    const getLowerPair = (ch) => {
+        let output = [];
+        for (let pair of allPairs) {
+            if (pair[0] === ch) {
+                output.push(pair[1]);
+            };
+        };
+        return output;
+    };
+
+    const getNext = (ch) => {
+        let output = [];
+        let list = [];
+        for (let poem of poems) {
+            list.push(...poem.poem);
+        };
+        for (let poem of list) {
+            poem.replace(new RegExp(`${ch}(.)`, 'gu'), (_, next) => {
+                output.push(next);
+            });
+        };
+        return output;
+    };
+
+    const randomSelect = (list, times) => {
+        let output;
+        let weight = new Map();
+        for (let value of list) {
+            if (weight.has(value)) {
+                weight.set(value, weight.get(value) + 1);
+            } else {
+                weight.set(value, 1);
+            };
+        };
+        let weightSqr = new Map();
+        for (let [key, value] of weight) {
+            weightSqr.set(key, Math.pow(value, 2));
+        };
+        let max = 0;
+        let weightRange = new Map();
+        for (let [key, value] of weightSqr) {
+            let min = max;
+            max += value;
+            weightRange.set(key, [min, max]);
+        };
+        let random = [];
+        let offset = 0;
+        while (offset < times) {
+            let num = Math.random() * max;
+            for (let [key, value] of weightRange) {
+                if (value[0] <= num && num < value[1]) {
+                    random.push(key);
+                    break;
+                };
+            };
+            offset += 1;
+        };
+        let sel = new Map();
+        for (let value of random) {
+            if (sel.has(value)) {
+                sel.set(value, sel.get(value) + 1);
+            } else {
+                sel.set(value, 1);
+            };
+        };
+        max = 0;
+        for (let [key, value] of sel) {
+            if (value > max) {
+                max = value;
+                output = key;
+            };
+        };
+        return output;
+    };
+
+    const nextPairedSelect = (list1, list2, times) => {
+        let output;
+        let weight1 = new Map();
+        let weight2 = new Map();
+        for (let value of list1) {
+            if (weight1.has(value)) {
+                weight1.set(value, weight1.get(value) + 1);
+            } else {
+                weight1.set(value, 1);
+            };
+        };
+        for (let value of list2) {
+            if (weight2.has(value)) {
+                weight2.set(value, weight2.get(value) + 1);
+            } else {
+                weight2.set(value, 1);
+            };
+        };
+        let keys = [...new Set([...weight1.keys(), ...weight2.keys()])];
+        let weight = new Map();
+        for (let key of keys) {
+            if (weight1.has(key) && weight2.has(key)) {
+                weight.set(key, weight1.get(key) * weight2.get(key));
+            } else {
+                weight.set(key, 0);
+            };
+        };
+        let max = 0;
+        let weightRange = new Map();
+        for (let [key, value] of weight) {
+            let min = max;
+            max += value;
+            weightRange.set(key, [min, max]);
+        };
+        let random = [];
+        let offset = 0;
+        while (offset < times) {
+            let num = Math.random() * max;
+            for (let [key, value] of weightRange) {
+                if (value[0] <= num && num < value[1]) {
+                    random.push(key);
+                    break;
+                };
+            };
+            offset += 1;
+        };
+        let sel = new Map();
+        for (let value of random) {
+            if (sel.has(value)) {
+                sel.set(value, sel.get(value) + 1);
+            } else {
+                sel.set(value, 1);
+            };
+        };
+        max = 0;
+        for (let [key, value] of sel) {
+            if (value > max) {
+                max = value;
+                output = key;
+            };
+        };
+        return output;
+    };
+    // 核心部分
+    let resp = randomSelect(getLowerPair(begin), 10);
+    if (resp === undefined) {
+        throw 'Failed to choose word';
+    };
+    let ask = begin;
+    while ([...ask].length < length) {
+        let asking = [...ask].slice(twogram && [...ask].length >= 2 ? -2 : -1).join('');
+        let askingset = getNext(asking);
+        if ([...ask].length >= 2) {
+            let del = [...ask].slice(-2)[0];
+            while (askingset.includes(del)) {
+                askingset.splice(askingset.indexOf(del), 1);
+            };
+        };
+        let pairingset = getLowerPair(asking);
+        asking = randomSelect(askingset, r);
+        if (asking === undefined) {
+            throw 'Failed to choose word';
+        };
+        let responding = [...resp].slice(-1).join('');
+        let respondingset = getNext(responding);
+        responding = nextPairedSelect(pairingset, respondingset, r);
+        if (responding === undefined) {
+            throw 'Failed to choose word';
+        };
+
+        ask += asking;
+        resp += responding;
+    };
+    let showing = `${ask},${resp}`;
+    return [ask, resp];
 };
 
 if (config.mode === 'active') {
