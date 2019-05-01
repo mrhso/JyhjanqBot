@@ -927,7 +927,7 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
     // 主动打喷
     daapenActive();
 } else { */
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound';
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、poem';
 // 群聊
 qqbot.on('GroupMessage', (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
@@ -1826,17 +1826,17 @@ qqbot.on('GroupMessage', (rawdata) => {
                             reply(rawdata, current);
                         };
                     } else if (config.twogramSwitch && input.search(new RegExp(config.twogramSwitch, 'gu')) > -1) {
-                        let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase());
+                        let twogram = qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase();
                         if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
                             config.twogram = Boolean(JSON.parse(twogram));
                             reply(rawdata, `已更改全局 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                             writeConfig(config, './config.js');
                         } else {
                             let current = [];
-                            if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram) {
+                            if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram !== undefined) {
                                 current.push(`单 QQ 2gram 为「${pPoem[rawdata.from].twogram}」`);
                             };
-                            if (gPoem[rawdata.group] && gPoem[rawdata.group].twogram) {
+                            if (gPoem[rawdata.group] && gPoem[rawdata.group].twogram !== undefined) {
                                 current.push(`单群 2gram 为「${gPoem[rawdata.group].twogram}」`);
                             };
                             current.push(`全局 2gram 为「${config.twogram}」`);
@@ -1879,6 +1879,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                             };
                         } catch (ex) {
                             conLog(ex, true);
+                            reply(rawdata, '字词选取失败！');
                         };
                         reply(rawdata, output);
                     };
@@ -2443,7 +2444,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     };
                 } else if (config.pTwogramSwitch && input.search(new RegExp(config.pTwogramSwitch, 'gu')) > -1) {
                     pPoem[rawdata.from] = pPoem[rawdata.from] || {};
-                    let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase());
+                    let twogram = qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase();
                     if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
                         pPoem[rawdata.from].twogram = Boolean(JSON.parse(twogram));
                         reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
@@ -2484,14 +2485,14 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         reply(rawdata, current);
                     };
                 } else if (config.twogramSwitch && input.search(new RegExp(config.twogramSwitch, 'gu')) > -1) {
-                    let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase());
+                    let twogram = qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase();
                     if (twogram === 'true' || twogram === '1' || twogram === 'false' || twogram === '0') {
                         config.twogram = Boolean(JSON.parse(twogram));
                         reply(rawdata, `已更改全局 2gram 至「${Boolean(JSON.parse(twogram))}」。`);
                         writeConfig(config, './config.js');
                     } else {
                         let current = [];
-                        if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram) {
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram !== undefined) {
                             current.push(`单 QQ 2gram 为「${pPoem[rawdata.from].twogram}」`);
                         };
                         current.push(`全局 2gram 为「${config.twogram}」`);
@@ -2528,9 +2529,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         };
                     } catch (ex) {
                         conLog(ex, true);
+                        reply(rawdata, '字词选取失败！');
                     };
                     reply(rawdata, output);
                 };
+                break;
 
             default:
                 reply(rawdata, '当前模式不存在，请检查设定。');
