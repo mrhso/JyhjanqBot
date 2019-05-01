@@ -26,9 +26,7 @@
 ```
 npm install
 ```
-这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑文本。
-
-编辑完毕后，将 *.example.js 都更名为 *.js。
+这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text 内的数据。
 
 打开酷 Q，然后执行：
 ```

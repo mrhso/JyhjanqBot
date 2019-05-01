@@ -29,8 +29,8 @@ const conLog = (message, isError = false) => {
 };
 
 const config = require('./config.js');
-const pMode = require('./mode.private.js');
-const gMode = require('./mode.group.js');
+const pMode = require('./data/mode.private.js');
+const gMode = require('./data/mode.group.js');
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -57,7 +57,7 @@ qqbot.on('LoginQQ', (rawdata) => {
 let penshern = [];
 let penshernCopy = [];
 try {
-    penshern = require('./text.js');
+    penshern = require('./text/text.js');
 } catch (ex) {
     conLog('Failed to load text.js', true);
 };
@@ -65,12 +65,12 @@ try {
 let petText = {};
 let petList = {};
 try {
-    petText = require('./pet.text.js');
+    petText = require('./text/pet.text.js');
 } catch (ex) {
     conLog('Failed to load pet.text.js', true);
 };
 try {
-    petList = require('./pet.list.js');
+    petList = require('./data/pet.list.js');
 } catch (ex) {
     conLog('Failed to load pet.list.js', true);
 };
@@ -78,12 +78,12 @@ try {
 let gongText = {};
 let gongFormat = [];
 try {
-    gongText = require('./gong.text.js');
+    gongText = require('./text/gong.text.js');
 } catch (ex) {
     conLog('Failed to load gong.text.js', true);
 };
 try {
-    gongFormat = require('./gong.format.js');
+    gongFormat = require('./text/gong.format.js');
 } catch (ex) {
     conLog('Failed to load gong.format.js', true);
 };
@@ -91,12 +91,12 @@ try {
 let kufonText = {};
 let kufonFormat = [];
 try {
-    kufonText = require('./kufon.text.js');
+    kufonText = require('./text/kufon.text.js');
 } catch (ex) {
     conLog('Failed to load kufon.text.js', true);
 };
 try {
-    kufonFormat = require('./kufon.format.js');
+    kufonFormat = require('./text/kufon.format.js');
 } catch (ex) {
     conLog('Failed to load kufon.format.js', true);
 };
@@ -104,12 +104,12 @@ try {
 let pGt = {};
 let gGt = {};
 try {
-    pGt = require('./gt.private.js');
+    pGt = require('./data/gt.private.js');
 } catch (ex) {
     conLog('Failed to load gt.private.js', true);
 };
 try {
-    gGt = require('./gt.group.js');
+    gGt = require('./data/gt.group.js');
 } catch (ex) {
     conLog('Failed to load gt.group.js', true);
 };
@@ -117,20 +117,22 @@ try {
 let pAIxxz = {};
 let gAIxxz = {};
 try {
-    pAIxxz = require('./AIxxz.private.js');
+    pAIxxz = require('./data/AIxxz.private.js');
 } catch (ex) {
     conLog('Failed to load AIxxz.private.js', true);
 };
 try {
-    gAIxxz = require('./AIxxz.group.js');
+    gAIxxz = require('./data/AIxxz.group.js');
 } catch (ex) {
     conLog('Failed to load AIxxz.group.js', true);
 };
 
 const poems = [];
 const allPairs = [];
+let pPoem = {};
+let gPoem = {};
 try {
-    const originalText = toLF(fs.readFileSync('./全唐诗.txt').toString());
+    const originalText = toLF(fs.readFileSync('./text/全唐诗.txt').toString());
 
     originalText.replace(/卷(\d+)_(\d+) 【((?:.|\n)+?)】((?:.|\n)*?) \n\n((?:.|\n)+?)\n+ +/gmu, (_, fold, order, title, poet, poem) => {
         poems.push({
@@ -164,6 +166,16 @@ try {
     };
 } catch (ex) {
     conLog('Failed to load 全唐诗.txt', true);
+};
+try {
+    pPoem = require('./poem.private.js');
+} catch (ex) {
+    conLog('Failed to load poem.private.js', true);
+};
+try {
+    gPoem = require('./poem.group.js');
+} catch (ex) {
+    conLog('Failed to load poem.group.js', true);
 };
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
