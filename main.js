@@ -1719,7 +1719,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                     let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                     if (config.pLengthSwitch && input.search(new RegExp(config.pLengthSwitch, 'gu')) > -1) {
                         pPoem[rawdata.from] = pPoem[rawdata.from] || {};
-                        let length = qqbot.parseMessage(input.replace(new RegExp(config.pLengthSwitch, 'gu'), '')).text;
+                        let length = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.pLengthSwitch, 'gu'), '')).text);
                         if (length) {
                             pPoem[rawdata.from].length = length;
                             reply(rawdata, `已更改单 QQ 长度至「${length}」。`);
@@ -1731,7 +1731,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                     } else if (config.pRandomitySwitch && input.search(new RegExp(config.pRandomitySwitch, 'gu')) > -1) {
                         pPoem[rawdata.from] = pPoem[rawdata.from] || {};
-                        let randomity = qqbot.parseMessage(input.replace(new RegExp(config.pRandomitySwitch, 'gu'), '')).text;
+                        let randomity = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.pRandomitySwitch, 'gu'), '')).text);
                         if (randomity) {
                             pPoem[rawdata.from].randomity = randomity;
                             reply(rawdata, `已更改单 QQ 随机度至「${randomity}」。`);
@@ -1755,7 +1755,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                     } else if (config.gLengthSwitch && input.search(new RegExp(config.gLengthSwitch, 'gu')) > -1) {
                         gPoem[rawdata.group] = gPoem[rawdata.group] || {};
-                        let length = qqbot.parseMessage(input.replace(new RegExp(config.gLengthSwitch, 'gu'), '')).text;
+                        let length = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.gLengthSwitch, 'gu'), '')).text);
                         if (length) {
                             gPoem[rawdata.group].length = length;
                             reply(rawdata, `已更改单群长度至「${length}」。`);
@@ -1767,7 +1767,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                     } else if (config.gRandomitySwitch && input.search(new RegExp(config.gRandomitySwitch, 'gu')) > -1) {
                         gPoem[rawdata.group] = gPoem[rawdata.group] || {};
-                        let randomity = qqbot.parseMessage(input.replace(new RegExp(config.gRandomitySwitch, 'gu'), '')).text;
+                        let randomity = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.gRandomitySwitch, 'gu'), '')).text);
                         if (randomity) {
                             gPoem[rawdata.group].randomity = randomity;
                             reply(rawdata, `已更改单群随机度至「${randomity}」。`);
@@ -1790,7 +1790,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                             writeConfig(gPoem, './data/poem.group.js');
                         };
                     } else if (config.lengthSwitch && input.search(new RegExp(config.lengthSwitch, 'gu')) > -1) {
-                        let length = qqbot.parseMessage(input.replace(new RegExp(config.lengthSwitch, 'gu'), '')).text;
+                        let length = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.lengthSwitch, 'gu'), '')).text);
                         if (length) {
                             config.length = length;
                             reply(rawdata, `已更改全局长度至「${length}」。`);
@@ -1808,7 +1808,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                             reply(rawdata, current);
                         };
                     } else if (config.randomitySwitch && input.search(new RegExp(config.randomitySwitch, 'gu')) > -1) {
-                        let randomity = qqbot.parseMessage(input.replace(new RegExp(config.randomitySwitch, 'gu'), '')).text;
+                        let randomity = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.randomitySwitch, 'gu'), '')).text);
                         if (randomity) {
                             config.randomity = randomity;
                             reply(rawdata, `已更改全局随机度至「${randomity}」。`);
@@ -2420,7 +2420,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                 input = rawdata.raw;
                 if (config.pLengthSwitch && input.search(new RegExp(config.pLengthSwitch, 'gu')) > -1) {
                     pPoem[rawdata.from] = pPoem[rawdata.from] || {};
-                    let length = qqbot.parseMessage(input.replace(new RegExp(config.pLengthSwitch, 'gu'), '')).text;
+                    let length = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.pLengthSwitch, 'gu'), '')).text);
                     if (length) {
                         pPoem[rawdata.from].length = length;
                         reply(rawdata, `已更改单 QQ 长度至「${length}」。`);
@@ -2432,7 +2432,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     };
                 } else if (config.pRandomitySwitch && input.search(new RegExp(config.pRandomitySwitch, 'gu')) > -1) {
                     pPoem[rawdata.from] = pPoem[rawdata.from] || {};
-                    let randomity = qqbot.parseMessage(input.replace(new RegExp(config.pRandomitySwitch, 'gu'), '')).text;
+                    let randomity = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.pRandomitySwitch, 'gu'), '')).text);
                     if (randomity) {
                         pPoem[rawdata.from].randomity = randomity;
                         reply(rawdata, `已更改单 QQ 随机度至「${randomity}」。`);
@@ -2455,7 +2455,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         writeConfig(pPoem, './data/poem.private.js');
                     };
                 } else if (config.lengthSwitch && input.search(new RegExp(config.lengthSwitch, 'gu')) > -1) {
-                    let length = qqbot.parseMessage(input.replace(new RegExp(config.lengthSwitch, 'gu'), '')).text;
+                    let length = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.lengthSwitch, 'gu'), '')).text);
                     if (length) {
                         config.length = length;
                         reply(rawdata, `已更改全局长度至「${length}」。`);
@@ -2470,7 +2470,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         reply(rawdata, current);
                     };
                 } else if (config.randomitySwitch && input.search(new RegExp(config.randomitySwitch, 'gu')) > -1) {
-                    let randomity = qqbot.parseMessage(input.replace(new RegExp(config.randomitySwitch, 'gu'), '')).text;
+                    let randomity = parseInt(qqbot.parseMessage(input.replace(new RegExp(config.randomitySwitch, 'gu'), '')).text);
                     if (randomity) {
                         config.randomity = randomity;
                         reply(rawdata, `已更改全局随机度至「${randomity}」。`);
