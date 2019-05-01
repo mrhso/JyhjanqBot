@@ -892,10 +892,10 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
         return output;
     };
     // 核心部分
-    let resp = '';
-    let offset = 0;
+    let resp = randomSelect(getLowerPair([...begin][0]), 10);
+    let offset = 1;
     while (offset < [...begin].length) {
-        resp += randomSelect(getLowerPair([...begin][offset]), 10);
+        resp += nextPairedSelect(getLowerPair([...begin][offset]), getNext([...resp].slice(-1).join('')), r);
         offset += 1;
     };
     let ask = begin;
