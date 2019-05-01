@@ -739,6 +739,7 @@ const charCode = (str) => {
 };
 
 // 移植自 https://github.com/Lo-Aidas/MathematicaToys/blob/master/verseGen.nb
+// 另外有所改进
 const verseGen = (begin, length, r = 30, twogram = false) => {
     // 首先是函数准备阶段
     const getUpperPair = (ch) => {
@@ -891,9 +892,11 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
         return output;
     };
     // 核心部分
-    let resp = randomSelect(getLowerPair(begin), 10);
-    if (resp === undefined) {
-        throw 'Failed to choose word';
+    let resp = '';
+    let offset = 0;
+    while (offset < [...begin].length) {
+        resp += randomSelect(getLowerPair([...begin][offset]), 10);
+        offset += 1;
     };
     let ask = begin;
     while ([...ask].length < length) {
@@ -905,17 +908,11 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
                 askingset.splice(askingset.indexOf(del), 1);
             };
         };
-        let pairingset = getLowerPair(asking);
+        let pairingset = twogram ? getLowerPair([...asking][0]) + getLowerPair([...asking][1]) : getLowerPair(asking);
         asking = randomSelect(askingset, r);
-        if (asking === undefined) {
-            throw 'Failed to choose word';
-        };
         let responding = [...resp].slice(-1).join('');
         let respondingset = getNext(responding);
         responding = nextPairedSelect(pairingset, respondingset, r);
-        if (responding === undefined) {
-            throw 'Failed to choose word';
-        };
 
         ask += asking;
         resp += responding;
@@ -1873,13 +1870,8 @@ qqbot.on('GroupMessage', (rawdata) => {
                             twogram = config.twogram;
                         };
                         input = qqbot.parseMessage(input).text;
-                        let output;
-                        if ([...input].length === 1) {
-                            output = verseGen(input, length, randomity, twogram);
-                            output = `${output[0]}，${output[1]}。`;
-                        } else {
-                            output = '输入只能为一个字！';
-                        };
+                        let output = verseGen(input, length, randomity, twogram);
+                        output = `${output[0]}，${output[1]}。`;
                         reply(rawdata, output);
                     };
                 };
@@ -2518,13 +2510,8 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         twogram = config.twogram;
                     };
                     input = qqbot.parseMessage(input).text;
-                    let output;
-                    if ([...input].length === 1) {
-                        output = verseGen(input, length, randomity, twogram);
-                        output = `${output[0]}，${output[1]}。`;
-                    } else {
-                        output = '输入只能为一个字！';
-                    };
+                    let output = verseGen(input, length, randomity, twogram);
+                    output = `${output[0]}，${output[1]}。`;
                     reply(rawdata, output);
                 };
                 break;
