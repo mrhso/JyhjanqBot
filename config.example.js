@@ -38,17 +38,29 @@ module.exports = {
     "gtTgtSwitch": "",                                   // Google 翻译目标语文切换，用法同 modeSwitch
     "gtSwapSwitch": "",                                  // Google 翻译源语文与目标语文交换，用法同 modeSwitch
     "gModeSwitch": "",                                   // modeSwitch 单群版
-    "gGtSrcSwitch": "",                                  // gtSrcSwitch 单群版
-    "gGtTgtSwitch": "",                                  // gtTgtSwitch 单群版
-    "gGtSwapSwitch": "",                                 // gtSwapSwitch 单群版
+    "gGtSrcSwitch": "",
+    "gGtTgtSwitch": "",
+    "gGtSwapSwitch": "",
     "pModeSwitch": "",                                   // modeSwitch 单 QQ 版
-    "pGtSrcSwitch": "",                                  // gtSrcSwitch 单 QQ 版
-    "pGtTgtSwitch": "",                                  // gtTgtSwitch 单 QQ 版
-    "pGtSwapSwitch": "",                                 // gtSwapSwitch 单 QQ 版
-    "langSwitch": "",                                    // 小信子语文切换
-    "citySwitch": "",                                    // 小信子城市切换
-    "gLangSwitch": "",                                   // langSwitch 单群版
-    "gCitySwitch": "",                                   // citySwitch 单群版
-    "pLangSwitch": "",                                   // langSwitch 单 QQ 版
-    "pCitySwitch": ""                                    // citySwitch 单 QQ 版
+    "pGtSrcSwitch": "",
+    "pGtTgtSwitch": "",
+    "pGtSwapSwitch": "",
+    "langSwitch": "",
+    "citySwitch": "",
+    "gLangSwitch": "",
+    "gCitySwitch": "",
+    "pLangSwitch": "",
+    "pCitySwitch": "",
+    "length": 7,                                         // 作诗长度（五言七言等）
+    "randomity": 30,                                     // 作诗随机度（默认 30）
+    "twogram": false,                                    // 使用 2gram 模型（大概率失败）
+    "lengthSwitch": "",
+    "randomitySwitch": "",
+    "twogramSwitch": "",
+    "gLengthSwitch": "",
+    "gRandomitySwitch": "",
+    "gTwogramSwitch": "",
+    "pLengthSwitch": "",
+    "pRandomitySwitch": "",
+    "pTwogramSwitch": ""
 };

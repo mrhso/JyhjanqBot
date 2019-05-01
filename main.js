@@ -462,7 +462,7 @@ const pet = (user, input, randomDie = undefined) => {
     };
     // 处理完毕后更改设定
     petList[user] = pet;
-    writeConfig(petList, './pet.list.js');
+    writeConfig(petList, './data/pet.list.js');
     // 返回答语
     return output;
 };
@@ -935,22 +935,22 @@ qqbot.on('GroupMessage', (rawdata) => {
         if (newMode) {
             pMode[rawdata.from] = newMode;
             reply(rawdata, `已切换单 QQ 模式至「${newMode}」。`);
-            writeConfig(pMode, './mode.private.js');
+            writeConfig(pMode, './data/mode.private.js');
         } else {
             pMode[rawdata.from] = undefined;
             reply(rawdata, `已清除单 QQ 模式。\n${modeList}`);
-            writeConfig(pMode, './mode.private.js');
+            writeConfig(pMode, './data/mode.private.js');
         };
     } else if (config.gModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.gModeSwitch, 'gu')) > -1) {
         let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.gModeSwitch, 'gu'), '')).text;
         if (newMode) {
             gMode[rawdata.group] = newMode;
             reply(rawdata, `已切换单群模式至「${newMode}」。`);
-            writeConfig(gMode, './mode.group.js');
+            writeConfig(gMode, './data/mode.group.js');
         } else {
             gMode[rawdata.group] = undefined;
             reply(rawdata, `已清除单群模式。\n${modeList}`);
-            writeConfig(gMode, './mode.group.js');
+            writeConfig(gMode, './data/mode.group.js');
         };
     } else if (config.modeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.modeSwitch, 'gu')) > -1) {
         let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
@@ -1008,11 +1008,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newLang) {
                             pAIxxz[rawdata.from].lang = newLang;
                             reply(rawdata, `已切换单 QQ 语文至「${newLang}」。`);
-                            writeConfig(pAIxxz, './AIxxz.private.js');
+                            writeConfig(pAIxxz, './data/AIxxz.private.js');
                         } else {
                             pAIxxz[rawdata.from].lang = undefined;
                             reply(rawdata, `已清除单 QQ 语文。`);
-                            writeConfig(pAIxxz, './AIxxz.private.js');
+                            writeConfig(pAIxxz, './data/AIxxz.private.js');
                         };
                     } else if (config.pCitySwitch && question.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
                         pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
@@ -1020,11 +1020,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newCity) {
                             pAIxxz[rawdata.from].city = newCity;
                             reply(rawdata, `已切换单 QQ 城市至「${newCity}」。`);
-                            writeConfig(pAIxxz, './AIxxz.private.js');
+                            writeConfig(pAIxxz, './data/AIxxz.private.js');
                         } else {
                             pAIxxz[rawdata.from].city = undefined;
                             reply(rawdata, `已清除单 QQ 城市。`);
-                            writeConfig(pAIxxz, './AIxxz.private.js');
+                            writeConfig(pAIxxz, './data/AIxxz.private.js');
                         };
                     } else if (config.gLangSwitch && question.search(new RegExp(config.gLangSwitch, 'gu')) > -1) {
                         gAIxxz[rawdata.group] = gAIxxz[rawdata.group] || {};
@@ -1032,11 +1032,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newLang) {
                             gAIxxz[rawdata.group].lang = newLang;
                             reply(rawdata, `已切换单群语文至「${newLang}」。`);
-                            writeConfig(gAIxxz, './AIxxz.group.js');
+                            writeConfig(gAIxxz, './data/AIxxz.group.js');
                         } else {
                             gAIxxz[rawdata.group].lang = undefined;
                             reply(rawdata, `已清除单群语文。`);
-                            writeConfig(gAIxxz, './AIxxz.group.js');
+                            writeConfig(gAIxxz, './data/AIxxz.group.js');
                         };
                     } else if (config.gCitySwitch && question.search(new RegExp(config.gCitySwitch, 'gu')) > -1) {
                         gAIxxz[rawdata.group] = gAIxxz[rawdata.group] || {};
@@ -1044,11 +1044,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newCity) {
                             gAIxxz[rawdata.group].city = newCity;
                             reply(rawdata, `已切换单群城市至「${newCity}」。`);
-                            writeConfig(gAIxxz, './AIxxz.group.js');
+                            writeConfig(gAIxxz, './data/AIxxz.group.js');
                         } else {
                             gAIxxz[rawdata.group].city = undefined;
                             reply(rawdata, `已清除单群城市。`);
-                            writeConfig(gAIxxz, './AIxxz.group.js');
+                            writeConfig(gAIxxz, './data/AIxxz.group.js');
                         };
                     } else if (config.langSwitch && question.search(new RegExp(config.langSwitch, 'gu')) > -1) {
                         let newLang = qqbot.parseMessage(question.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
@@ -1151,11 +1151,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newSrc) {
                             pGt[rawdata.from].src = newSrc;
                             reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].src = undefined;
                             reply(rawdata, `已清除单 QQ 源语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1163,11 +1163,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             pGt[rawdata.from].tgt = newTgt;
                             reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].tgt = undefined;
                             reply(rawdata, `已清除单 QQ 目标语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1177,18 +1177,18 @@ qqbot.on('GroupMessage', (rawdata) => {
                         pGt[rawdata.from].src = newSrc;
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else if (config.gGtSrcSwitch && input.search(new RegExp(config.gGtSrcSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gGtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
                             gGt[rawdata.group].src = newSrc;
                             reply(rawdata, `已切换单群源语文至「${newSrc}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].src = undefined;
                             reply(rawdata, `已清除单群源语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtTgtSwitch && input.search(new RegExp(config.gGtTgtSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1196,11 +1196,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             gGt[rawdata.group].tgt = newTgt;
                             reply(rawdata, `已切换单群目标语文至「${newTgt}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].tgt = undefined;
                             reply(rawdata, `已清除单群目标语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtSwapSwitch && input.search(new RegExp(config.gGtSwapSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1209,7 +1209,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         gGt[rawdata.group].src = newSrc;
                         gGt[rawdata.group].tgt = newTgt;
                         reply(rawdata, `已交换单群源语文与单群目标语文。\n现在单群源语文为「${newSrc}」，单群目标语文为「${newTgt}」。`);
-                        writeConfig(gGt, './gt.group.js');
+                        writeConfig(gGt, './data/gt.group.js');
                     } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
@@ -1289,11 +1289,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newSrc) {
                             pGt[rawdata.from].src = newSrc;
                             reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].src = undefined;
                             reply(rawdata, `已清除单 QQ 源语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1301,11 +1301,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             pGt[rawdata.from].tgt = newTgt;
                             reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].tgt = undefined;
                             reply(rawdata, `已清除单 QQ 目标语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1315,18 +1315,18 @@ qqbot.on('GroupMessage', (rawdata) => {
                         pGt[rawdata.from].src = newSrc;
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else if (config.gGtSrcSwitch && input.search(new RegExp(config.gGtSrcSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gGtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
                             gGt[rawdata.group].src = newSrc;
                             reply(rawdata, `已切换单群源语文至「${newSrc}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].src = undefined;
                             reply(rawdata, `已清除单群源语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtTgtSwitch && input.search(new RegExp(config.gGtTgtSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1334,11 +1334,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             gGt[rawdata.group].tgt = newTgt;
                             reply(rawdata, `已切换单群目标语文至「${newTgt}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].tgt = undefined;
                             reply(rawdata, `已清除单群目标语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtSwapSwitch && input.search(new RegExp(config.gGtSwapSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1347,7 +1347,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         gGt[rawdata.group].src = newSrc;
                         gGt[rawdata.group].tgt = newTgt;
                         reply(rawdata, `已交换单群源语文与单群目标语文。\n现在单群源语文为「${newSrc}」，单群目标语文为「${newTgt}」。`);
-                        writeConfig(gGt, './gt.group.js');
+                        writeConfig(gGt, './data/gt.group.js');
                     } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
@@ -1447,11 +1447,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newSrc) {
                             pGt[rawdata.from].src = newSrc;
                             reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].src = undefined;
                             reply(rawdata, `已清除单 QQ 源语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1459,11 +1459,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             pGt[rawdata.from].tgt = newTgt;
                             reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].tgt = undefined;
                             reply(rawdata, `已清除单 QQ 目标语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1473,18 +1473,18 @@ qqbot.on('GroupMessage', (rawdata) => {
                         pGt[rawdata.from].src = newSrc;
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else if (config.gGtSrcSwitch && input.search(new RegExp(config.gGtSrcSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gGtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
                             gGt[rawdata.group].src = newSrc;
                             reply(rawdata, `已切换单群源语文至「${newSrc}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].src = undefined;
                             reply(rawdata, `已清除单群源语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtTgtSwitch && input.search(new RegExp(config.gGtTgtSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1492,11 +1492,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             gGt[rawdata.group].tgt = newTgt;
                             reply(rawdata, `已切换单群目标语文至「${newTgt}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].tgt = undefined;
                             reply(rawdata, `已清除单群目标语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtSwapSwitch && input.search(new RegExp(config.gGtSwapSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1505,7 +1505,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         gGt[rawdata.group].src = newSrc;
                         gGt[rawdata.group].tgt = newTgt;
                         reply(rawdata, `已交换单群源语文与单群目标语文。\n现在单群源语文为「${newSrc}」，单群目标语文为「${newTgt}」。`);
-                        writeConfig(gGt, './gt.group.js');
+                        writeConfig(gGt, './data/gt.group.js');
                     } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
@@ -1584,11 +1584,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newSrc) {
                             pGt[rawdata.from].src = newSrc;
                             reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].src = undefined;
                             reply(rawdata, `已清除单 QQ 源语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1596,11 +1596,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             pGt[rawdata.from].tgt = newTgt;
                             reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         } else {
                             pGt[rawdata.from].tgt = undefined;
                             reply(rawdata, `已清除单 QQ 目标语文。`);
-                            writeConfig(pGt, './gt.private.js');
+                            writeConfig(pGt, './data/gt.private.js');
                         };
                     } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                         pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1610,18 +1610,18 @@ qqbot.on('GroupMessage', (rawdata) => {
                         pGt[rawdata.from].src = newSrc;
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else if (config.gGtSrcSwitch && input.search(new RegExp(config.gGtSrcSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gGtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
                             gGt[rawdata.group].src = newSrc;
                             reply(rawdata, `已切换单群源语文至「${newSrc}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].src = undefined;
                             reply(rawdata, `已清除单群源语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtTgtSwitch && input.search(new RegExp(config.gGtTgtSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1629,11 +1629,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         if (newTgt) {
                             gGt[rawdata.group].tgt = newTgt;
                             reply(rawdata, `已切换单群目标语文至「${newTgt}」。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         } else {
                             gGt[rawdata.group].tgt = undefined;
                             reply(rawdata, `已清除单群目标语文。`);
-                            writeConfig(gGt, './gt.group.js');
+                            writeConfig(gGt, './data/gt.group.js');
                         };
                     } else if (config.gGtSwapSwitch && input.search(new RegExp(config.gGtSwapSwitch, 'gu')) > -1) {
                         gGt[rawdata.group] = gGt[rawdata.group] || {};
@@ -1642,7 +1642,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                         gGt[rawdata.group].src = newSrc;
                         gGt[rawdata.group].tgt = newTgt;
                         reply(rawdata, `已交换单群源语文与单群目标语文。\n现在单群源语文为「${newSrc}」，单群目标语文为「${newTgt}」。`);
-                        writeConfig(gGt, './gt.group.js');
+                        writeConfig(gGt, './data/gt.group.js');
                     } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                         let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                         if (newSrc) {
@@ -1713,6 +1713,178 @@ qqbot.on('GroupMessage', (rawdata) => {
                 };
                 break;
 
+            // 作诗
+            case 'poem':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
+                    if (config.pLengthSwitch && input.search(new RegExp(config.pLengthSwitch, 'gu')) > -1) {
+                        pPoem[rawdata.from] = pPoem[rawdata.from] || {};
+                        let length = qqbot.parseMessage(input.replace(new RegExp(config.pLengthSwitch, 'gu'), '')).text;
+                        if (length) {
+                            pPoem[rawdata.from].length = length;
+                            reply(rawdata, `已更改单 QQ 长度至「${length}」。`);
+                            writeConfig(pPoem, './data/poem.private.js');
+                        } else {
+                            pPoem[rawdata.from].length = undefined;
+                            reply(rawdata, `已清除单 QQ 长度。`);
+                            writeConfig(pPoem, './data/poem.private.js');
+                        };
+                    } else if (config.pRandomitySwitch && input.search(new RegExp(config.pRandomitySwitch, 'gu')) > -1) {
+                        pPoem[rawdata.from] = pPoem[rawdata.from] || {};
+                        let randomity = qqbot.parseMessage(input.replace(new RegExp(config.pRandomitySwitch, 'gu'), '')).text;
+                        if (randomity) {
+                            pPoem[rawdata.from].randomity = randomity;
+                            reply(rawdata, `已更改单 QQ 随机度至「${randomity}」。`);
+                            writeConfig(pPoem, './data/poem.private.js');
+                        } else {
+                            pPoem[rawdata.from].randomity = undefined;
+                            reply(rawdata, `已清除单 QQ 随机度。`);
+                            writeConfig(pPoem, './data/poem.private.js');
+                        };
+                    } else if (config.pTwogramSwitch && input.search(new RegExp(config.pTwogramSwitch, 'gu')) > -1) {
+                        pPoem[rawdata.from] = pPoem[rawdata.from] || {};
+                        let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase());
+                        if (twogram !== '') {
+                            pPoem[rawdata.from].twogram = Boolean(twogram);
+                            reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(twogram)}」。`);
+                            writeConfig(pPoem, './data/poem.private.js');
+                        } else {
+                            pPoem[rawdata.from].twogram = undefined;
+                            reply(rawdata, `已清除单 QQ 2gram。`);
+                            writeConfig(pPoem, './data/poem.private.js');
+                        };
+                    } else if (config.gLengthSwitch && input.search(new RegExp(config.gLengthSwitch, 'gu')) > -1) {
+                        gPoem[rawdata.group] = gPoem[rawdata.group] || {};
+                        let length = qqbot.parseMessage(input.replace(new RegExp(config.gLengthSwitch, 'gu'), '')).text;
+                        if (length) {
+                            gPoem[rawdata.group].length = length;
+                            reply(rawdata, `已更改单群长度至「${length}」。`);
+                            writeConfig(gPoem, './data/poem.group.js');
+                        } else {
+                            gPoem[rawdata.group].length = undefined;
+                            reply(rawdata, `已清除单群长度。`);
+                            writeConfig(gPoem, './data/poem.group.js');
+                        };
+                    } else if (config.gRandomitySwitch && input.search(new RegExp(config.gRandomitySwitch, 'gu')) > -1) {
+                        gPoem[rawdata.group] = gPoem[rawdata.group] || {};
+                        let randomity = qqbot.parseMessage(input.replace(new RegExp(config.gRandomitySwitch, 'gu'), '')).text;
+                        if (randomity) {
+                            gPoem[rawdata.group].randomity = randomity;
+                            reply(rawdata, `已更改单群随机度至「${randomity}」。`);
+                            writeConfig(gPoem, './data/poem.group.js');
+                        } else {
+                            gPoem[rawdata.group].randomity = undefined;
+                            reply(rawdata, `已清除单群随机度。`);
+                            writeConfig(gPoem, './data/poem.group.js');
+                        };
+                    } else if (config.gTwogramSwitch && input.search(new RegExp(config.gTwogramSwitch, 'gu')) > -1) {
+                        gPoem[rawdata.group] = gPoem[rawdata.group] || {};
+                        let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.gTwogramSwitch, 'gu'), '')).text.toLowerCase());
+                        if (twogram !== '') {
+                            gPoem[rawdata.group].twogram = Boolean(twogram);
+                            reply(rawdata, `已更改单群 2gram 至「${Boolean(twogram)}」。`);
+                            writeConfig(gPoem, './data/poem.group.js');
+                        } else {
+                            gPoem[rawdata.group].twogram = undefined;
+                            reply(rawdata, `已清除单群 2gram。`);
+                            writeConfig(gPoem, './data/poem.group.js');
+                        };
+                    } else if (config.lengthSwitch && input.search(new RegExp(config.lengthSwitch, 'gu')) > -1) {
+                        let length = qqbot.parseMessage(input.replace(new RegExp(config.lengthSwitch, 'gu'), '')).text;
+                        if (length) {
+                            config.length = length;
+                            reply(rawdata, `已更改全局长度至「${length}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pPoem[rawdata.from] && pPoem[rawdata.from].length) {
+                                current.push(`单 QQ 长度为「${pPoem[rawdata.from].length}」`);
+                            };
+                            if (gPoem[rawdata.group] && gPoem[rawdata.group].length) {
+                                current.push(`单群长度为「${gPoem[rawdata.group].length}」`);
+                            };
+                            current.push(`全局长度为「${config.length}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.randomitySwitch && input.search(new RegExp(config.randomitySwitch, 'gu')) > -1) {
+                        let randomity = qqbot.parseMessage(input.replace(new RegExp(config.randomitySwitch, 'gu'), '')).text;
+                        if (randomity) {
+                            config.randomity = randomity;
+                            reply(rawdata, `已更改全局随机度至「${randomity}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pPoem[rawdata.from] && pPoem[rawdata.from].randomity) {
+                                current.push(`单 QQ 随机度为「${pPoem[rawdata.from].randomity}」`);
+                            };
+                            if (gPoem[rawdata.group] && gPoem[rawdata.group].randomity) {
+                                current.push(`单群随机度为「${gPoem[rawdata.group].randomity}」`);
+                            };
+                            current.push(`全局随机度为「${config.randomity}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else if (config.twogramSwitch && input.search(new RegExp(config.twogramSwitch, 'gu')) > -1) {
+                        let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase());
+                        if (twogram !== '') {
+                            config.twogram = Boolean(twogram);
+                            reply(rawdata, `已更改全局 2gram 至「${Boolean(twogram)}」。`);
+                            writeConfig(config, './config.js');
+                        } else {
+                            let current = [];
+                            if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram) {
+                                current.push(`单 QQ 2gram 为「${pPoem[rawdata.from].twogram}」`);
+                            };
+                            if (gPoem[rawdata.group] && gPoem[rawdata.group].twogram) {
+                                current.push(`单群 2gram 为「${gPoem[rawdata.group].twogram}」`);
+                            };
+                            current.push(`全局 2gram 为「${config.twogram}」`);
+                            current = `当前${current.join('，')}。`;
+                            reply(rawdata, current);
+                        };
+                    } else {
+                        let length;
+                        let randomity;
+                        let twogram;
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].length) {
+                            length = pPoem[rawdata.from].length;
+                        } else if (gPoem[rawdata.group] && gPoem[rawdata.group].length) {
+                            length = gPoem[rawdata.group].length;
+                        } else {
+                            length = config.length || 7;
+                        };
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].randomity) {
+                            randomity = pPoem[rawdata.from].randomity;
+                        } else if (gPoem[rawdata.group] && gPoem[rawdata.group].randomity) {
+                            randomity = gPoem[rawdata.group].randomity;
+                        } else {
+                            randomity = config.randomity;
+                        };
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram !== undefined) {
+                            twogram = pPoem[rawdata.from].twogram;
+                        } else if (gPoem[rawdata.group] && gPoem[rawdata.group].twogram !== undefined) {
+                            twogram = gPoem[rawdata.group].twogram;
+                        } else {
+                            twogram = config.twogram;
+                        };
+                        input = qqbot.parseMessage(input).text;
+                        let output;
+                        try {
+                            if ([...input].length === 1) {
+                                output = verseGen(input, length, randomity, twogram);
+                                output = `${output[0]}，${output[1]}。`;
+                            } else {
+                                output = '输入只能为一个字！';
+                            };
+                        } catch (ex) {
+                            conLog(ex, true);
+                        };
+                        reply(rawdata, output);
+                    };
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -1728,11 +1900,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         if (newMode) {
             pMode[rawdata.from] = newMode;
             reply(rawdata, `已切换单 QQ 模式至「${newMode}」。`);
-            writeConfig(pMode, './mode.private.js');
+            writeConfig(pMode, './data/mode.private.js');
         } else {
             pMode[rawdata.from] = undefined;
             reply(rawdata, `已清除单 QQ 模式。\n${modeList}`);
-            writeConfig(pMode, './mode.private.js');
+            writeConfig(pMode, './data/mode.private.js');
         };
     } else if (config.modeSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
         let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(config.modeSwitch, 'gu'), '')).text;
@@ -1778,11 +1950,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newLang) {
                         pAIxxz[rawdata.from].lang = newLang;
                         reply(rawdata, `已切换单 QQ 语文至「${newLang}」。`);
-                        writeConfig(pAIxxz, './AIxxz.private.js');
+                        writeConfig(pAIxxz, './data/AIxxz.private.js');
                     } else {
                         pAIxxz[rawdata.from].lang = undefined;
                         reply(rawdata, `已清除单 QQ 语文。`);
-                        writeConfig(pAIxxz, './AIxxz.private.js');
+                        writeConfig(pAIxxz, './data/AIxxz.private.js');
                     };
                 } else if (config.pCitySwitch && question.search(new RegExp(config.pCitySwitch, 'gu')) > -1) {
                     pAIxxz[rawdata.from] = pAIxxz[rawdata.from] || {};
@@ -1790,11 +1962,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newCity) {
                         pAIxxz[rawdata.from].city = newCity;
                         reply(rawdata, `已切换单 QQ 城市至「${newCity}」。`);
-                        writeConfig(pAIxxz, './AIxxz.private.js');
+                        writeConfig(pAIxxz, './data/AIxxz.private.js');
                     } else {
                         pAIxxz[rawdata.from].city = undefined;
                         reply(rawdata, `已清除单 QQ 城市。`);
-                        writeConfig(pAIxxz, './AIxxz.private.js');
+                        writeConfig(pAIxxz, './data/AIxxz.private.js');
                     };
                 } else if (config.langSwitch && question.search(new RegExp(config.langSwitch, 'gu')) > -1) {
                     let newLang = qqbot.parseMessage(question.replace(new RegExp(config.langSwitch, 'gu'), '')).text;
@@ -1870,11 +2042,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newSrc) {
                         pGt[rawdata.from].src = newSrc;
                         reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].src = undefined;
                         reply(rawdata, `已清除单 QQ 源语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1882,11 +2054,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newTgt) {
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].tgt = undefined;
                         reply(rawdata, `已清除单 QQ 目标语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1895,7 +2067,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     pGt[rawdata.from].src = newSrc;
                     pGt[rawdata.from].tgt = newTgt;
                     reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                    writeConfig(pGt, './gt.private.js');
+                    writeConfig(pGt, './data/gt.private.js');
                 } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                     let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                     if (newSrc) {
@@ -1961,11 +2133,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newSrc) {
                         pGt[rawdata.from].src = newSrc;
                         reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].src = undefined;
                         reply(rawdata, `已清除单 QQ 源语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1973,11 +2145,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newTgt) {
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].tgt = undefined;
                         reply(rawdata, `已清除单 QQ 目标语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -1986,7 +2158,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     pGt[rawdata.from].src = newSrc;
                     pGt[rawdata.from].tgt = newTgt;
                     reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                    writeConfig(pGt, './gt.private.js');
+                    writeConfig(pGt, './data/gt.private.js');
                 } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                     let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                     if (newSrc) {
@@ -2067,11 +2239,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newSrc) {
                         pGt[rawdata.from].src = newSrc;
                         reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].src = undefined;
                         reply(rawdata, `已清除单 QQ 源语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -2079,11 +2251,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newTgt) {
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].tgt = undefined;
                         reply(rawdata, `已清除单 QQ 目标语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -2092,7 +2264,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     pGt[rawdata.from].src = newSrc;
                     pGt[rawdata.from].tgt = newTgt;
                     reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                    writeConfig(pGt, './gt.private.js');
+                    writeConfig(pGt, './data/gt.private.js');
                 } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                     let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                     if (newSrc) {
@@ -2158,11 +2330,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newSrc) {
                         pGt[rawdata.from].src = newSrc;
                         reply(rawdata, `已切换单 QQ 源语文至「${newSrc}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].src = undefined;
                         reply(rawdata, `已清除单 QQ 源语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtTgtSwitch && input.search(new RegExp(config.pGtTgtSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -2170,11 +2342,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     if (newTgt) {
                         pGt[rawdata.from].tgt = newTgt;
                         reply(rawdata, `已切换单 QQ 目标语文至「${newTgt}」。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     } else {
                         pGt[rawdata.from].tgt = undefined;
                         reply(rawdata, `已清除单 QQ 目标语文。`);
-                        writeConfig(pGt, './gt.private.js');
+                        writeConfig(pGt, './data/gt.private.js');
                     };
                 } else if (config.pGtSwapSwitch && input.search(new RegExp(config.pGtSwapSwitch, 'gu')) > -1) {
                     pGt[rawdata.from] = pGt[rawdata.from] || {};
@@ -2183,7 +2355,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     pGt[rawdata.from].src = newSrc;
                     pGt[rawdata.from].tgt = newTgt;
                     reply(rawdata, `已交换单 QQ 源语文与单 QQ 目标语文。\n现在单 QQ 源语文为「${newSrc}」，单 QQ 目标语文为「${newTgt}」。`);
-                    writeConfig(pGt, './gt.private.js');
+                    writeConfig(pGt, './data/gt.private.js');
                 } else if (config.gtSrcSwitch && input.search(new RegExp(config.gtSrcSwitch, 'gu')) > -1) {
                     let newSrc = qqbot.parseMessage(input.replace(new RegExp(config.gtSrcSwitch, 'gu'), '')).text;
                     if (newSrc) {
@@ -2242,6 +2414,123 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     });
                 };
                 break;
+
+            case 'poem':
+                input = rawdata.raw;
+                if (config.pLengthSwitch && input.search(new RegExp(config.pLengthSwitch, 'gu')) > -1) {
+                    pPoem[rawdata.from] = pPoem[rawdata.from] || {};
+                    let length = qqbot.parseMessage(input.replace(new RegExp(config.pLengthSwitch, 'gu'), '')).text;
+                    if (length) {
+                        pPoem[rawdata.from].length = length;
+                        reply(rawdata, `已更改单 QQ 长度至「${length}」。`);
+                        writeConfig(pPoem, './data/poem.private.js');
+                    } else {
+                        pPoem[rawdata.from].length = undefined;
+                        reply(rawdata, `已清除单 QQ 长度。`);
+                        writeConfig(pPoem, './data/poem.private.js');
+                    };
+                } else if (config.pRandomitySwitch && input.search(new RegExp(config.pRandomitySwitch, 'gu')) > -1) {
+                    pPoem[rawdata.from] = pPoem[rawdata.from] || {};
+                    let randomity = qqbot.parseMessage(input.replace(new RegExp(config.pRandomitySwitch, 'gu'), '')).text;
+                    if (randomity) {
+                        pPoem[rawdata.from].randomity = randomity;
+                        reply(rawdata, `已更改单 QQ 随机度至「${randomity}」。`);
+                        writeConfig(pPoem, './data/poem.private.js');
+                    } else {
+                        pPoem[rawdata.from].randomity = undefined;
+                        reply(rawdata, `已清除单 QQ 随机度。`);
+                        writeConfig(pPoem, './data/poem.private.js');
+                    };
+                } else if (config.pTwogramSwitch && input.search(new RegExp(config.pTwogramSwitch, 'gu')) > -1) {
+                    pPoem[rawdata.from] = pPoem[rawdata.from] || {};
+                    let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.pTwogramSwitch, 'gu'), '')).text.toLowerCase());
+                    if (twogram !== '') {
+                        pPoem[rawdata.from].twogram = Boolean(twogram);
+                        reply(rawdata, `已更改单 QQ 2gram 至「${Boolean(twogram)}」。`);
+                        writeConfig(pPoem, './data/poem.private.js');
+                    } else {
+                        pPoem[rawdata.from].twogram = undefined;
+                        reply(rawdata, `已清除单 QQ 2gram。`);
+                        writeConfig(pPoem, './data/poem.private.js');
+                    };
+                } else if (config.lengthSwitch && input.search(new RegExp(config.lengthSwitch, 'gu')) > -1) {
+                    let length = qqbot.parseMessage(input.replace(new RegExp(config.lengthSwitch, 'gu'), '')).text;
+                    if (length) {
+                        config.length = length;
+                        reply(rawdata, `已更改全局长度至「${length}」。`);
+                        writeConfig(config, './config.js');
+                    } else {
+                        let current = [];
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].length) {
+                            current.push(`单 QQ 长度为「${pPoem[rawdata.from].length}」`);
+                        };
+                        current.push(`全局长度为「${config.length}」`);
+                        current = `当前${current.join('，')}。`;
+                        reply(rawdata, current);
+                    };
+                } else if (config.randomitySwitch && input.search(new RegExp(config.randomitySwitch, 'gu')) > -1) {
+                    let randomity = qqbot.parseMessage(input.replace(new RegExp(config.randomitySwitch, 'gu'), '')).text;
+                    if (randomity) {
+                        config.randomity = randomity;
+                        reply(rawdata, `已更改全局随机度至「${randomity}」。`);
+                        writeConfig(config, './config.js');
+                    } else {
+                        let current = [];
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].randomity) {
+                            current.push(`单 QQ 随机度为「${pPoem[rawdata.from].randomity}」`);
+                        };
+                        current.push(`全局随机度为「${config.randomity}」`);
+                        current = `当前${current.join('，')}。`;
+                        reply(rawdata, current);
+                    };
+                } else if (config.twogramSwitch && input.search(new RegExp(config.twogramSwitch, 'gu')) > -1) {
+                    let twogram = JSON.parse(qqbot.parseMessage(input.replace(new RegExp(config.twogramSwitch, 'gu'), '')).text.toLowerCase());
+                    if (twogram !== '') {
+                        config.twogram = Boolean(twogram);
+                        reply(rawdata, `已更改全局 2gram 至「${Boolean(twogram)}」。`);
+                        writeConfig(config, './config.js');
+                    } else {
+                        let current = [];
+                        if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram) {
+                            current.push(`单 QQ 2gram 为「${pPoem[rawdata.from].twogram}」`);
+                        };
+                        current.push(`全局 2gram 为「${config.twogram}」`);
+                        current = `当前${current.join('，')}。`;
+                        reply(rawdata, current);
+                    };
+                } else {
+                    let length;
+                    let randomity;
+                    let twogram;
+                    if (pPoem[rawdata.from] && pPoem[rawdata.from].length) {
+                        length = pPoem[rawdata.from].length;
+                    } else {
+                        length = config.length || 7;
+                    };
+                    if (pPoem[rawdata.from] && pPoem[rawdata.from].randomity) {
+                        randomity = pPoem[rawdata.from].randomity;
+                    } else {
+                        randomity = config.randomity;
+                    };
+                    if (pPoem[rawdata.from] && pPoem[rawdata.from].twogram !== undefined) {
+                        twogram = pPoem[rawdata.from].twogram;
+                    } else {
+                        twogram = config.twogram;
+                    };
+                    input = qqbot.parseMessage(input).text;
+                    let output;
+                    try {
+                        if ([...input].length === 1) {
+                            output = verseGen(input, length, randomity, twogram);
+                            output = `${output[0]}，${output[1]}。`;
+                        } else {
+                            output = '输入只能为一个字！';
+                        };
+                    } catch (ex) {
+                        conLog(ex, true);
+                    };
+                    reply(rawdata, output);
+                };
 
             default:
                 reply(rawdata, '当前模式不存在，请检查设定。');
