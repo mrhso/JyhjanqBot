@@ -16,6 +16,7 @@ module.exports = {
                                                          // code 为编码查询模式，查询字符之编码
                                                          // bf 为百度翻译模式
                                                          // bfRound 为百度来回翻译模式
+                                                         // poem 为作诗模式
     "sleep": 100,                                        // 单字符延时（毫秒），单字符延时 × 字符数 = 字符串延时
                                                          // 设定为 false 或 0 则不延时
     "appid" : "dcXbXX0X",                                // 小信子 AppID
