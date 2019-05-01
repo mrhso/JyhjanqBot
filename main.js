@@ -908,10 +908,16 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
                 askingset.splice(askingset.indexOf(del), 1);
             };
         };
-        let pairingset = getLowerPair([...asking].slice(-1).join(''));
         asking = randomSelect(askingset, r);
+        let pairingset = getLowerPair(asking);
         let responding = [...resp].slice(twogram && [...resp].length >= 2 ? -2 : -1).join('');
         let respondingset = getNext(responding);
+        if ([...resp].length >= 2) {
+            let del = [...resp].slice(-2)[0];
+            while (respondingset.includes(del)) {
+                respondingset.splice(respondingset.indexOf(del), 1);
+            };
+        };
         responding = nextPairedSelect(pairingset, respondingset, r);
 
         ask += asking;
