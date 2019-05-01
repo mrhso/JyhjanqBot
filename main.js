@@ -908,14 +908,11 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
                 askingset.splice(askingset.indexOf(del), 1);
             };
         };
-        let pairingset = getLowerPair([...asking][0]);
+        let pairingset = getLowerPair([...asking].slice(-1).join(''));
         asking = randomSelect(askingset, r);
-        let responding = [...resp].slice(-1).join('');
+        let responding = [...resp].slice(twogram && [...ask].length >= 2 ? -2 : -1).join('');
         let respondingset = getNext(responding);
         responding = nextPairedSelect(pairingset, respondingset, r);
-        if (twogram) {
-            responding += nextPairedSelect(getLowerPair([...asking][1]), getNext(responding), r);
-        };
 
         ask += asking;
         resp += responding;
