@@ -776,7 +776,8 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
     };
 
     const randomSelect = (list, times) => {
-        let output;
+        // 匹配失败的输出 U+D800（不用正规字符，防止被错误匹配），以待处理
+        let output = '\u{D800}';
         let weight = new Map();
         for (let value of list) {
             if (weight.has(value)) {
@@ -827,7 +828,7 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
     };
 
     const nextPairedSelect = (list1, list2, times) => {
-        let output;
+        let output = '\u{D800}';
         let weight1 = new Map();
         let weight2 = new Map();
         for (let value of list1) {
@@ -919,6 +920,9 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
         ask += asking;
         resp += responding;
     };
+    // 替换为「█」
+    ask = ask.replace(/\u{D800}/gu, '█');
+    resp = resp.replace(/\u{D800}/gu, '█');
     let showing = `${ask},${resp}`;
     return [ask, resp];
 };
@@ -1870,16 +1874,11 @@ qqbot.on('GroupMessage', (rawdata) => {
                         };
                         input = qqbot.parseMessage(input).text;
                         let output;
-                        try {
-                            if ([...input].length === 1) {
-                                output = verseGen(input, length, randomity, twogram);
-                                output = `${output[0]}，${output[1]}。`;
-                            } else {
-                                output = '输入只能为一个字！';
-                            };
-                        } catch (ex) {
-                            conLog(ex, true);
-                            reply(rawdata, '字词选取失败！');
+                        if ([...input].length === 1) {
+                            output = verseGen(input, length, randomity, twogram);
+                            output = `${output[0]}，${output[1]}。`;
+                        } else {
+                            output = '输入只能为一个字！';
                         };
                         reply(rawdata, output);
                     };
@@ -2520,16 +2519,11 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     };
                     input = qqbot.parseMessage(input).text;
                     let output;
-                    try {
-                        if ([...input].length === 1) {
-                            output = verseGen(input, length, randomity, twogram);
-                            output = `${output[0]}，${output[1]}。`;
-                        } else {
-                            output = '输入只能为一个字！';
-                        };
-                    } catch (ex) {
-                        conLog(ex, true);
-                        reply(rawdata, '字词选取失败！');
+                    if ([...input].length === 1) {
+                        output = verseGen(input, length, randomity, twogram);
+                        output = `${output[0]}，${output[1]}。`;
+                    } else {
+                        output = '输入只能为一个字！';
                     };
                     reply(rawdata, output);
                 };
