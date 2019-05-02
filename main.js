@@ -7,6 +7,10 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
+const config = require('./config.js');
+const pMode = require('./data/mode.private.js');
+const gMode = require('./data/mode.group.js');
+
 let OpenCC;
 if (config.simply) {
     OpenCC = require('./lib/OpenCC/opencc.js');
@@ -32,10 +36,6 @@ const conLog = (message, isError = false) => {
         console.log(output);
     };
 };
-
-const config = require('./config.js');
-const pMode = require('./data/mode.private.js');
-const gMode = require('./data/mode.group.js');
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -475,7 +475,7 @@ const pet = (user, input, randomDie = undefined) => {
 const alphaGong = () => {
     let output = eval(`\`${arrayRandom(gongFormat)}\``);
     if (config.simply) {
-        output = new OpenCC('t2s.json').convertSync(output);
+        output = new OpenCC('./lib/OpenCC/t2s.json').convertSync(output);
     };
     return output;
 };
