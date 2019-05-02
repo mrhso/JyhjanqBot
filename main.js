@@ -925,6 +925,9 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
         let respondingset = getNext(responding);
         if ([...resp].length >= 2) {
             let del = [...resp].slice(-2)[0];
+            while (pairingset.includes(del)) {
+                pairingset.splice(pairingset.indexOf(del), 1);
+            };
             while (respondingset.includes(del)) {
                 respondingset.splice(respondingset.indexOf(del), 1);
             };
