@@ -7,6 +7,11 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 
+let OpenCC;
+if (config.simply) {
+    OpenCC = require('./lib/OpenCC/opencc.js');
+};
+
 const conLog = (message, isError = false) => {
     let date = new Date();
     let zone = -date.getTimezoneOffset();
@@ -467,7 +472,13 @@ const pet = (user, input, randomDie = undefined) => {
     return output;
 };
 
-const alphaGong = () => eval(`\`${arrayRandom(gongFormat)}\``);
+const alphaGong = () => {
+    let output = eval(`\`${arrayRandom(gongFormat)}\``);
+    if (config.simply) {
+        output = new OpenCC('t2s.json').convertSync(output);
+    };
+    return output;
+};
 
 const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
