@@ -64,6 +64,5 @@ module.exports = {
     "pLengthSwitch": "",
     "pRandomitySwitch": "",
     "pTwogramSwitch": "",
-    "simply": false                                      // 将预设词库为繁体的模式（如龚诗模式）之输出转化为简化字
-                                                         // 需自备编译过的 opencc.node
+    "simply": false                                      // 将预设词库为繁体的模式之输出转化为简化字
 };

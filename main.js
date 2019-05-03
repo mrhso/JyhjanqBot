@@ -6,15 +6,11 @@ const http = require('http');
 const https = require('https');
 const path = require('path');
 const fs = require('fs');
+const OpenCC = require('./lib/OpenCC/opencc.js');
 
 const config = require('./config.js');
 const pMode = require('./data/mode.private.js');
 const gMode = require('./data/mode.group.js');
-
-let OpenCC;
-if (config.simply) {
-    OpenCC = require('./lib/OpenCC/opencc.js');
-};
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -137,15 +133,37 @@ const allPairs = [];
 let pPoem = {};
 let gPoem = {};
 try {
-    const originalText = toLF(fs.readFileSync('./text/全唐诗.txt').toString());
+    const shyjing = toLF(fs.readFileSync('./text/詩經.txt').toString());
+    const tarngshySanbaeShoou = new OpenCC('./lib/OpenCC/tw2t.json').convertSync(toLF(fs.readFileSync('./text/唐詩三百首.txt').toString()));
+    const yuehfuuShyjyi = new OpenCC('./lib/OpenCC/tw2t.json').convertSync(toLF(fs.readFileSync('./text/樂府詩集.txt').toString()));
 
-    originalText.replace(/卷(\d+)_(\d+) 【((?:.|\n)+?)】((?:.|\n)*?) \n\n((?:.|\n)+?)\n+ +/gmu, (_, fold, order, title, poet, poem) => {
+    shyjing.replace(/《(.*?)》\n((?:.|\n)*?)\n(?:\n|$)/gu, (_, title, poem) => {
+        poems.push({
+            title: title,
+            poem: poem.replace(/\n/gu, '').replace(/[，。！？；、：]$/gu, '').split(/[，。！？；、：]/gu),
+        });
+    });
+
+    tarngshySanbaeShoou.replace(/詩名:(.*?)\n作者:(.*?)\n詩體:(.*?)\n詩文:(?:\(押(.*?)韻\))?(.*?)\n/gu, (_, title, poet, type, rhyme, poem) => {
         poems.push({
             title: title,
             poet: poet,
-            poem: poem.replace(/\n/gu, '').replace(/[，。]$/gu, '').split(/[，。]/gu),
+            type: type,
+            rhyme: rhyme,
+            poem: poem.replace(/\n/gu, '').replace(/[，。！？；、：]$/gu, '').split(/[，。！？；、：]/gu),
+        });
+    });
+
+    yuehfuuShyjyi.replace(/---\n.*?\n詩題：(.*?)\n篇目：(.*?)\n朝代：(.*?)\n作者：(.*?)\n卷別：(.*?)\n(?:詩題解：(.*?)\n)?(?:詩序：(.*?)\n)?詩文：(.*?)\n/gu, (_, title, chapter, dynasty, poet, fold, explain, prelude, poem) => {
+        poems.push({
+            title: title,
+            chapter: chapter,
+            dynasty: dynasty,
+            poet: poet,
             fold: fold,
-            order: order,
+            explain: explain,
+            prelude: prelude,
+            poem: poem.replace(/\n/gu, '').replace(/【.*?】/gu, '').replace(/[，。！？；、：]$/gu, '').split(/[，。！？；、：]/gu),
         });
     });
 
@@ -903,13 +921,14 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
         return output;
     };
     // 核心部分
-    let resp = randomSelect(getLowerPair([...begin][0]), 10);
+    let input = new OpenCC('./lib/OpenCC/s2t.json').convertSync(begin);
+    let resp = randomSelect(getLowerPair([...input][0]), r);
     let offset = 1;
-    while (offset < [...begin].length) {
-        resp += nextPairedSelect(getLowerPair([...begin][offset]), getNext([...resp].slice(twogram && [...resp].length >= 2 ? -2 : -1).join('')), r);
+    while (offset < [...input].length) {
+        resp += nextPairedSelect(getLowerPair([...input][offset]), getNext([...resp].slice(twogram && [...resp].length >= 2 ? -2 : -1).join('')), r);
         offset += 1;
     };
-    let ask = begin;
+    let ask = input;
     while ([...ask].length < length) {
         let asking = [...ask].slice(twogram && [...ask].length >= 2 ? -2 : -1).join('');
         let askingset = getNext(asking);
