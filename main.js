@@ -696,8 +696,10 @@ const baiduFanyi = (text, src = 'auto', tgt = 'en', callback) => {
                                 conLog(ex, true);
                             };
                             let output = [];
-                            for (let result of chunk.trans_result.data) {
-                                output.push(result.dst);
+                            if (chunk.trans_result) {
+                                for (let result of chunk.trans_result.data) {
+                                    output.push(result.dst);
+                                };
                             };
                             output = output.join('\n');
                             callback(output);
