@@ -959,6 +959,10 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
     // 替换为「█」
     ask = ask.replace(/\u{D800}/gu, '█');
     resp = resp.replace(/\u{D800}/gu, '█');
+    if (config.simply) {
+        ask = new OpenCC('./lib/OpenCC/t2s.json').convertSync(ask);
+        resp = new OpenCC('./lib/OpenCC/t2s.json').convertSync(resp);
+    };
     let showing = `${ask},${resp}`;
     return [ask, resp];
 };
