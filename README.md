@@ -26,6 +26,7 @@
 npm install
 ```
 - 编译 opencc.node，自备 OpenCC 转换档
+
 这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text 内的数据。
 
 打开酷 Q，然后执行：
