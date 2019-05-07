@@ -188,7 +188,7 @@ try {
         allPairs.push(...getPairs(poem));
     };
 } catch (ex) {
-    conLog('Failed to load 全唐诗.txt', true);
+    conLog('Failed to load poem-data', true);
 };
 try {
     pPoem = require('./data/poem.private.js');
@@ -300,7 +300,7 @@ const reply = async (rawdata, message, options) => {
             await sleep((config.sleep || 100) * [...random].length);
         };
         if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendGroupMessage(config.to, random, { noEscape: true });
+            qqbot.sendGroupMessage(config.to, config.at ? `[CQ:at,qq=${config.at}] ${random}` : random, { noEscape: true });
         } else {
             qqbot.sendPrivateMessage(config.to, random, { noEscape: true });
         };
