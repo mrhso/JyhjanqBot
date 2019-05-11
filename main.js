@@ -293,9 +293,9 @@ const reply = async (rawdata, message, options) => {
 }; */
 
 /* const daapenActive = async () => {
-    for (let i = 1; i <= (config.count || 100); i ++) {
+    let offset = 0;
+    while (offset < (config.count || 100)) {
         let random = daapen();
-        // 延时不放在 for 里不行，所以没办法把发送部分封入函数
         if (config.sleep === undefined ? true : config.sleep) {
             await sleep((config.sleep || 100) * [...random].length);
         };
@@ -305,6 +305,7 @@ const reply = async (rawdata, message, options) => {
             qqbot.sendPrivateMessage(config.to, random, { noEscape: true });
         };
         conLog(`Output: ${random}`);
+        offset += 1;
     };
 }; */
 
