@@ -3,7 +3,8 @@
     "version": "1.6.0",
     "description": "多功能人工池沼",
     "dependencies": {
-        "ishisashiencoding": "^0.3.2"
+        "ishisashiencoding": "^0.4.0",
+        "ishisashimap": "^1.0.1"
     },
     "engines": {
         "node": ">=10.0.0"
