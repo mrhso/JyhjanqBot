@@ -134,7 +134,7 @@ let pPoem = {};
 let gPoem = {};
 try {
     const shyjing = toLF(fs.readFileSync('./text/詩經.txt').toString());
-    const tarngshySanbaeShoou = toLF(fs.readFileSync('./text/唐詩三百首.txt').toString();
+    const tarngshySanbaeShoou = toLF(fs.readFileSync('./text/唐詩三百首.txt').toString());
     const yuehfuuShyjyi = toLF(fs.readFileSync('./text/樂府詩集.txt').toString());
 
     shyjing.replace(/《(.*?)》\n((?:.|\n)*?)\n(?:\n|$)/gu, (_, title, poem) => {
