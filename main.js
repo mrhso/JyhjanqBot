@@ -359,10 +359,14 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                             return;
                         // 图片这个比较特殊，会给出重复链接，所以筛掉
                         } else if (chunk.xxztype === 'image') {
-                            for (let data of chunk.data) {
-                                for (let data2 in data) {
-                                    if (data2 !== 'picurl') {
-                                        answer.push(data[data2]);
+                            if (chunk.datatype === 'text') {
+                                answer.push(chunk.data);
+                            } else {
+                                for (let data of chunk.data) {
+                                    for (let data2 in data) {
+                                        if (data2 !== 'picurl') {
+                                            answer.push(data[data2]);
+                                        };
                                     };
                                 };
                             };
@@ -377,8 +381,12 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                             for (let data in chunk.data) {
                                 answer.push(chunk.data[data]);
                             };
-                        } else if (chunk.data === null) {
-                            return;
+                        } else if (!chunk.data) {
+                            if (chunk.note) {
+                                answer.push(chunk.note);
+                            } else {
+                                return;
+                            };
                         } else {
                             answer.push(chunk.data);
                         };
