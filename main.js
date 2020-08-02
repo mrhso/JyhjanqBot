@@ -7,6 +7,7 @@ const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const OpenCC = require('./lib/OpenCC/opencc.js');
+const { v4: uuidv4 } = require('uuid');
 
 const config = require('./config.js');
 const pMode = require('./data/mode.private.js');
@@ -117,6 +118,7 @@ try {
 
 let pAIxxz = {};
 let gAIxxz = {};
+let AIxxzUUID = {};
 try {
     pAIxxz = require('./data/AIxxz.private.js');
 } catch (ex) {
@@ -126,6 +128,11 @@ try {
     gAIxxz = require('./data/AIxxz.group.js');
 } catch (ex) {
     conLog('Failed to load AIxxz.group.js', true);
+};
+try {
+    AIxxzUUID = require('./data/AIxxz.uuid.js');
+} catch (ex) {
+    conLog('Failed to load AIxxz.uuid.js', true);
 };
 
 const poems = [];
@@ -323,8 +330,15 @@ const jinkohChishoh = (question) => {
 };
 
 const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
+    let uuid = AIxxzUUID[rawdata.from];
+    if (!uuid) {
+        uuid = uuidv4();
+        AIxxzUUID[rawdata.from] = uuid;
+        writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
+    };
+
     if (rawdata.extra.images.length === 0) {
-        let postData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(config.devid || 'UniqueDeviceID')}"]`;
+        let postData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
         let reqUK = http.request(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) } }, (res) => {
             // 用数组装入 chunk
             let chunks = [];
@@ -337,7 +351,7 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                 // 将 chunk 合并起来，读为 JSON
                 let chunk = JSON.parse(Buffer.concat(chunks).toString());
                 // 请求回答
-                let postData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(config.devid || 'UniqueDeviceID')}&uk=${encodeURIComponent(chunk.data.UniqueDeviceID.uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&user=${encodeURIComponent(rawdata.from)}&city=${encodeURIComponent(city)}`;
+                let postData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(chunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
                 let reqAnswer = http.request(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) } }, (res) => {
                     let chunks = [];
                     res.on('data', (chunk) => {
@@ -369,6 +383,14 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                                         };
                                     };
                                 };
+                            };
+                        } else if (chunk.xxztype === 'pedia') {
+                            if (chunk.note) {
+                                answer.push(chunk.note);
+                            } else if (chunk.data.text1) {
+                                answer.push(chunk.data.text1);
+                            } else {
+                                return;
                             };
                         } else if (Array.isArray(chunk.data)) {
                             for (let data of chunk.data) {
@@ -409,16 +431,18 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                         if (chunk.xxztype === 'remind') {
                             // 处理小信子返回的时间，注意时区为 UTC+8
                             let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || '08:00:00'} UTC+0800`);
-                            let remindMessage = chunk.semantic.message;
+                            let remindMessage = chunk.semantic.message || '';
                             if (lang === 'zh_TW' || lang === 'zh_HK') {
                                 remindMessage = `提醒時間到了！${remindMessage}`;
                             } else {
                                 remindMessage = `提醒时间到了！${remindMessage}`;
                             };
                             // 获取当前时间，并与小信子返回的时间相减，然后延时
-                            await sleep(remindTime - new Date());
-                            // 回复
-                            callback(remindMessage);
+                            let delay = remindTime - new Date();
+                            await sleep(delay);
+                            if (delay > 0) {
+                                callback(remindMessage);
+                            };
                         };
                     });
                 });
@@ -976,6 +1000,61 @@ const verseGen = (begin, length, r = 30, twogram = false) => {
     };
     let showing = `${ask},${resp}`;
     return [ask, resp];
+};
+
+// 移植自 https://www.zhihu.com/question/402635037/answer/1302122540
+// 做了繁简适配，顺带优化词库
+const jiowjeh = (question) => {
+    let forceUniversalAnswerRate = 0.13;
+
+    let universalAnswers = [
+        '你说你🐴呢？',
+        '那没事了。',
+        '真别逗我笑啊。',
+        '那可真是有趣呢。',
+        '就这？就这？',
+        '你品，你细品。',
+        '不会真有人觉得是这样的吧，不会吧不会吧？'
+    ];
+    let strongEmotionAnswers = [
+        '你急了急了急了？',
+        '他急了，他急了！'
+    ];
+    let questionAnswers = [
+        '不会真有人还不知道吧？',
+        '你都不知道，那你说你🐴呢？'
+    ];
+
+    let strongEmotionPatterns = [
+        '[！!]',
+        '[？?][？?][？?]',
+        '[气氣]抖冷'
+    ];
+    let questionParrerns = [
+        '[？?]',
+        '怎[么麼]',
+        '什[么麼]',
+        '咋'
+    ];
+
+    const checkPatterns = (strIn, patterns) => {
+        for (let p of patterns) {
+            if (strIn.match(new RegExp(p, 'u'))) {
+                return true;
+            };
+        };
+        return false;
+    };
+
+    if (Math.random() < forceUniversalAnswerRate) {
+        return arrayRandom(universalAnswers);
+    } else if (checkPatterns(question, strongEmotionPatterns)) {
+        return arrayRandom(strongEmotionAnswers);
+    } else if (checkPatterns(question, questionParrerns)) {
+        return arrayRandom(questionAnswers);
+    } else {
+        return arrayRandom(universalAnswers);
+    };
 };
 
 /* if (config.mode === 'active') {
@@ -1931,6 +2010,16 @@ qqbot.on('GroupMessage', (rawdata) => {
                 };
                 break;
 
+            // 阴阳怪气
+            // 就这？
+            case 'jiowjeh':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let question = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
+                    let answer = jiowjeh(question);
+                    reply(rawdata, answer, { noEscape: true });
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -2568,6 +2657,12 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                     output = `${output[0]}，${output[1]}。`;
                     reply(rawdata, output);
                 };
+                break;
+
+            case 'jiowjeh':
+                question = rawdata.raw;
+                answer = jiowjeh(question);
+                reply(rawdata, answer, { noEscape: true });
                 break;
 
             default:

@@ -1,10 +1,11 @@
 {
     "name": "jyhjanqbot",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "description": "多功能人工池沼",
     "dependencies": {
         "ishisashiencoding": "^0.4.0",
-        "ishisashimap": "^1.0.1"
+        "ishisashimap": "^1.0.5",
+        "uuid": "^8.3.0"
     },
     "engines": {
         "node": ">=10.0.0"
