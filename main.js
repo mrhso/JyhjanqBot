@@ -384,14 +384,8 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                                     };
                                 };
                             };
-                        } else if (chunk.xxztype === 'pedia') {
-                            if (chunk.note) {
-                                answer.push(chunk.note);
-                            } else if (chunk.data.text1) {
-                                answer.push(chunk.data.text1);
-                            } else {
-                                return;
-                            };
+                        } else if (chunk.data && chunk.data.text1) {
+                            answer.push(chunk.data.text1);
                         } else if (Array.isArray(chunk.data)) {
                             for (let data of chunk.data) {
                                 // 有时数组里面还包着对象
@@ -437,11 +431,10 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                             } else {
                                 remindMessage = `提醒时间到了！${remindMessage}`;
                             };
-                            // 获取当前时间，并与小信子返回的时间相减，然后延时
-                            let delay = remindTime - new Date();
-                            await sleep(delay);
-                            if (delay > 0) {
-                                callback(remindMessage);
+                            if (!(chunk.semantic.message === '提醒時間最短為1分鐘！' || chunk.semantic.message === '提醒时间最短为1分钟！')) {
+                                // 获取当前时间，并与小信子返回的时间相减，然后延时
+                                let delay = remindTime - new Date();
+                                await sleep(delay);
                             };
                         };
                     });
@@ -1061,7 +1054,7 @@ const jiowjeh = (question) => {
     // 主动打喷
     daapenActive();
 } else { */
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、poem';
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、poem、jiowjeh';
 // 群聊
 qqbot.on('GroupMessage', (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
