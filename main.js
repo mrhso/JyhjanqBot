@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const OpenCC = require('./lib/OpenCC/opencc.js');
 const { v4: uuidv4 } = require('uuid');
+const jieba = require('nodejieba');
 
 const config = require('./config.js');
 const pMode = require('./data/mode.private.js');
@@ -133,6 +134,19 @@ try {
     AIxxzUUID = require('./data/AIxxz.uuid.js');
 } catch (ex) {
     conLog('Failed to load AIxxz.uuid.js', true);
+};
+
+let wtfurryDic = {};
+let wtfurryIndy_s = {};
+try {
+    wtfurryDic = require('./text/wtfurry.index.js');
+} catch (ex) {
+    conLog('Failed to load wtfurry.index.js', true);
+};
+try {
+    wtfurryIndy_s = require('./text/wtfurry.indy_s.js');
+} catch (ex) {
+    conLog('Failed to load wtfurry.indy_s.js', true);
 };
 
 const poems = [];
@@ -1050,11 +1064,40 @@ const jiowjeh = (question) => {
     };
 };
 
+// https://github.com/Meeken1998/wtfurry
+// 有男同性恋变态售壬控那味了吗？
+const wtfurry = (sentence) => {
+    let list = jieba.tag(sentence, true);
+    let str = '';
+
+    let i = 0;
+    while (i < list.length) {
+        try {
+            if (list[i].tag === 'x' && list[i + 1].tag === 'x' && wtfurryIndy_s[list[i].tag][i].includes(list[i].word) && wtfurryIndy_s[list[i + 1].tag][i + 1].includes(list[i + 1].word)) {
+                list[i].word = '';
+            };
+        } catch {};
+
+        if (list[i] && list[i].tag && wtfurryDic[list[i].tag] && wtfurryDic[list[i].tag][list[i].word] && wtfurryDic[list[i].tag][list[i].word].length) {
+            list[i].word = arrayRandom(wtfurryDic[list[i].tag][list[i].word]);
+        };
+
+        str += list[i].word;
+        i += 1;
+    };
+
+    if (list && list[0] && list[0].tag && (list[0].tag === 'r' || list[0].tag === 'm')) {
+        str = `${arrayRandom(wtfurryDic.emm)}${str}`;
+    };
+
+    return str;
+};
+
 /* if (config.mode === 'active') {
     // 主动打喷
     daapenActive();
 } else { */
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、poem、jiowjeh';
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、poem、jiowjeh、wtfurry';
 // 群聊
 qqbot.on('GroupMessage', (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.pModeSwitch, 'gu')) > -1) {
@@ -2013,6 +2056,15 @@ qqbot.on('GroupMessage', (rawdata) => {
                 };
                 break;
 
+            // 售壬控模拟器
+            case 'wtfurry':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let sentence = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
+                    let str = wtfurry(sentence);
+                    reply(rawdata, str, { noEscape: true });
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -2058,6 +2110,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         };
         let question;
         let input;
+        let str;
         switch (mode) {
             /* case 'passive':
                 let random = daapen();
@@ -2354,7 +2407,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                 break;
 
             case 'code':
-                let str = rawdata.text;
+                str = rawdata.text;
                 let code = charCode(str);
                 reply(rawdata, code);
                 break;
@@ -2656,6 +2709,12 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                 question = rawdata.raw;
                 answer = jiowjeh(question);
                 reply(rawdata, answer, { noEscape: true });
+                break;
+
+            case 'wtfurry':
+                let sentence = rawdata.raw;
+                str = wtfurry(question);
+                reply(rawdata, str, { noEscape: true });
                 break;
 
             default:
