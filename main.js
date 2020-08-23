@@ -399,27 +399,30 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         if (chunk.xxztype === 'music') {
             return;
         // 图片这个比较特殊，会给出重复链接，所以筛掉
-        } else if (chunk.xxztype === 'image') {
-            if (chunk.datatype === 'text') {
-                answer.push(chunk.data);
-            } else {
-                for (let data of chunk.data) {
-                    let list = [];
-                    for (let data2 in data) {
-                        if (data2 !== 'picurl') {
-                            list.push(data2);
-                        };
-                    };
-                    list.sort(sort);
-                    for (let data2 of list) {
-                        if (data2 === 'link') {
-                            // 以 U+D800 作为图片标记
-                            answer.push(`\u{D800}${data.link}`);
-                        } else {
-                            answer.push(data[data2]);
-                        };
+        } else if (chunk.xxztype === 'image' && Array.isArray(chunk.data)) {
+            for (let data of chunk.data) {
+                let list = [];
+                for (let data2 in data) {
+                    if (data2 !== 'picurl') {
+                        list.push(data2);
                     };
                 };
+                list.sort(sort);
+                for (let data2 of list) {
+                    if (data2 === 'link') {
+                        // 以 U+D800 作为图片标记
+                        answer.push(`\u{D800}${data.link}`);
+                    } else {
+                        answer.push(data[data2]);
+                    };
+                };
+            };
+        } else if (chunk.xxztype === 'weather' && chunk.datatype === 'weather'){
+            answer.push(chunk.city);
+            for (let data of chunk.data) {
+                answer.push(`${data.date}　${data.temperature}`);
+                answer.push(`${data.weather}　${data.wind}`);
+                answer.push(`\u{D800}${data.dayPictureUrl}`);
             };
         } else if (chunk.data && chunk.data.text1) {
             answer.push(chunk.data.text1);
