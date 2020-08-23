@@ -9,6 +9,7 @@ const fs = require('fs');
 const OpenCC = require('./lib/OpenCC/opencc.js');
 const { v4: uuidv4 } = require('uuid');
 const jieba = require('nodejieba');
+const fetch = require('node-fetch');
 
 const config = require('./config.js');
 const pMode = require('./data/mode.private.js');
@@ -50,11 +51,16 @@ qqbot.start();
 
 // 将 Bot 所用到的稳定资讯缓存起来，随 ServerHello 更新
 let botQQ;
+let cacheDir;
 qqbot.on('ServerHello', (rawdata) => {
     qqbot.loginQQ();
+    qqbot.appDirectory();
 });
 qqbot.on('LoginQQ', (rawdata) => {
     botQQ = rawdata;
+});
+qqbot.on('AppDirectory', (rawdata) => {
+    cacheDir = path.join(rawdata, 'cache');
 });
 
 /* let penshern = [];
@@ -480,7 +486,11 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                                 // 百分号编码
                                 if (data.match(/\u{D800}/u)) {
                                     data = encodeURI(data.replace(/\u{D800}/gu, ''));
-                                    answerURI.push(`[CQ:image,url=${qqbot.escape(data, true)}]`);
+                                    let filepath = path.join(cacheDir, Date.now().toString());
+                                    let get = await fetch(data);
+                                    let getBuf = await get.buffer();
+                                    fs.writeFileSync(filepath, getBuf);
+                                    answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
                                 } else {
                                     data = encodeURI(data);
                                     answerURI.push(qqbot.escape(data));
