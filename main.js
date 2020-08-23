@@ -1252,7 +1252,7 @@ qqbot.on('GroupMessage', (rawdata) => {
                             if (gAIxxz[rawdata.group] && gAIxxz[rawdata.group].city) {
                                 current.push(`单群城市为「${gAIxxz[rawdata.group].city}」`);
                             };
-                            current.push(`全局语文为「${config.city}」`);
+                            current.push(`全局城市为「${config.city}」`);
                             current = `当前${current.join('，')}。`;
                             reply(rawdata, current);
                         };
@@ -2175,7 +2175,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         if (pAIxxz[rawdata.from] && pAIxxz[rawdata.from].city) {
                             current.push(`单 QQ 城市为「${pAIxxz[rawdata.from].city}」`);
                         };
-                        current.push(`全局语文为「${config.city}」`);
+                        current.push(`全局城市为「${config.city}」`);
                         current = `当前${current.join('，')}。`;
                         reply(rawdata, current);
                     };

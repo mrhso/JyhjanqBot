@@ -1,10 +1,10 @@
 {
-  "name": "Traditional Chinese (Taiwan standard) to Traditional Chinese",
+  "name": "Traditional Chinese (Hong Kong variant) to Traditional Chinese",
   "segmentation": {
     "type": "mmseg",
     "dict": {
       "type": "ocd2",
-      "file": "TWVariantsRevPhrases.ocd2"
+      "file": "HKVariantsRevPhrases.ocd2"
     }
   },
   "conversion_chain": [{
@@ -12,10 +12,10 @@
       "type": "group",
       "dicts": [{
         "type": "ocd2",
-        "file": "TWVariantsRevPhrases.ocd2"
+        "file": "HKVariantsRevPhrases.ocd2"
       }, {
         "type": "ocd2",
-        "file": "TWVariantsRev.ocd2"
+        "file": "HKVariantsRev.ocd2"
       }] 
     }
   }]

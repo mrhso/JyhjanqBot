@@ -6,52 +6,51 @@
 #include "DictConverter.hpp"
 
 // For faster build
-#include "BinaryDict.cpp"
 #include "Config.cpp"
 #include "Conversion.cpp"
 #include "ConversionChain.cpp"
 #include "Converter.cpp"
-#include "DartsDict.cpp"
 #include "Dict.cpp"
 #include "DictConverter.cpp"
 #include "DictEntry.cpp"
 #include "DictGroup.cpp"
+#include "Lexicon.cpp"
+#include "MarisaDict.cpp"
 #include "MaxMatchSegmentation.cpp"
 #include "Segmentation.cpp"
+#include "SerializedValues.cpp"
 #include "TextDict.cpp"
 #include "UTF8Util.cpp"
 
 using namespace opencc;
 
-string ToUtf8String(const v8::Local<v8::Value>& val) {
+std::string ToUtf8String(const v8::Local<v8::Value>& val) {
   Nan::Utf8String utf8(val);
-  return string(*utf8);
+  return std::string(*utf8);
 }
 
 class OpenccBinding : public Nan::ObjectWrap {
   struct ConvertRequest {
     OpenccBinding* instance;
-    string input;
-    string output;
-    Nan::Callback *callback;
+    std::string input;
+    std::string output;
+    Nan::Callback* callback;
     Optional<opencc::Exception> ex;
 
     ConvertRequest()
-        : instance(nullptr), ex(Optional<opencc::Exception>::Null()) {
-    }
+        : instance(nullptr), ex(Optional<opencc::Exception>::Null()) {}
   };
 
   Config config_;
   const ConverterPtr converter_;
- public:
-  explicit OpenccBinding(const string configFileName)
-    : config_(),
-      converter_(config_.NewFromFile(configFileName)) {}
 
-  virtual ~OpenccBinding() {
-  }
+public:
+  explicit OpenccBinding(const std::string configFileName)
+      : config_(), converter_(config_.NewFromFile(configFileName)) {}
 
-  string Convert(const string& input) {
+  virtual ~OpenccBinding() {}
+
+  std::string Convert(const std::string& input) {
     return converter_->Convert(input);
   }
 
@@ -64,7 +63,7 @@ class OpenccBinding : public Nan::ObjectWrap {
 
     try {
       if (info.Length() >= 1 && info[0]->IsString()) {
-        const string configFile = ToUtf8String(info[0]);
+        const std::string configFile = ToUtf8String(info[0]);
         instance = new OpenccBinding(configFile);
       } else {
         instance = new OpenccBinding("s2t.json");
@@ -91,7 +90,8 @@ class OpenccBinding : public Nan::ObjectWrap {
     conv_data->ex = Optional<opencc::Exception>::Null();
     uv_work_t* req = new uv_work_t;
     req->data = conv_data;
-    uv_queue_work(uv_default_loop(), req, DoConvert, (uv_after_work_cb)AfterConvert);
+    uv_queue_work(uv_default_loop(), req, DoConvert,
+                  (uv_after_work_cb)AfterConvert);
 
     return;
   }
@@ -110,16 +110,15 @@ class OpenccBinding : public Nan::ObjectWrap {
     Nan::HandleScope scope;
     ConvertRequest* conv_data = static_cast<ConvertRequest*>(req->data);
     v8::Local<v8::Value> err = Nan::Undefined();
-    v8::Local<v8::String> converted = Nan::New(conv_data->output.c_str()).ToLocalChecked();
+    v8::Local<v8::String> converted =
+        Nan::New(conv_data->output.c_str()).ToLocalChecked();
     if (!conv_data->ex.IsNull()) {
       err = Nan::New(conv_data->ex.Get().what()).ToLocalChecked();
     }
     const unsigned argc = 2;
-    v8::Local<v8::Value> argv[argc] = {
-      err,
-      converted
-    };
-    conv_data->callback->Call(argc, argv);
+    v8::Local<v8::Value> argv[argc] = {err, converted};
+    Nan::AsyncResource resource("opencc:convert-async-cb");
+    conv_data->callback->Call(argc, argv, &resource);
     delete conv_data;
     delete req;
   }
@@ -130,10 +129,11 @@ class OpenccBinding : public Nan::ObjectWrap {
       return;
     }
 
-    OpenccBinding* instance = Nan::ObjectWrap::Unwrap<OpenccBinding>(info.This());
+    OpenccBinding* instance =
+        Nan::ObjectWrap::Unwrap<OpenccBinding>(info.This());
 
-    const string input = ToUtf8String(info[0]);
-    string output;
+    const std::string input = ToUtf8String(info[0]);
+    std::string output;
     try {
       output = instance->Convert(input);
     } catch (opencc::Exception& e) {
@@ -146,17 +146,18 @@ class OpenccBinding : public Nan::ObjectWrap {
   }
 
   static NAN_METHOD(GenerateDict) {
-    if (info.Length() < 4 || !info[0]->IsString() || !info[1]->IsString()
-       || !info[2]->IsString() || !info[3]->IsString()) {
+    if (info.Length() < 4 || !info[0]->IsString() || !info[1]->IsString() ||
+        !info[2]->IsString() || !info[3]->IsString()) {
       Nan::ThrowTypeError("Wrong arguments");
       return;
     }
-    const string inputFileName = ToUtf8String(info[0]);
-    const string outputFileName = ToUtf8String(info[1]);
-    const string formatFrom = ToUtf8String(info[2]);
-    const string formatTo = ToUtf8String(info[3]);
+    const std::string inputFileName = ToUtf8String(info[0]);
+    const std::string outputFileName = ToUtf8String(info[1]);
+    const std::string formatFrom = ToUtf8String(info[2]);
+    const std::string formatTo = ToUtf8String(info[3]);
     try {
-      opencc::ConvertDictionary(inputFileName, outputFileName, formatFrom, formatTo);
+      opencc::ConvertDictionary(inputFileName, outputFileName, formatFrom,
+                                formatTo);
     } catch (opencc::Exception& e) {
       Nan::ThrowError(e.what());
     }
@@ -164,7 +165,8 @@ class OpenccBinding : public Nan::ObjectWrap {
 
   static NAN_MODULE_INIT(Init) {
     // Prepare constructor template
-    v8::Local<v8::FunctionTemplate> tpl = Nan::New<v8::FunctionTemplate>(OpenccBinding::New);
+    v8::Local<v8::FunctionTemplate> tpl =
+        Nan::New<v8::FunctionTemplate>(OpenccBinding::New);
     tpl->SetClassName(Nan::New("Opencc").ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
     // Methods
