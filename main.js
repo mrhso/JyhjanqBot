@@ -479,8 +479,8 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                             if (data.match(/https?:\/\//u)) {
                                 // 百分号编码
                                 if (data.match(/\u{D800}/u)) {
-                                    data = `[CQ:image,url=${encodeURI(data.replace(/\u{D800}/gu, ''))}]`;
-                                    answerURI.push(data);
+                                    data = encodeURI(data.replace(/\u{D800}/gu, ''));
+                                    answerURI.push(`[CQ:image,url=${qqbot.escape(data, true)}]`);
                                 } else {
                                     data = encodeURI(data);
                                     answerURI.push(qqbot.escape(data));
