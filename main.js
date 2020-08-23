@@ -418,15 +418,22 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
                 };
             };
         } else if (chunk.xxztype === 'weather' && chunk.datatype === 'weather'){
-            let info = [chunk.city];
+            if (chunk.city) {
+                answer.push(chunk.city);
+            };
             for (let data of chunk.data) {
-                info.push([data.date, data.temperature].filter((value) => value).join('　'));
-                info.push([data.weather, data.wind].filter((value) => value).join('　'));
+                let line1 = [data.date, data.temperature].filter((value) => value).join('　');
+                let line2 = [data.weather, data.wind].filter((value) => value).join('　');
+                if (line1) {
+                    answer.push(line1);
+                };
+                if (line2) {
+                    answer.push(line2);
+                };
                 if (data.dayPictureUrl) {
-                    info.push(`\u{D800}${data.dayPictureUrl}`);
+                    answer.push(`\u{D800}${data.dayPictureUrl}`);
                 };
             };
-            answer.push(...info.filter((value) => value));
         } else if (chunk.data && chunk.data.text1) {
             answer.push(chunk.data.text1);
         } else if (Array.isArray(chunk.data)) {
