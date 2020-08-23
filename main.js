@@ -2138,6 +2138,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         let input;
         let str;
         let output;
+        let answer;
         switch (mode) {
             /* case 'passive':
                 let random = daapen();
@@ -2146,7 +2147,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
 
             case 'chishoh':
                 question = rawdata.raw;
-                let answer = jinkohChishoh(question);
+                answer = jinkohChishoh(question);
                 reply(rawdata, answer, { noEscape: true });
                 break;
 
