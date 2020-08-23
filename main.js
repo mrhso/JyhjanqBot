@@ -2,8 +2,6 @@
 
 const QQBot = require('./lib/QQBot.js');
 const { toLF, toCRLF, TextEncoder } = require('ishisashiencoding');
-const http = require('http');
-const https = require('https');
 const path = require('path');
 const fs = require('fs');
 const OpenCC = require('./lib/OpenCC/opencc.js');
@@ -349,7 +347,7 @@ const jinkohChishoh = (question) => {
     .replace(/什么/gu, '竞选').replace(/什麼/gu, '競選');
 };
 
-const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
+const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => {
     let uuid = AIxxzUUID[rawdata.from];
     if (!uuid) {
         uuid = uuidv4();
@@ -358,175 +356,155 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
     };
 
     if (rawdata.extra.images.length === 0) {
-        let postData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
-        let reqUK = http.request(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) } }, (res) => {
-            // 用数组装入 chunk
-            let chunks = [];
-            // 接收 chunk
-            res.on('data', (chunk) => {
-                chunks.push(chunk);
-            });
-            // 接收完毕
-            res.on('end', () => {
-                // 将 chunk 合并起来，读为 JSON
-                let chunk = JSON.parse(Buffer.concat(chunks).toString());
-                // 请求回答
-                let postData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(chunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
-                let reqAnswer = http.request(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData) } }, (res) => {
-                    let chunks = [];
-                    res.on('data', (chunk) => {
-                        chunks.push(chunk);
-                    });
-                    res.on('end', async () => {
-                        let chunk = Buffer.concat(chunks).toString();
-                        // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
-                        chunk = chunk.substring(chunk.search(/\{/gu));
-                        try {
-                            chunk = JSON.parse(chunk);
-                        } catch (ex) {
-                            conLog(ex, true);
+        let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
+        let getUK = await fetch(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
+        let getUKBuf = await getUK.buffer();
+        let getUKChunk = JSON.parse(getUKBuf.toString());
+        // 请求回答
+        let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
+        let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
+        let getAnswerBuf = await getAnswer.buffer();
+        let chunk = getAnswerBuf.toString();
+        // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
+        chunk = chunk.substring(chunk.search(/\{/gu));
+        try {
+            chunk = JSON.parse(chunk);
+        } catch (ex) {
+            conLog(ex, true);
+        };
+        // 先用数组存储回答，因为小信子的返回格式比较复杂
+        let answer = [];
+        // 排序优先度
+        let order = ['title', 'description', 'picurl', 'link'];
+        const sort = (a, b) => {
+            let ia = order.indexOf(a);
+            let ib = order.indexOf(b);
+            if (ia === ib) {
+                return 0;
+            };
+            if (ia === -1) {
+                return 1;
+            };
+            if (ib === -1) {
+                return -1;
+            };
+            if (ia < ib) {
+                return -1;
+            };
+            if (ia > ib) {
+                return 1;
+            };
+        };
+        // 音乐连链接都没返回，所以没有处理的必要
+        if (chunk.xxztype === 'music') {
+            return;
+        // 图片这个比较特殊，会给出重复链接，所以筛掉
+        } else if (chunk.xxztype === 'image') {
+            if (chunk.datatype === 'text') {
+                answer.push(chunk.data);
+            } else {
+                for (let data of chunk.data) {
+                    let list = [];
+                    for (let data2 in data) {
+                        if (data2 !== 'picurl') {
+                            list.push(data2);
                         };
-                        // 先用数组存储回答，因为小信子的返回格式比较复杂
-                        let answer = [];
-                        // 排序优先度
-                        let order = ['title', 'description', 'picurl', 'link'];
-                        const sort = (a, b) => {
-                            let ia = order.indexOf(a);
-                            let ib = order.indexOf(b);
-                            if (ia === ib) {
-                                return 0;
-                            };
-                            if (ia === -1) {
-                                return 1;
-                            };
-                            if (ib === -1) {
-                                return -1;
-                            };
-                            if (ia < ib) {
-                                return -1;
-                            };
-                            if (ia > ib) {
-                                return 1;
-                            };
-                        };
-                        // 音乐连链接都没返回，所以没有处理的必要
-                        if (chunk.xxztype === 'music') {
-                            return;
-                        // 图片这个比较特殊，会给出重复链接，所以筛掉
-                        } else if (chunk.xxztype === 'image') {
-                            if (chunk.datatype === 'text') {
-                                answer.push(chunk.data);
-                            } else {
-                                for (let data of chunk.data) {
-                                    let list = [];
-                                    for (let data2 in data) {
-                                        if (data2 !== 'picurl') {
-                                            list.push(data2);
-                                        };
-                                    };
-                                    list.sort(sort);
-                                    for (let data2 of list) {
-                                        if (data2 === 'link') {
-                                            // 以 U+D800 作为图片标记
-                                            answer.push(`\u{D800}${data.link}`);
-                                        } else {
-                                            answer.push(data[data2]);
-                                        };
-                                    };
-                                };
-                            };
-                        } else if (chunk.data && chunk.data.text1) {
-                            answer.push(chunk.data.text1);
-                        } else if (Array.isArray(chunk.data)) {
-                            for (let data of chunk.data) {
-                                // 有时数组里面还包着对象
-                                let list = [];
-                                for (let data2 in data) {
-                                    if (!data2.match(/BBSCOLN/u)) {
-                                        list.push(data2);
-                                    };
-                                };
-                                list.sort(sort);
-                                for (let data2 of list) {
-                                    if (data2 === 'picurl') {
-                                        answer.push(`\u{D800}${data.picurl}`);
-                                    } else {
-                                        answer.push(data[data2]);
-                                    };
-                                };
-                            };
-                        } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
-                            let list = [];
-                            for (let data in chunk.data) {
-                                if (!data.match(/BBSCOLN/u)) {
-                                    list.push(data);
-                                };
-                            };
-                            list.sort(sort);
-                            for (let data of list) {
-                                if (data === 'picurl') {
-                                    answer.push(`\u{D800}${chunk.data.picurl}`);
-                                } else {
-                                    answer.push(chunk.data[data]);
-                                };
-                            };
-                        } else if (!chunk.data) {
-                            if (chunk.note) {
-                                answer.push(chunk.note);
-                            } else {
-                                return;
-                            };
+                    };
+                    list.sort(sort);
+                    for (let data2 of list) {
+                        if (data2 === 'link') {
+                            // 以 U+D800 作为图片标记
+                            answer.push(`\u{D800}${data.link}`);
                         } else {
-                            answer.push(chunk.data);
+                            answer.push(data[data2]);
                         };
-                        // 处理 URI……以及图片？
-                        let answerURI = [];
-                        for (let data of answer) {
-                            if (data.match(/https?:\/\//u)) {
-                                // 百分号编码
-                                if (data.match(/\u{D800}/u)) {
-                                    data = encodeURI(data.replace(/\u{D800}/gu, ''));
-                                    let filepath = path.join(cacheDir, Date.now().toString());
-                                    let get = await fetch(data);
-                                    let getBuf = await get.buffer();
-                                    fs.writeFileSync(filepath, getBuf);
-                                    answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
-                                } else {
-                                    data = encodeURI(data);
-                                    answerURI.push(qqbot.escape(data));
-                                };
-                            } else {
-                                answerURI.push(qqbot.escape(data));
-                            };
-                        };
-                        // 将数组转为换行字符串
-                        // 注意小信子本身返回的数据就掺杂着 CR LF
-                        answer = toLF(answerURI.join('\n'));
-                        callback(answer);
-                        // 如果是提醒的话，处理提醒时间
-                        if (chunk.xxztype === 'remind') {
-                            // 处理小信子返回的时间，注意时区为 UTC+8
-                            let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || '08:00:00'} UTC+0800`);
-                            let remindMessage = qqbot.escape(chunk.semantic.message) || '';
-                            if (lang === 'zh_TW' || lang === 'zh_HK') {
-                                remindMessage = `提醒時間到了！${remindMessage}`;
-                            } else {
-                                remindMessage = `提醒时间到了！${remindMessage}`;
-                            };
-                            if (!(chunk.semantic.message === '提醒時間最短為1分鐘！' || chunk.semantic.message === '提醒时间最短为1分钟！')) {
-                                // 获取当前时间，并与小信子返回的时间相减，然后延时
-                                let delay = remindTime - new Date();
-                                await sleep(delay);
-                            };
-                        };
-                    });
-                });
-                reqAnswer.write(postData);
-                reqAnswer.end();
-            });
-        });
-        reqUK.write(postData);
-        reqUK.end();
+                    };
+                };
+            };
+        } else if (chunk.data && chunk.data.text1) {
+            answer.push(chunk.data.text1);
+        } else if (Array.isArray(chunk.data)) {
+            for (let data of chunk.data) {
+                // 有时数组里面还包着对象
+                let list = [];
+                for (let data2 in data) {
+                    if (!data2.match(/BBSCOLN/u)) {
+                        list.push(data2);
+                    };
+                };
+                list.sort(sort);
+                for (let data2 of list) {
+                    if (data2 === 'picurl') {
+                        answer.push(`\u{D800}${data.picurl}`);
+                    } else {
+                        answer.push(data[data2]);
+                    };
+                };
+            };
+        } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
+            let list = [];
+            for (let data in chunk.data) {
+                if (!data.match(/BBSCOLN/u)) {
+                    list.push(data);
+                };
+            };
+            list.sort(sort);
+            for (let data of list) {
+                if (data === 'picurl') {
+                    answer.push(`\u{D800}${chunk.data.picurl}`);
+                } else {
+                    answer.push(chunk.data[data]);
+                };
+            };
+        } else if (!chunk.data) {
+            if (chunk.note) {
+                answer.push(chunk.note);
+            } else {
+                return;
+            };
+        } else {
+            answer.push(chunk.data);
+        };
+        // 处理 URI……以及图片？
+        let answerURI = [];
+        for (let data of answer) {
+            if (data.match(/https?:\/\//u)) {
+                // 百分号编码
+                if (data.match(/\u{D800}/u)) {
+                    data = encodeURI(data.replace(/\u{D800}/gu, ''));
+                    let filepath = path.join(cacheDir, Date.now().toString());
+                    let get = await fetch(new URL(data));
+                    let getBuf = await get.buffer();
+                    fs.writeFileSync(filepath, getBuf);
+                    answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
+                } else {
+                    data = encodeURI(data);
+                    answerURI.push(qqbot.escape(data));
+                };
+            } else {
+                answerURI.push(qqbot.escape(data));
+            };
+        };
+        // 将数组转为换行字符串
+        // 注意小信子本身返回的数据就掺杂着 CR LF
+        answer = toLF(answerURI.join('\n'));
+        callback(answer);
+        // 如果是提醒的话，处理提醒时间
+        if (chunk.xxztype === 'remind') {
+            // 处理小信子返回的时间，注意时区为 UTC+8
+            let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || '08:00:00'} UTC+0800`);
+            let remindMessage = qqbot.escape(chunk.semantic.message) || '';
+            if (lang === 'zh_TW' || lang === 'zh_HK') {
+                remindMessage = `提醒時間到了！${remindMessage}`;
+            } else {
+                remindMessage = `提醒时间到了！${remindMessage}`;
+            };
+            if (!(chunk.semantic.message === '提醒時間最短為1分鐘！' || chunk.semantic.message === '提醒时间最短为1分钟！')) {
+                // 获取当前时间，并与小信子返回的时间相减，然后延时
+                let delay = remindTime - new Date();
+                await sleep(delay);
+            };
+        };
     } else if (rawdata.extra.images.join(',').match(/\.gif/u)) {
         let answer;
         if (lang === 'zh_TW' || lang === 'zh_HK') {
@@ -608,7 +586,7 @@ const alphaGong = () => {
 
 const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
-const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
+const googleTranslate = async (text, src = 'auto', tgt = 'en', callback) => {
     // 根据 tkk 获取 tk，高能
     const getTk = (text, tkk) => {
         // 我只好用 Nazo 表达我的绝望
@@ -662,42 +640,30 @@ const googleTranslate = (text, src = 'auto', tgt = 'en', callback) => {
         return `${e}.${e ^ tkkInt}`;
     };
     // 开始请求
-    https.get(new URL('https://translate.google.cn/'), (res) => {
-        let chunks = [];
-        res.on('data', (chunk) => {
-            chunks.push(chunk);
-        });
-        res.on('end', () => {
-            let chunk = Buffer.concat(chunks).toString();
-            let tkk = chunk.match(/tkk:'(.*?)'/u)[1];
-            let tk = getTk(text, tkk);
-            https.get(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl=${encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}&q=${encodeURIComponent(text)}`), (res) => {
-                let chunks = [];
-                res.on('data', (chunk) => {
-                    chunks.push(chunk);
-                });
-                res.on('end', () => {
-                    let chunk = Buffer.concat(chunks).toString();
-                    // 读入 JSON
-                    try {
-                        chunk = JSON.parse(chunk);
-                    } catch (ex) {
-                        conLog(ex, true);
-                    };
-                    let output = '';
-                    for (let result of chunk[0]) {
-                        if (result[0] !== null) {
-                            output += result[0];
-                        };
-                    };
-                    callback(output);
-                });
-            });
-        });
-    });
+    let getToken = await fetch(new URL('https://translate.google.cn/'));
+    let getTokenBuf = await getToken.buffer();
+    let getTokenChunk = getTokenBuf.toString();
+    let tkk = getTokenChunk.match(/tkk:'(.*?)'/u)[1];
+    let tk = getTk(text, tkk);
+    let get = await fetch(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl=${encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}&q=${encodeURIComponent(text)}`));
+    let getBuf = await get.buffer();
+    let chunk = getBuf.toString();
+    // 读入 JSON
+    try {
+        chunk = JSON.parse(chunk);
+    } catch (ex) {
+        conLog(ex, true);
+    };
+    let output = '';
+    for (let result of chunk[0]) {
+        if (result[0] !== null) {
+            output += result[0];
+        };
+    };
+    callback(output);
 };
 
-const baiduFanyi = (text, src = 'auto', tgt = 'en', callback) => {
+const baiduFanyi = async (text, src = 'auto', tgt = 'en', callback) => {
     // 百度翻译的 sign 算法源于 Google 翻译，但更为キチガイ
     const getSign = (text, gtk) => {
         const nazo = (a, b) => {
@@ -769,75 +735,48 @@ const baiduFanyi = (text, src = 'auto', tgt = 'en', callback) => {
         return `${l}.${l ^ gtkInt}`;
     };
     // 开始请求
-    https.get(new URL('https://fanyi.baidu.com/'), (res) => {
-        let chunks = [];
-        res.on('data', (chunk) => {
-            chunks.push(chunk);
-        });
-        res.on('end', () => {
-            // 百度翻译最坑的一点在于要带 Cookie 请求，得到的 Token 才有效，所以要先拿到 Cookie 再重新请求
-            let cookie = res.headers['set-cookie'];
-            https.get(new URL('https://fanyi.baidu.com/'), { headers: { 'Cookie': cookie } }, (res) => {
-                let chunks = [];
-                res.on('data', (chunk) => {
-                    chunks.push(chunk);
-                });
-                res.on('end', () => {
-                    let chunk = Buffer.concat(chunks).toString();
-                    let token = chunk.match(/token: '(.*?)'/u)[1];
-                    // gtk 类似于 Google 翻译的 tkk
-                    let gtk = chunk.match(/gtk = '(.*?)'/u)[1];
-                    // sign 类似于 Google 翻译的 tk
-                    let sign = getSign(text, gtk);
-                    let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
-                    let req = https.request(new URL('https://fanyi.baidu.com/v2transapi'), { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData), 'Cookie': cookie } }, (res) => {
-                        let chunks = [];
-                        res.on('data', (chunk) => {
-                            chunks.push(chunk);
-                        });
-                        res.on('end', () => {
-                            let chunk = Buffer.concat(chunks).toString();
-                            // 读入 JSON
-                            try {
-                                chunk = JSON.parse(chunk);
-                            } catch (ex) {
-                                conLog(ex, true);
-                            };
-                            let output = [];
-                            if (chunk.trans_result) {
-                                for (let result of chunk.trans_result.data) {
-                                    output.push(result.dst);
-                                };
-                            };
-                            output = output.join('\n');
-                            callback(output);
-                        });
-                    });
-                    req.write(postData);
-                    req.end();
-                });
-            });
-        });
-    });
+    let getCookie = await fetch(new URL('https://fanyi.baidu.com/'));
+    // 百度翻译最坑的一点在于要带 Cookie 请求，得到的 Token 才有效，所以要先拿到 Cookie 再重新请求
+    let cookie = getCookie.headers.raw()['set-cookie'];
+    let getToken = await fetch(new URL('https://fanyi.baidu.com/'), { headers: { 'Cookie': cookie } });
+    let getTokenBuf = await getToken.buffer();
+    let getTokenChunk = getTokenBuf.toString();
+    let token = getTokenChunk.match(/token: '(.*?)'/u)[1];
+    // gtk 类似于 Google 翻译的 tkk
+    let gtk = getTokenChunk.match(/gtk = '(.*?)'/u)[1];
+    // sign 类似于 Google 翻译的 tk
+    let sign = getSign(text, gtk);
+    let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
+    let get = await fetch(new URL('https://fanyi.baidu.com/v2transapi'), { method: 'POST', body: postData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData), 'Cookie': cookie } });
+    let getBuf = await get.buffer();
+    let chunk = getBuf.toString();
+    // 读入 JSON
+    try {
+        chunk = JSON.parse(chunk);
+    } catch (ex) {
+        conLog(ex, true);
+    };
+    let output = [];
+    if (chunk.trans_result) {
+        for (let result of chunk.trans_result.data) {
+            output.push(result.dst);
+        };
+    };
+    output = output.join('\n');
+    callback(output);
 };
 
-const couplet = (text, callback) => {
-    https.get(new URL(`https://ai-backend.binwang.me/chat/couplet/${encodeURIComponent(text)}`), (res) => {
-        let chunks = [];
-        res.on('data', (chunk) => {
-            chunks.push(chunk);
-        });
-        res.on('end', () => {
-            let chunk = Buffer.concat(chunks).toString();
-            // 读入 JSON
-            try {
-                chunk = JSON.parse(chunk);
-            } catch (ex) {
-                conLog(ex, true);
-            };
-            callback(chunk.output);
-        });
-    });
+const couplet = async (text, callback) => {
+    let get = await fetch(new URL(`https://ai-backend.binwang.me/chat/couplet/${encodeURIComponent(text)}`));
+    let getBuf = await get.buffer();
+    let chunk = getBuf.toString();
+    // 读入 JSON
+    try {
+        chunk = JSON.parse(chunk);
+    } catch (ex) {
+        conLog(ex, true);
+    };
+    callback(chunk.output);
 };
 
 const charCode = (str) => {
