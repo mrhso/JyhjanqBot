@@ -2713,7 +2713,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
 
             case 'wtfurry':
                 let sentence = rawdata.raw;
-                str = wtfurry(question);
+                str = wtfurry(sentence);
                 reply(rawdata, str, { noEscape: true });
                 break;
 
