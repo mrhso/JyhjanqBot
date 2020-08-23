@@ -365,7 +365,6 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
         let getAnswerBuf = await getAnswer.buffer();
         let chunk = getAnswerBuf.toString();
-        console.log(chunk)
         // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
         chunk = chunk.substring(chunk.search(/\{/gu));
         try {
