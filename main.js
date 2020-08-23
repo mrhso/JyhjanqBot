@@ -436,7 +436,7 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                                 // 有时数组里面还包着对象
                                 let list = [];
                                 for (let data2 in data) {
-                                    if (!data2.match(/BBSCOLN/gu)) {
+                                    if (!data2.match(/BBSCOLN/u)) {
                                         list.push(data2);
                                     };
                                 };
@@ -452,7 +452,7 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                         } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
                             let list = [];
                             for (let data in chunk.data) {
-                                if (!data.match(/BBSCOLN/gu)) {
+                                if (!data.match(/BBSCOLN/u)) {
                                     list.push(data);
                                 };
                             };
@@ -1354,7 +1354,7 @@ qqbot.on('GroupMessage', (rawdata) => {
 
             // 某致郁游戏，复活一时爽，一直复活一直爽
             case 'pet':
-                if (rawdata.extra.ats.includes(botQQ) || rawdata.raw.match(/\[CQ:hb,.*?\]/gu)) {
+                if (rawdata.extra.ats.includes(botQQ) || rawdata.raw.match(/\[CQ:hb,.*?\]/u)) {
                     let input = rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '');
                     let output = pet(rawdata.from, input);
                     reply(rawdata, output, { noEscape: true });
