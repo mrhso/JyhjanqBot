@@ -586,7 +586,7 @@ const alphaGong = () => {
 
 const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
-const googleTranslate = async (text, src = 'auto', tgt = 'en', callback) => {
+const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
     // 根据 tkk 获取 tk，高能
     const getTk = (text, tkk) => {
         // 我只好用 Nazo 表达我的绝望
@@ -660,10 +660,10 @@ const googleTranslate = async (text, src = 'auto', tgt = 'en', callback) => {
             output += result[0];
         };
     };
-    callback(output);
+    return output;
 };
 
-const baiduFanyi = async (text, src = 'auto', tgt = 'en', callback) => {
+const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
     // 百度翻译的 sign 算法源于 Google 翻译，但更为キチガイ
     const getSign = (text, gtk) => {
         const nazo = (a, b) => {
@@ -763,10 +763,10 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en', callback) => {
         };
     };
     output = output.join('\n');
-    callback(output);
+    return output;
 };
 
-const couplet = async (text, callback) => {
+const couplet = async (text) => {
     let get = await fetch(new URL(`https://ai-backend.binwang.me/chat/couplet/${encodeURIComponent(text)}`));
     let getBuf = await get.buffer();
     let chunk = getBuf.toString();
@@ -776,7 +776,7 @@ const couplet = async (text, callback) => {
     } catch (ex) {
         conLog(ex, true);
     };
-    callback(chunk.output);
+    return chunk.output;
 };
 
 const charCode = (str) => {
@@ -1106,7 +1106,7 @@ const wtfurry = (sentence) => {
 } else { */
 let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、poem、jiowjeh、wtfurry';
 // 群聊
-qqbot.on('GroupMessage', (rawdata) => {
+qqbot.on('GroupMessage', async (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.pModeSwitch, 'u'))) {
         let newMode = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').replace(new RegExp(config.pModeSwitch, 'gu'), '')).text;
         if (newMode) {
@@ -1461,9 +1461,8 @@ qqbot.on('GroupMessage', (rawdata) => {
                             tgt = config.gtTgt || 'en';
                         };
                         input = qqbot.parseMessage(input).text;
-                        googleTranslate(input, src, tgt, (output) => {
-                            reply(rawdata, output);
-                        });
+                        let output = await googleTranslate(input, src, tgt);
+                        reply(rawdata, output);
                     };
                 };
                 break;
@@ -1599,11 +1598,9 @@ qqbot.on('GroupMessage', (rawdata) => {
                             tgt = config.gtTgt || 'en';
                         };
                         input = qqbot.parseMessage(input).text;
-                        googleTranslate(input, src, tgt, (output) => {
-                            googleTranslate(output, tgt, src, (output) => {
-                                reply(rawdata, output);
-                            });
-                        });
+                        let output = await googleTranslate(input, src, tgt);
+                        output = await googleTranslate(output, tgt, src);
+                        reply(rawdata, output);
                     };
                 };
                 break;
@@ -1613,9 +1610,8 @@ qqbot.on('GroupMessage', (rawdata) => {
             case 'couplet':
                 if (rawdata.extra.ats.includes(botQQ)) {
                     let input = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
-                    couplet(input, (output) => {
-                        reply(rawdata, output);
-                    });
+                    let output = await couplet(input);
+                    reply(rawdata, output);
                 };
                 break;
 
@@ -1757,9 +1753,8 @@ qqbot.on('GroupMessage', (rawdata) => {
                             tgt = config.gtTgt || 'en';
                         };
                         input = qqbot.parseMessage(input).text;
-                        baiduFanyi(input, src, tgt, (output) => {
-                            reply(rawdata, output);
-                        });
+                        let output = await baiduFanyi(input, src, tgt);
+                        reply(rawdata, output);
                     };
                 };
                 break;
@@ -1894,11 +1889,9 @@ qqbot.on('GroupMessage', (rawdata) => {
                             tgt = config.gtTgt || 'en';
                         };
                         input = qqbot.parseMessage(input).text;
-                        baiduFanyi(input, src, tgt, (output) => {
-                            baiduFanyi(output, tgt, src, (output) => {
-                                reply(rawdata, output);
-                            });
-                        });
+                        let output = await baiduFanyi(input, src, tgt);
+                        output = await baiduFanyi(output, tgt, src);
+                        reply(rawdata, output);
                     };
                 };
                 break;
@@ -2144,6 +2137,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         let question;
         let input;
         let str;
+        let output;
         switch (mode) {
             /* case 'passive':
                 let random = daapen();
@@ -2234,7 +2228,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
 
             case 'pet':
                 input = rawdata.raw;
-                let output = pet(rawdata.from, input);
+                output = pet(rawdata.from, input);
                 reply(rawdata, output, { noEscape: true });
                 break;
 
@@ -2333,9 +2327,8 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         tgt = config.gtTgt || 'en';
                     };
                     input = qqbot.parseMessage(input).text;
-                    googleTranslate(input, src, tgt, (output) => {
-                        reply(rawdata, output);
-                    });
+                    output = await googleTranslate(input, src, tgt);
+                    reply(rawdata, output);
                 };
                 break;
 
@@ -2424,19 +2417,16 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         tgt = config.gtTgt || 'en';
                     };
                     input = qqbot.parseMessage(input).text;
-                    googleTranslate(input, src, tgt, (output) => {
-                        googleTranslate(output, tgt, src, (output) => {
-                            reply(rawdata, output);
-                        });
-                    });
+                    output = await googleTranslate(input, src, tgt);
+                    output = await googleTranslate(output, tgt, src);
+                    reply(rawdata, output);
                 };
                 break;
 
             case 'couplet':
                 input = rawdata.text;
-                couplet(input, (output) => {
-                    reply(rawdata, output);
-                });
+                output = await couplet(input);
+                reply(rawdata, output);
                 break;
 
             case 'code':
@@ -2530,9 +2520,8 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         tgt = config.gtTgt || 'en';
                     };
                     input = qqbot.parseMessage(input).text;
-                    baiduFanyi(input, src, tgt, (output) => {
-                        reply(rawdata, output);
-                    });
+                    output = await baiduFanyi(input, src, tgt);
+                    reply(rawdata, output);
                 };
                 break;
 
@@ -2621,11 +2610,9 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                         tgt = config.gtTgt || 'en';
                     };
                     input = qqbot.parseMessage(input).text;
-                    baiduFanyi(input, src, tgt, (output) => {
-                        baiduFanyi(output, tgt, src, (output) => {
-                            reply(rawdata, output);
-                        });
-                    });
+                    output = await baiduFanyi(input, src, tgt);
+                    output = await baiduFanyi(output, tgt, src);
+                    reply(rawdata, output);
                 };
                 break;
 
