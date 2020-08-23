@@ -365,6 +365,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
         let getAnswerBuf = await getAnswer.buffer();
         let chunk = getAnswerBuf.toString();
+        console.log(chunk)
         // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
         chunk = chunk.substring(chunk.search(/\{/gu));
         try {
@@ -398,25 +399,6 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         // 音乐连链接都没返回，所以没有处理的必要
         if (chunk.xxztype === 'music') {
             return;
-        // 图片这个比较特殊，会给出重复链接，所以筛掉
-        } else if (chunk.xxztype === 'image' && Array.isArray(chunk.data)) {
-            for (let data of chunk.data) {
-                let list = [];
-                for (let data2 in data) {
-                    if (data2 !== 'picurl') {
-                        list.push(data2);
-                    };
-                };
-                list.sort(sort);
-                for (let data2 of list) {
-                    if (data2 === 'link') {
-                        // 以 U+D800 作为图片标记
-                        answer.push(`\u{D800}${data.link}`);
-                    } else {
-                        answer.push(data[data2]);
-                    };
-                };
-            };
         } else if (chunk.xxztype === 'weather' && chunk.datatype === 'weather'){
             if (chunk.city) {
                 answer.push(chunk.city);
@@ -441,7 +423,8 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
                 // 有时数组里面还包着对象
                 let list = [];
                 for (let data2 in data) {
-                    if (!data2.match(/BBSCOLN/u)) {
+                    // 如果链接与图片重复，筛掉
+                    if (!data2.match(/BBSCOLN/u) && !(data.link === data.picurl && data2 === 'link')) {
                         list.push(data2);
                     };
                 };
@@ -457,7 +440,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
             let list = [];
             for (let data in chunk.data) {
-                if (!data.match(/BBSCOLN/u)) {
+                if (!data.match(/BBSCOLN/u) && !(chunk.data.link === chunk.data.picurl && data === 'link')) {
                     list.push(data);
                 };
             };
