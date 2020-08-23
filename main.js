@@ -1140,6 +1140,19 @@ qqbot.on('GroupMessage', (rawdata) => {
             current = `当前${current.join('，')}。`;
             reply(rawdata, `${current}\n${modeList}`);
         };
+    } else if (config.forceWriteSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').search(new RegExp(config.forceWriteSwitch, 'gu')) > -1) {
+        writeConfig(config, './config.js');
+        writeConfig(pMode, './data/mode.private.js');
+        writeConfig(gMode, './data/mode.group.js');
+        writeConfig(petList, './data/pet.list.js');
+        writeConfig(pGt, './data/gt.private.js');
+        writeConfig(gGt, './data/gt.group.js');
+        writeConfig(pAIxxz, './data/AIxxz.private.js');
+        writeConfig(gAIxxz, './data/AIxxz.group.js');
+        writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
+        writeConfig(pPoem, './data/poem.private.js');
+        writeConfig(gPoem, './data/poem.group.js');
+        reply(rawdata, '所有数据已强制写入。');
     } else {
         let mode;
         if (pMode[rawdata.from]) {
@@ -2101,6 +2114,19 @@ qqbot.on('PrivateMessage', async (rawdata) => {
             current = `当前${current.join('，')}。`;
             reply(rawdata, `${current}\n${modeList}`);
         };
+    } else if (config.forceWriteSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+        writeConfig(config, './config.js');
+        writeConfig(pMode, './data/mode.private.js');
+        writeConfig(gMode, './data/mode.group.js');
+        writeConfig(petList, './data/pet.list.js');
+        writeConfig(pGt, './data/gt.private.js');
+        writeConfig(gGt, './data/gt.group.js');
+        writeConfig(pAIxxz, './data/AIxxz.private.js');
+        writeConfig(gAIxxz, './data/AIxxz.group.js');
+        writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
+        writeConfig(pPoem, './data/poem.private.js');
+        writeConfig(gPoem, './data/poem.group.js');
+        reply(rawdata, '所有数据已强制写入。');
     } else {
         let mode;
         if (pMode[rawdata.from]) {
