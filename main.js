@@ -466,15 +466,18 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         for (let data of answer) {
             if (data.match(/https?:\/\//u)) {
                 // 百分号编码
+                // 小信子所给的 URI 格式暂时不明
+                // 遇到过汉字未进行百分号编码的情形
+                // 但是一些 ASCII 内字符似乎进行了百分号编码？
                 if (data.match(/\u{D800}/u)) {
-                    data = encodeURI(data.replace(/\u{D800}/gu, ''));
+                    data = encodeURI(decodeURI(data.replace(/\u{D800}/gu, '')));
                     let filepath = path.join(cacheDir, Date.now().toString());
                     let get = await fetch(new URL(data));
                     let getBuf = await get.buffer();
                     fs.writeFileSync(filepath, getBuf);
                     answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
                 } else {
-                    data = encodeURI(data);
+                    data = encodeURI(decodeURI(data));
                     answerURI.push(qqbot.escape(data));
                 };
             } else {
