@@ -382,6 +382,27 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                         };
                         // 先用数组存储回答，因为小信子的返回格式比较复杂
                         let answer = [];
+                        // 排序优先度
+                        let order = ['title', 'description', 'picurl', 'link'];
+                        const sort = (a, b) => {
+                            let ia = order.indexOf(a);
+                            let ib = order.indexOf(b);
+                            if (ia === ib) {
+                                return 0;
+                            };
+                            if (ia === -1) {
+                                return 1;
+                            };
+                            if (ib === -1) {
+                                return -1;
+                            };
+                            if (ia < ib) {
+                                return -1;
+                            };
+                            if (ia > ib) {
+                                return 1;
+                            };
+                        };
                         // 音乐连链接都没返回，所以没有处理的必要
                         if (chunk.xxztype === 'music') {
                             return;
@@ -391,10 +412,15 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                                 answer.push(chunk.data);
                             } else {
                                 for (let data of chunk.data) {
+                                    let list = [];
                                     for (let data2 in data) {
                                         if (data2 !== 'picurl') {
-                                            answer.push(data[data2]);
+                                            list.push(data2);
                                         };
+                                    };
+                                    list.sort(sort);
+                                    for (let data2 of list) {
+                                        answer.push(data[data2]);
                                     };
                                 };
                             };
@@ -403,12 +429,26 @@ const AIxxz = (rawdata, question, lang = 'zh-CN', city = '', callback) => {
                         } else if (Array.isArray(chunk.data)) {
                             for (let data of chunk.data) {
                                 // 有时数组里面还包着对象
+                                let list = [];
                                 for (let data2 in data) {
+                                    if (!data2.match(/BBSCOLN/g)) {
+                                        list.push(data2);
+                                    };
+                                };
+                                list.sort(sort);
+                                for (let data2 of list) {
                                     answer.push(data[data2]);
                                 };
                             };
                         } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
+                            let list = [];
                             for (let data in chunk.data) {
+                                if (!data.match(/BBSCOLN/g)) {
+                                    list.push(data);
+                                };
+                            };
+                            list.sort(sort);
+                            for (let data of list) {
                                 answer.push(chunk.data[data]);
                             };
                         } else if (!chunk.data) {
@@ -2114,7 +2154,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
             current = `当前${current.join('，')}。`;
             reply(rawdata, `${current}\n${modeList}`);
         };
-    } else if (config.forceWriteSwitch && rawdata.raw.search(new RegExp(config.modeSwitch, 'gu')) > -1) {
+    } else if (config.forceWriteSwitch && rawdata.raw.search(new RegExp(config.forceWriteSwitch, 'gu')) > -1) {
         writeConfig(config, './config.js');
         writeConfig(pMode, './data/mode.private.js');
         writeConfig(gMode, './data/mode.group.js');
