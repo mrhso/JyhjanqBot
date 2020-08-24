@@ -466,17 +466,21 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
             if (data.match(/https?:\/\//u)) {
                 // 百分号编码
                 // 小信子所给的 URI 格式暂时不明
-                // 遇到过汉字未进行百分号编码的情形
-                // 但是一些 ASCII 内字符似乎进行了百分号编码？
+                // 考虑到这样的例子
+                // "link":"http:\/\/ai.xiaoxinzi.com\/tools\/gotonews.php?url=http:\/\/www.ineng.org\/jinrong\/202008\/36295.html&did=27616&title=谷歌股票價格卡比較37％的功能差異是一種過時的指控"
+                // 请看这里，插进去的那里不是 U+0025，而是 U+FF05
+                // 这意味着小信子是不会乱插 % 的，因此，编码后可以将 %25 替换回 %……？
+                // 这是比较保守的做法
+                // 但既然是你们（指文化传信）的锅，我是没甚么办法
                 if (data.match(/\u{D800}/u)) {
-                    data = encodeURI(decodeURI(data.replace(/\u{D800}/gu, '')));
+                    data = encodeURI(data.replace(/\u{D800}/gu, '')).replace(/%25/gu, '%');
                     let filepath = path.join(cacheDir, Date.now().toString());
                     let get = await fetch(new URL(data));
                     let getBuf = await get.buffer();
                     fs.writeFileSync(filepath, getBuf);
                     answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
                 } else {
-                    data = encodeURI(decodeURI(data));
+                    data = encodeURI(data).replace(/%25/gu, '%');
                     answerURI.push(qqbot.escape(data));
                 };
             } else {
