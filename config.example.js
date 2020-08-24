@@ -53,18 +53,6 @@ module.exports = {
     "gCitySwitch": "",
     "pLangSwitch": "",
     "pCitySwitch": "",
-    "length": 7,                                         // 作诗长度（五言七言等）
-    "randomity": 30,                                     // 作诗随机度（默认 30）
-    "twogram": false,                                    // 使用 2gram 模型（大概率失败）
-    "lengthSwitch": "",
-    "randomitySwitch": "",
-    "twogramSwitch": "",
-    "gLengthSwitch": "",
-    "gRandomitySwitch": "",
-    "gTwogramSwitch": "",
-    "pLengthSwitch": "",
-    "pRandomitySwitch": "",
-    "pTwogramSwitch": "",
     "simply": false,                                     // 将预设词库为繁体的模式之输出转化为简化字
     "forceWriteSwitch": ""                               // 容灾措施
                                                          // 若误操作删除数据，可以在重启之前通过该指令强制写入
