@@ -409,7 +409,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
             } else {
                 remindMessage = `提醒时间到了！${remindMessage}`;
             };
-            if (!(chunk.semantic.message === '提醒時間最短為1分鐘！' || chunk.semantic.message === '提醒时间最短为1分钟！')) {
+            if (!(chunk.data === '提醒時間最短為1分鐘！' || chunk.data === '提醒时间最短为1分钟！')) {
                 // 获取当前时间，并与小信子返回的时间相减，然后延时
                 let delay = remindTime - new Date();
                 await sleep(delay);
