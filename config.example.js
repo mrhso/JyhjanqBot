@@ -19,15 +19,10 @@ module.exports = {
                                                          // poem 为作诗模式
                                                          // jiowjeh 为阴阳怪气模式
                                                          // wtfurry 为售壬控模拟器模式
-    "sleep": 100,                                        // 单字符延时（毫秒），单字符延时 × 字符数 = 字符串延时
-                                                         // 设定为 false 或 0 则不延时
     "appid" : "dcXbXX0X",                                // 小信子 AppID
     "ak": "5c011b2726e0adb52f98d6a57672774314c540a0",    // 小信子 Authkey
     "token": "f9e79b0d9144b9b47f3072359c0dfa75926a5013", // 小信子 Token
     "lang": "zh_CN",                                     // 小信子语文，已知 zh_CN、zh_TW、zh_HK
-    "nickname": "",                                      // 小信子有效，用户昵称
-                                                         // 若指定为空，则为群名片或 QQ 昵称
-                                                         // 实际上未指定该参数或 API 无法识别时，返回为「互动者」
     "city": "",                                          // 小信子有效，用户城市
                                                          // 这个查天气有用
     "modeSwitch": "",                                    // 模式切换，留空则关闭

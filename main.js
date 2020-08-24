@@ -61,14 +61,6 @@ qqbot.on('AppDirectory', (rawdata) => {
     cacheDir = path.join(rawdata, 'cache');
 });
 
-/* let penshern = [];
-let penshernCopy = [];
-try {
-    penshern = require('./text/text.js');
-} catch (ex) {
-    conLog('Failed to load text.js', true);
-}; */
-
 let petText = {};
 let petList = {};
 try {
@@ -175,7 +167,7 @@ const writeConfig = (config, file) => {
     });
 };
 
-const reply = async (rawdata, message, options) => {
+const reply = (rawdata, message, options) => {
     if (Object.prototype.toString.call(message) === '[object String]') {
         let length;
         let id;
@@ -185,11 +177,6 @@ const reply = async (rawdata, message, options) => {
         } else {
             length = [...message].length;
             message = qqbot.escape(message);
-        };
-
-        // 延时
-        if (config.sleep === undefined ? true : config.sleep) {
-            await sleep((config.sleep || 100) * length);
         };
 
         if (rawdata.group) {
@@ -234,33 +221,6 @@ const reply = async (rawdata, message, options) => {
     };
 };
 
-/* const daapen = () => {
-    // 若 penshernCopy 为空，将 penshern 内容放入 penshernCopy
-    if (penshernCopy.length === 0) {
-        penshernCopy.push(...penshern);
-    };
-    let random = arrayRandom(penshernCopy, config.unique);
-    // 返回回答
-    return random;
-}; */
-
-/* const daapenActive = async () => {
-    let offset = 0;
-    while (offset < (config.count || 100)) {
-        let random = daapen();
-        if (config.sleep === undefined ? true : config.sleep) {
-            await sleep((config.sleep || 100) * [...random].length);
-        };
-        if (config.isGroup === undefined ? true : config.isGroup) {
-            qqbot.sendGroupMessage(config.to, config.at ? `[CQ:at,qq=${config.at}] ${random}` : random, { noEscape: true });
-        } else {
-            qqbot.sendPrivateMessage(config.to, random, { noEscape: true });
-        };
-        conLog(`Output: ${random}`);
-        offset += 1;
-    };
-}; */
-
 const jinkohChishoh = (question) => {
     return question.replace(/([^？。！])$/gu, '$1？')
     .replace(/^/gu, '\uD800').replace(/([^\uD800？。！])[啊吗嗎吧呢的]?？/gu, '$1！').replace(/\uD800/gu, '')
@@ -288,7 +248,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         let getUKBuf = await getUK.buffer();
         let getUKChunk = JSON.parse(getUKBuf.toString());
         // 请求回答
-        let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(config.nickname || rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
+        let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
         let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
         let getAnswerBuf = await getAnswer.buffer();
         let chunk = getAnswerBuf.toString();
@@ -829,10 +789,6 @@ const wtfurry = (sentence) => {
     return str;
 };
 
-/* if (config.mode === 'active') {
-    // 主动打喷
-    daapenActive();
-} else { */
 let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
@@ -897,14 +853,6 @@ qqbot.on('GroupMessage', async (rawdata) => {
             mode = config.mode;
         };
         switch (mode) {
-            // 被动打喷
-            /* case 'passive':
-                if (rawdata.extra.ats.includes(botQQ)) {
-                    let random = daapen();
-                    reply(rawdata, random, { noEscape: true });
-                };
-                break; */
-
             // 人工智障（Jinkō Chishō），现代日本语与「人工池沼」同音
             // 或许也可以用国语罗马字，叫 Rengong Jyhjanq，甚至 Rengong Chyrjao
             case 'chishoh':
@@ -1702,11 +1650,6 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         let output;
         let answer;
         switch (mode) {
-            /* case 'passive':
-                let random = daapen();
-                reply(rawdata, random, { noEscape: true });
-                break; */
-
             case 'chishoh':
                 question = rawdata.raw;
                 answer = jinkohChishoh(question);
@@ -2197,4 +2140,3 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         };
     };
 });
-// };
