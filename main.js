@@ -549,7 +549,14 @@ const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
     let getTokenChunk = getTokenBuf.toString();
     let tkk = getTokenChunk.match(/tkk:'(.*?)'/u)[1];
     let tk = getTk(text, tkk);
-    let get = await fetch(new URL(`https://translate.google.cn/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl=${encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}&q=${encodeURIComponent(text)}`));
+    let partA = `/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl=${encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}`;
+    let partB = `q=${encodeURIComponent(text)}`;
+    let get;
+    if (partA.length + partB.length < 2000) {
+        get = await fetch(new URL(`https://translate.google.cn${partA}&${partB}`));
+    } else {
+        get = await fetch(new URL(`https://translate.google.cn${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
+    };
     let getBuf = await get.buffer();
     let chunk = getBuf.toString();
     // 读入 JSON
