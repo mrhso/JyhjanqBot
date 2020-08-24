@@ -413,6 +413,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
                 // 获取当前时间，并与小信子返回的时间相减，然后延时
                 let delay = remindTime - new Date();
                 await sleep(delay);
+                callback(remindMessage);
             };
         };
     } else if (rawdata.extra.images.join(',').match(/\.gif/u)) {
