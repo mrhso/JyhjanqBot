@@ -263,170 +263,163 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
     };
 
-    if (rawdata.extra.images.length === 0) {
-        let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
-        let getUK = await fetch(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
-        let getUKBuf = await getUK.buffer();
-        let getUKChunk = JSON.parse(getUKBuf.toString());
-        // 请求回答
-        let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
-        let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
-        let getAnswerBuf = await getAnswer.buffer();
-        let chunk = getAnswerBuf.toString();
-        // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
-        chunk = chunk.substring(chunk.search(/\{/gu));
-        try {
-            chunk = JSON.parse(chunk);
-        } catch (ex) {
-            conLog(ex, true);
+    if (rawdata.extra.images.length > 0) {
+        let answer = '收到图片';
+        callback(answer);
+        return;
+    };
+
+    let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
+    let getUK = await fetch(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
+    let getUKBuf = await getUK.buffer();
+    let getUKChunk = JSON.parse(getUKBuf.toString());
+    // 请求回答
+    let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
+    let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
+    let getAnswerBuf = await getAnswer.buffer();
+    let chunk = getAnswerBuf.toString();
+    // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
+    chunk = chunk.substring(chunk.search(/\{/gu));
+    try {
+        chunk = JSON.parse(chunk);
+    } catch (ex) {
+        conLog(ex, true);
+    };
+    // 先用数组存储回答，因为小信子的返回格式比较复杂
+    let answer = [];
+    // 排序优先度
+    let order = ['title', 'description', 'picurl', 'link'];
+    const sort = (a, b) => {
+        let ia = order.indexOf(a);
+        let ib = order.indexOf(b);
+        if (ia === ib) {
+            return 0;
         };
-        // 先用数组存储回答，因为小信子的返回格式比较复杂
-        let answer = [];
-        // 排序优先度
-        let order = ['title', 'description', 'picurl', 'link'];
-        const sort = (a, b) => {
-            let ia = order.indexOf(a);
-            let ib = order.indexOf(b);
-            if (ia === ib) {
-                return 0;
+        if (ia === -1) {
+            return 1;
+        };
+        if (ib === -1) {
+            return -1;
+        };
+        if (ia < ib) {
+            return -1;
+        };
+        if (ia > ib) {
+            return 1;
+        };
+    };
+    // 音乐连链接都没返回，所以没有处理的必要
+    if (chunk.xxztype === 'music') {
+        return;
+    } else if (chunk.xxztype === 'weather' && chunk.datatype === 'weather'){
+        if (chunk.city) {
+            answer.push(chunk.city);
+        };
+        for (let data of chunk.data) {
+            let line1 = [data.date, data.temperature].filter((value) => value).join('　');
+            let line2 = [data.weather, data.wind].filter((value) => value).join('　');
+            if (line1) {
+                answer.push(line1);
             };
-            if (ia === -1) {
-                return 1;
+            if (line2) {
+                answer.push(line2);
             };
-            if (ib === -1) {
-                return -1;
-            };
-            if (ia < ib) {
-                return -1;
-            };
-            if (ia > ib) {
-                return 1;
+            if (data.dayPictureUrl) {
+                answer.push(`\u{D800}${data.dayPictureUrl}`);
             };
         };
-        // 音乐连链接都没返回，所以没有处理的必要
-        if (chunk.xxztype === 'music') {
-            return;
-        } else if (chunk.xxztype === 'weather' && chunk.datatype === 'weather'){
-            if (chunk.city) {
-                answer.push(chunk.city);
-            };
-            for (let data of chunk.data) {
-                let line1 = [data.date, data.temperature].filter((value) => value).join('　');
-                let line2 = [data.weather, data.wind].filter((value) => value).join('　');
-                if (line1) {
-                    answer.push(line1);
-                };
-                if (line2) {
-                    answer.push(line2);
-                };
-                if (data.dayPictureUrl) {
-                    answer.push(`\u{D800}${data.dayPictureUrl}`);
-                };
-            };
-        } else if (chunk.data && chunk.data.text1) {
-            answer.push(chunk.data.text1);
-        } else if (Array.isArray(chunk.data)) {
-            for (let data of chunk.data) {
-                // 有时数组里面还包着对象
-                let list = [];
-                for (let data2 in data) {
-                    // 如果链接与图片重复，筛掉
-                    if (!data2.match(/BBSCOLN/u) && !(data.link === data.picurl && data2 === 'link')) {
-                        list.push(data2);
-                    };
-                };
-                list.sort(sort);
-                for (let data2 of list) {
-                    if (data2 === 'picurl') {
-                        answer.push(`\u{D800}${data.picurl}`);
-                    } else {
-                        answer.push(data[data2]);
-                    };
-                };
-            };
-        } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
+    } else if (chunk.data && chunk.data.text1) {
+        answer.push(chunk.data.text1);
+    } else if (Array.isArray(chunk.data)) {
+        for (let data of chunk.data) {
+            // 有时数组里面还包着对象
             let list = [];
-            for (let data in chunk.data) {
-                if (!data.match(/BBSCOLN/u) && !(chunk.data.link === chunk.data.picurl && data === 'link')) {
-                    list.push(data);
+            for (let data2 in data) {
+                // 如果链接与图片重复，筛掉
+                if (!data2.match(/BBSCOLN/u) && !(data.link === data.picurl && data2 === 'link')) {
+                    list.push(data2);
                 };
             };
             list.sort(sort);
-            for (let data of list) {
-                if (data === 'picurl') {
-                    answer.push(`\u{D800}${chunk.data.picurl}`);
+            for (let data2 of list) {
+                if (data2 === 'picurl') {
+                    answer.push(`\u{D800}${data.picurl}`);
                 } else {
-                    answer.push(chunk.data[data]);
+                    answer.push(data[data2]);
                 };
             };
-        } else if (!chunk.data) {
-            if (chunk.note) {
-                answer.push(chunk.note);
-            } else {
-                return;
-            };
-        } else {
-            answer.push(chunk.data);
         };
-        // 处理 URI……以及图片？
-        let answerURI = [];
-        for (let data of answer) {
-            if (data.match(/https?:\/\//u)) {
-                // 百分号编码
-                // 小信子所给的 URI 格式暂时不明
-                // 考虑到这样的例子
-                // "link":"http:\/\/ai.xiaoxinzi.com\/tools\/gotonews.php?url=http:\/\/www.ineng.org\/jinrong\/202008\/36295.html&did=27616&title=谷歌股票價格卡比較37％的功能差異是一種過時的指控"
-                // 请看这里，插进去的那里不是 U+0025，而是 U+FF05
-                // 这意味着小信子是不会乱插 % 的，因此，编码后可以将 %25 替换回 %……？
-                // 这是比较保守的做法
-                // 但既然是你们（指文化传信）的锅，我是没甚么办法
-                if (data.match(/\u{D800}/u)) {
-                    data = encodeURI(data.replace(/\u{D800}/gu, '')).replace(/%25/gu, '%');
-                    let filepath = path.join(cacheDir, Date.now().toString());
-                    let get = await fetch(new URL(data));
-                    let getBuf = await get.buffer();
-                    fs.writeFileSync(filepath, getBuf);
-                    answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
-                } else {
-                    data = encodeURI(data).replace(/%25/gu, '%');
-                    answerURI.push(qqbot.escape(data));
-                };
+    } else if (Object.prototype.toString.call(chunk.data) === '[object Object]') {
+        let list = [];
+        for (let data in chunk.data) {
+            if (!data.match(/BBSCOLN/u) && !(chunk.data.link === chunk.data.picurl && data === 'link')) {
+                list.push(data);
+            };
+        };
+        list.sort(sort);
+        for (let data of list) {
+            if (data === 'picurl') {
+                answer.push(`\u{D800}${chunk.data.picurl}`);
             } else {
+                answer.push(chunk.data[data]);
+            };
+        };
+    } else if (!chunk.data) {
+        if (chunk.note) {
+            answer.push(chunk.note);
+        } else {
+            return;
+        };
+    } else {
+        answer.push(chunk.data);
+    };
+    // 处理 URI……以及图片？
+    let answerURI = [];
+    for (let data of answer) {
+        if (data.match(/https?:\/\//u)) {
+            // 百分号编码
+            // 小信子所给的 URI 格式暂时不明
+            // 考虑到这样的例子
+            // "link":"http:\/\/ai.xiaoxinzi.com\/tools\/gotonews.php?url=http:\/\/www.ineng.org\/jinrong\/202008\/36295.html&did=27616&title=谷歌股票價格卡比較37％的功能差異是一種過時的指控"
+            // 请看这里，插进去的那里不是 U+0025，而是 U+FF05
+            // 这意味着小信子是不会乱插 % 的，因此，编码后可以将 %25 替换回 %……？
+            // 这是比较保守的做法
+            // 但既然是你们（指文化传信）的锅，我是没甚么办法
+            if (data.match(/\u{D800}/u)) {
+                data = encodeURI(data.replace(/\u{D800}/gu, '')).replace(/%25/gu, '%');
+                let filepath = path.join(cacheDir, Date.now().toString());
+                let get = await fetch(new URL(data));
+                let getBuf = await get.buffer();
+                fs.writeFileSync(filepath, getBuf);
+                answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
+            } else {
+                data = encodeURI(data).replace(/%25/gu, '%');
                 answerURI.push(qqbot.escape(data));
             };
-        };
-        // 将数组转为换行字符串
-        // 注意小信子本身返回的数据就掺杂着 CR LF
-        answer = toLF(answerURI.join('\n'));
-        callback(answer);
-        // 如果是提醒的话，处理提醒时间
-        if (chunk.xxztype === 'remind') {
-            // 处理小信子返回的时间，注意时区为 UTC+8
-            let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || '08:00:00'} UTC+0800`);
-            let remindMessage = qqbot.escape(chunk.semantic.message) || '';
-            if (lang === 'zh_TW' || lang === 'zh_HK') {
-                remindMessage = `提醒時間到了！${remindMessage}`;
-            } else {
-                remindMessage = `提醒时间到了！${remindMessage}`;
-            };
-            if (!(chunk.data === '提醒時間最短為1分鐘！' || chunk.data === '提醒时间最短为1分钟！')) {
-                // 获取当前时间，并与小信子返回的时间相减，然后延时
-                let delay = remindTime - new Date();
-                await sleep(delay);
-                callback(remindMessage);
-            };
-        };
-    } else if (rawdata.extra.images.join(',').match(/\.gif/u)) {
-        let answer;
-        if (lang === 'zh_TW' || lang === 'zh_HK') {
-            answer = '那就不曉得了。';
         } else {
-            answer = '那就不晓得了。';
+            answerURI.push(qqbot.escape(data));
         };
-        callback(answer);
-    } else {
-        let answer = '收到图片';
-        callback(answer);
+    };
+    // 将数组转为换行字符串
+    // 注意小信子本身返回的数据就掺杂着 CR LF
+    answer = toLF(answerURI.join('\n'));
+    callback(answer);
+    // 如果是提醒的话，处理提醒时间
+    if (chunk.xxztype === 'remind') {
+        // 处理小信子返回的时间，注意时区为 UTC+8
+        let remindTime = new Date(`${chunk.semantic.start_date} ${chunk.semantic.start_time || '08:00:00'} UTC+0800`);
+        let remindMessage = qqbot.escape(chunk.semantic.message) || '';
+        if (lang === 'zh_TW' || lang === 'zh_HK') {
+            remindMessage = `提醒時間到了！${remindMessage}`;
+        } else {
+            remindMessage = `提醒时间到了！${remindMessage}`;
+        };
+        if (!(chunk.data === '提醒時間最短為1分鐘！' || chunk.data === '提醒时间最短为1分钟！')) {
+            // 获取当前时间，并与小信子返回的时间相减，然后延时
+            let delay = remindTime - new Date();
+            await sleep(delay);
+            callback(remindMessage);
+        };
     };
 };
 
