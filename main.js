@@ -177,7 +177,13 @@ const writeConfig = (config, file) => {
     let buf = Buffer.from(str);
     fs.writeFile(file, buf, (err) => {
         if (err) {
-            conLog(`Failed to write ${path.basename(file)}`, true);
+            fs.mkdir('./data/', (err) => {
+                if (err) {
+                    conLog(`Failed to write ${path.basename(file)}`, true);
+                } else {
+                    writeConfig(config, file);
+                };
+            });
         };
     });
 };
