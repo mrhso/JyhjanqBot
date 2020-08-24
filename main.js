@@ -9,10 +9,6 @@ const { v4: uuidv4 } = require('uuid');
 const jieba = require('nodejieba');
 const fetch = require('node-fetch');
 
-const config = require('./config.js');
-const pMode = require('./data/mode.private.js');
-const gMode = require('./data/mode.group.js');
-
 const conLog = (message, isError = false) => {
     let date = new Date();
     let zone = -date.getTimezoneOffset();
@@ -32,6 +28,25 @@ const conLog = (message, isError = false) => {
     } else {
         console.log(output);
     };
+};
+
+let config = {};
+let pMode = {};
+let gMode = {};
+try {
+    config = require('./config.js');
+} catch (ex) {
+    conLog('Failed to load config.js', true);
+};
+try {
+    pMode = require('./data/mode.private.js');
+} catch (ex) {
+    conLog('Failed to load mode.private.js', true);
+};
+try {
+    gMode = require('./data/mode.group.js');
+} catch (ex) {
+    conLog('Failed to load mode.group.js', true);
 };
 
 let qqbot = new QQBot({
