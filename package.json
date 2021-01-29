@@ -1,6 +1,6 @@
 {
     "name": "jyhjanqbot",
-    "version": "1.8.4",
+    "version": "1.8.5",
     "description": "多功能人工池沼",
     "dependencies": {
         "ishisashiencoding": "^0.4.0",

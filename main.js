@@ -279,7 +279,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
     let getAnswerBuf = await getAnswer.buffer();
     let chunk = getAnswerBuf.toString();
     // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
-    chunk = chunk.substring(chunk.search(/\{/gu));
+    chunk = chunk.substring(chunk.search(/\{/u));
     try {
         chunk = JSON.parse(chunk);
     } catch (ex) {
@@ -491,82 +491,21 @@ const alphaGong = () => {
 const alphaKufonZero = () => eval(`\`${arrayRandom(kufonFormat)}\``);
 
 const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
-    // 根据 tkk 获取 tk，高能
-    const getTk = (text, tkk) => {
-        // 我只好用 Nazo 表达我的绝望
-        const nazo = (a, b) => {
-            for (let c = 0; c < b.length - 2; c += 3) {
-                let d = b[c + 2];
-                // 啊啊啊 charCodeAt 必须死，，，
-                // 但原文如此，我也没办法
-                d = d >= 'a' ? d.charCodeAt(0) - 87 : parseInt(d);
-                d = b[c + 1] === '+' ? a >>> d : a << d;
-                a = b[c] === '+' ? a + d & 4294967295 : a ^ d;
-            };
-            return a;
-        };
-        let tkkInt = parseInt(tkk.split('.')[0]);
-        let tkkDec = parseInt(tkk.split('.')[1]);
-        let a = [];
-        let b = 0;
-        for (let c = 0; c < text.length; c++) {
-            let d = text.charCodeAt(c);
-            // 这段代码原文是用 ? : 写的，阅读起来完全就是地狱
-            if (d < 128) {
-                a[b++] = d;
-            } else {
-                if (d < 2048) {
-                    a[b++] = d >> 6 | 192;
-                } else {
-                    if ((d & 64512) === 55296 && c + 1 < text.length && (text.charCodeAt(c + 1) & 64512) === 56320) {
-                        d = 65536 + ((d & 1023) << 10) + (text.charCodeAt(++c) & 1023);
-                        a[b++] = d >> 18 | 240;
-                        a[b++] = d >> 12 & 63 | 128;
-                    } else {
-                        a[b++] = d >> 12 | 224;
-                    };
-                    a[b++] = d >> 6 & 63 | 128;
-                };
-                a[b++] = d & 63 | 128;
-            };
-        };
-        let e = tkkInt;
-        for (b = 0; b < a.length; b++) {
-            e += a[b];
-            e = nazo(e, '+-a^+6');
-        };
-        e = nazo(e, '+-3^+b+-f');
-        e ^= tkkDec;
-        if (e < 0) {
-            e = (e & 2147483647) + 2147483648;
-        };
-        e %= 1E6;
-        return `${e}.${e ^ tkkInt}`;
-    };
     // 开始请求
-    let getToken = await fetch(new URL('https://translate.google.cn/'));
-    let getTokenBuf = await getToken.buffer();
-    let getTokenChunk = getTokenBuf.toString();
-    let tkk = getTokenChunk.match(/tkk:'(.*?)'/u)[1];
-    let tk = getTk(text, tkk);
-    let partA = `/translate_a/single?client=webapp&sl=${encodeURIComponent(src)}&tl=${encodeURIComponent(tgt)}&hl=${encodeURIComponent(tgt)}&dt=at&dt=bd&dt=ex&dt=ld&dt=md&dt=qca&dt=rw&dt=rm&dt=ss&dt=t&ie=UTF-8&oe=UTF-8&tk=${encodeURIComponent(tk)}`;
-    let partB = `q=${encodeURIComponent(text)}`;
-    let get;
-    if (partA.length + partB.length < 2000) {
-        get = await fetch(new URL(`https://translate.google.cn${partA}&${partB}`));
-    } else {
-        get = await fetch(new URL(`https://translate.google.cn${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
-    };
+    let partA = `/_/TranslateWebserverUi/data/batchexecute`;
+    let partB = `f.req=${encodeURIComponent(JSON.stringify([[['MkEWBc', `${JSON.stringify([[text, src, tgt, true], [null]])}`, null, 'generic']]]))}`;
+    let get = await fetch(new URL(`https://translate.google.cn${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
     let getBuf = await get.buffer();
     let chunk = getBuf.toString();
+    chunk = chunk.substring(chunk.search(/\[/u));
     // 读入 JSON
     try {
-        chunk = JSON.parse(chunk);
+        chunk = JSON.parse(JSON.parse(chunk)[0][2]);
     } catch (ex) {
         conLog(ex, true);
     };
     let output = '';
-    for (let result of chunk[0]) {
+    for (let result of chunk[1][0][0][5]) {
         if (result[0] !== null) {
             output += result[0];
         };
@@ -576,6 +515,7 @@ const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
 
 const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
     // 百度翻译的 sign 算法源于 Google 翻译，但更为キチガイ
+    // 从前 Google 翻译使用的算法请参考 https://github.com/mrhso/JyhjanqBot/blob/a2490470c08d24dcc04d10a56e0461a6bfd295b3/main.js#L495
     const getSign = (text, gtk) => {
         const nazo = (a, b) => {
             for (let c = 0; c < b.length - 2; c += 3) {
