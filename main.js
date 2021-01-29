@@ -811,7 +811,24 @@ const wtfurry = (sentence) => {
     return str;
 };
 
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry';
+// 移植自 https://github.com/mrhso/IshisashiWebsite/blob/master/%E4%B9%B1%E5%86%99%E7%A8%8B%E5%BC%8F/%E8%90%A5%E9%94%80%E5%8F%B7%EF%BC%8C%E5%A6%82%E7%B4%AB%E7%81%AB%E8%88%AC%E7%87%83%E7%83%A7.js
+const yngshiau = async (event0, event1) => {
+    let event = `${event0}${event1}`;
+    let get = await fetch(new URL(`https://image.so.com/i?q=${event}&src=srp`));
+    let getBuf = await get.buffer();
+    let chunk = JSON.parse(getBuf.toString().match(/<script type="text\/data" id="initData">(.*?)<\/script>/u)[1]);
+    let imgs = chunk.list;
+    // 随机抽取一张图片
+    let img = imgs[Math.floor(Math.random() * imgs.length)].img;
+    let filepath = path.join(cacheDir, Date.now().toString());
+    let getImg = await fetch(new URL(img));
+    let getImgBuf = await getImg.buffer();
+    fs.writeFileSync(filepath, getImgBuf);
+    let template = `${qqbot.escape(event)}是怎么回事呢？${qqbot.escape(event)}相信大家都很熟悉，但是${qqbot.escape(event)}是怎么回事呢？下面就让小编带大家一起了解吧。\n${qqbot.escape(event)}，其实就是${qqbot.escape(event)}，大家可能会感到很惊讶，${qqbot.escape(event0)}怎么会${qqbot.escape(event1) || qqbot.escape(event0)}？但事实就是这样，小编也感到非常惊讶。\n[CQ:image,file=${qqbot.escape(filepath, true)}]\n那么这就是关于${qqbot.escape(event)}的事情了，大家有甚么想法呢？欢迎在评论区告诉小编一起讨论哦。`;
+    return template;
+};
+
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.pModeSwitch, 'u'))) {
@@ -1612,6 +1629,15 @@ qqbot.on('GroupMessage', async (rawdata) => {
                 };
                 break;
 
+            // 营销号，如紫火般燃烧
+            case 'yngshiau':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let events = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text.split('\n').filter((value) => value);
+                    let template = await yngshiau(events[0] || '', events[1] || '');
+                    reply(rawdata, template, { noEscape: true });
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -2154,6 +2180,12 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                 let sentence = rawdata.raw;
                 str = wtfurry(sentence);
                 reply(rawdata, str, { noEscape: true });
+                break;
+
+            case 'yngshiau':
+                let events = rawdata.text.split('\n').filter((value) => value);
+                let template = await yngshiau(events[0] || '', events[1] || '');
+                reply(rawdata, template, { noEscape: true });
                 break;
 
             default:
