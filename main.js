@@ -177,13 +177,7 @@ const writeConfig = (config, file) => {
     let buf = Buffer.from(str);
     fs.writeFile(file, buf, (err) => {
         if (err) {
-            fs.mkdir('./data/', (err) => {
-                if (err) {
-                    conLog(`Failed to write ${path.basename(file)}`, true);
-                } else {
-                    writeConfig(config, file);
-                };
-            });
+            conLog(`Failed to write ${path.basename(file)}`, true);
         };
     });
 };
@@ -812,6 +806,15 @@ qqbot.on('GroupMessage', async (rawdata) => {
             reply(rawdata, `${current}\n${modeList}`);
         };
     } else if (config.forceWriteSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.forceWriteSwitch, 'u'))) {
+        try {
+            fs.accessSync('./data/');
+        } catch (err) {
+            try {
+                fs.mkdirSync('./data/');
+            } catch (err) {
+                conLog(`Failed to create data directory`, true);
+            };
+        };
         writeConfig(config, './config.js');
         writeConfig(pMode, './data/mode.private.js');
         writeConfig(gMode, './data/mode.group.js');
@@ -1615,6 +1618,15 @@ qqbot.on('PrivateMessage', async (rawdata) => {
             reply(rawdata, `${current}\n${modeList}`);
         };
     } else if (config.forceWriteSwitch && rawdata.raw.match(new RegExp(config.forceWriteSwitch, 'u'))) {
+        try {
+            fs.accessSync('./data/');
+        } catch (err) {
+            try {
+                fs.mkdirSync('./data/');
+            } catch (err) {
+                conLog(`Failed to create data directory`, true);
+            };
+        };
         writeConfig(config, './config.js');
         writeConfig(pMode, './data/mode.private.js');
         writeConfig(gMode, './data/mode.group.js');
