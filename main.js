@@ -748,7 +748,7 @@ const wtfurry = (sentence) => {
 // 移植自 https://github.com/mrhso/IshisashiWebsite/blob/master/%E4%B9%B1%E5%86%99%E7%A8%8B%E5%BC%8F/%E8%90%A5%E9%94%80%E5%8F%B7%EF%BC%8C%E5%A6%82%E7%B4%AB%E7%81%AB%E8%88%AC%E7%87%83%E7%83%A7.js
 const yngshiau = async (event0, event1) => {
     let event = `${event0}${event1}`;
-    let get = await fetch(new URL(`https://image.so.com/i?q=${event}&src=srp`));
+    let get = await fetch(new URL(`https://image.so.com/i?q=${encodeURIComponent(event)}&src=srp`));
     let getBuf = await get.buffer();
     let chunk = JSON.parse(getBuf.toString().match(/<script type="text\/data" id="initData">(.*?)<\/script>/u)[1]);
     let imgs = chunk.list;

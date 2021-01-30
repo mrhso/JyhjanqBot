@@ -19,6 +19,7 @@ module.exports = {
                                                          // poem 为作诗模式
                                                          // jiowjeh 为阴阳怪气模式
                                                          // wtfurry 为售壬控模拟器模式
+                                                         // yngshiau 为营销号模拟器模式
     "appid" : "dcXbXX0X",                                // 小信子 AppID
     "ak": "5c011b2726e0adb52f98d6a57672774314c540a0",    // 小信子 Authkey
     "token": "f9e79b0d9144b9b47f3072359c0dfa75926a5013", // 小信子 Token
