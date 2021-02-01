@@ -4,7 +4,7 @@ const QQBot = require('./lib/QQBot.js');
 const { toLF, toCRLF, TextEncoder } = require('ishisashiencoding');
 const path = require('path');
 const fs = require('fs');
-const OpenCC = require('./lib/OpenCC/opencc.js');
+const OpenCC = require('opencc');
 const { v4: uuidv4 } = require('uuid');
 const jieba = require('nodejieba');
 const fetch = require('node-fetch');
@@ -477,7 +477,7 @@ const pet = (user, input, randomDie = undefined) => {
 const alphaGong = () => {
     let output = eval(`\`${arrayRandom(gongFormat)}\``);
     if (config.simply) {
-        output = new OpenCC('./lib/OpenCC/t2s.json').convertSync(output);
+        output = new OpenCC('t2s.json').convertSync(output);
     };
     return output;
 };
