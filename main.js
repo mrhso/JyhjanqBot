@@ -716,7 +716,7 @@ const jiowjeh = (question) => {
     };
 };
 
-// https://github.com/Meeken1998/wtfurry
+// 移植自 https://github.com/Meeken1998/wtfurry
 // 有男同性恋变态售壬控那味了吗？
 const wtfurry = (sentence) => {
     let list = jieba.tag(sentence, true);
@@ -760,6 +760,16 @@ const yngshiau = async (event0, event1) => {
     fs.writeFileSync(filepath, getImgBuf);
     let template = `${qqbot.escape(event)}是怎么回事呢？${qqbot.escape(event)}相信大家都很熟悉，但是${qqbot.escape(event)}是怎么回事呢？下面就让小编带大家一起了解吧。\n${qqbot.escape(event)}，其实就是${qqbot.escape(event)}，大家可能会感到很惊讶，${qqbot.escape(event0)}怎么会${qqbot.escape(event1) || qqbot.escape(event0)}？但事实就是这样，小编也感到非常惊讶。\n[CQ:image,file=${qqbot.escape(filepath, true)}]\n那么这就是关于${qqbot.escape(event)}的事情了，大家有甚么想法呢？欢迎在评论区告诉小编一起讨论哦。`;
     return template;
+};
+
+// 老白提供 API
+const zuzi = async (str) => {
+    let get = await fetch(new URL(`*******************${encodeURIComponent(str)}****`));
+    let normalised = Buffer.from(get.headers.raw()['*************************'][0], 'base64').toString();
+    let getBuf = await get.buffer();
+    let filepath = path.join(cacheDir, Date.now().toString());
+    fs.writeFileSync(filepath, getBuf);
+    return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
 let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau';
@@ -1581,6 +1591,15 @@ qqbot.on('GroupMessage', async (rawdata) => {
                 };
                 break;
 
+            // 动态组字（未开放）
+            case 'zuzi':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
+                    let output = await zuzi(str);
+                    reply(rawdata, output, { noEscape: true });
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -2138,6 +2157,12 @@ qqbot.on('PrivateMessage', async (rawdata) => {
                 let events = rawdata.text.split('\n').filter((value) => value);
                 let template = await yngshiau(events[0] || '', events[1] || '');
                 reply(rawdata, template, { noEscape: true });
+                break;
+
+            case 'zuzi':
+                str = rawdata.text;
+                output = await zuzi(str);
+                reply(rawdata, output, { noEscape: true });
                 break;
 
             default:
