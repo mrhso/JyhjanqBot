@@ -765,6 +765,9 @@ const yngshiau = async (event0, event1) => {
 // 老白提供 API
 const zuzi = async (str) => {
     let get = await fetch(new URL(`*******************${encodeURIComponent(str)}****`));
+    if (get.status === 400) {
+        return '非法语句！！';
+    };
     let normalised = Buffer.from(get.headers.raw()['*************************'][0], 'base64').toString();
     let getBuf = await get.buffer();
     let filepath = path.join(cacheDir, Date.now().toString());
