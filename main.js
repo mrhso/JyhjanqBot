@@ -764,15 +764,16 @@ const yngshiau = async (event0, event1) => {
 
 // 老白提供 API
 const zuzi = async (str) => {
-    let get = await fetch(new URL(`*******************${encodeURIComponent(str)}****`));
+    let get = await fetch(new URL(`http://zu.zi.tools/${encodeURIComponent(str)}.png`));
     if (get.status === 400) {
         return '非法语句！！';
     };
-    let normalised = Buffer.from(get.headers.raw()['*************************'][0], 'base64').toString();
+    let normalised = Buffer.from(get.headers.raw()['x-zi-tools-normalized-ids'][0], 'base64').toString();
+    let matches = Buffer.from(get.headers.raw()['x-zi-tools-matches-characters'][0], 'base64').toString().split(' ').filter((value) => value);
     let getBuf = await get.buffer();
     let filepath = path.join(cacheDir, Date.now().toString());
     fs.writeFileSync(filepath, getBuf);
-    return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n[CQ:image,file=${qqbot.escape(filepath, true)}]`;
+    return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
 let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau';
