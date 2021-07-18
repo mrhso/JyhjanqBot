@@ -776,7 +776,7 @@ const zuzi = async (str) => {
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau';
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.pModeSwitch, 'u'))) {
@@ -1595,7 +1595,7 @@ qqbot.on('GroupMessage', async (rawdata) => {
                 };
                 break;
 
-            // 动态组字（未开放）
+            // 动态组字
             case 'zuzi':
                 if (rawdata.extra.ats.includes(botQQ)) {
                     let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
