@@ -8,6 +8,8 @@
 
 官方拉丁转写为以国语罗马字拼写的「智障 Bot」，即「Jyhjanq Bot」。
 
+日本语「Chishō Bot」（纯 ASCII 写作「Chishoh Bot」）、朝鲜语「Jijang Bot」为许容写法。
+
 ## 特点
 本人工池沼为多功能人工池沼，功能如下：
 - 人工池沼模式
