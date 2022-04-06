@@ -1,4 +1,13 @@
-# 多功能人工池沼
+# 智障 Bot
+|语言|名称|
+|-|-|
+|官话（普通话）|<ruby>智<rp>（</rp><rt>zhì</rt><rp>）</rp></ruby><ruby>障<rp>（</rp><rt>zhàng</rt><rp>）</rp></ruby> Bot|
+|日本语|<ruby>智<rp>（</rp><rt>ち</rt><rp>）</rp></ruby><ruby>障<rp>（</rp><rt>しょう</rt><rp>）</rp></ruby> <ruby>Bot<rp>（</rp><rt>ボット</rt><rp>）</rp></ruby>|
+|朝鲜语（文化语）|<ruby>智<rp>（</rp><rt>지</rt><rp>）</rp></ruby><ruby>障<rp>（</rp><rt>장</rt><rp>）</rp></ruby> <ruby>Bot<rp>（</rp><rt>보트</rt><rp>）</rp></ruby>|
+|朝鲜语（南朝鲜标准语）|<ruby>智<rp>（</rp><rt>지</rt><rp>）</rp></ruby><ruby>障<rp>（</rp><rt>장</rt><rp>）</rp></ruby> <ruby>Bot<rp>（</rp><rt>봇</rt><rp>）</rp></ruby>|
+
+官方拉丁转写为以国语罗马字拼写的「智障 Bot」，即「Jyhjanq Bot」。
+
 ## 特点
 本人工池沼为多功能人工池沼，功能如下：
 - 人工池沼模式
