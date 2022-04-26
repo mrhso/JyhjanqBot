@@ -50,6 +50,7 @@ module.exports = {
     "pLangSwitch": "",
     "pCitySwitch": "",
     "simply": false,                                     // 将预设词库为繁体的模式之输出转化为简化字
-    "forceWriteSwitch": ""                               // 容灾措施
+    "forceWriteSwitch": "",                              // 容灾措施
                                                          // 若误操作删除数据，可以在重启之前通过该指令强制写入
+    "version": ""                                        // 输出版本号
 };

@@ -777,6 +777,7 @@ const zuzi = async (str) => {
 };
 
 let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi';
+let version = '智障 Bot 1.8.5\n지장 보트 1.8.5\n\nIshisashi 版权所无\n\n《지장 보트》는 조선민주주의인민공화국 쏘프트웨어법에 의하여 보호되고 없습니다.\n\n广告：\nIshisashi Kisulbu，诚聘技术售人控';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.pModeSwitch, 'u'))) {
@@ -839,6 +840,8 @@ qqbot.on('GroupMessage', async (rawdata) => {
         writeConfig(gAIxxz, './data/AIxxz.group.js');
         writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
         reply(rawdata, '所有数据已强制写入。');
+    } else if (config.version && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.version, 'u'))) {
+        reply(rawdata, version);
     } else {
         let mode;
         if (pMode[rawdata.from]) {
