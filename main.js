@@ -6,8 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const OpenCC = require('opencc');
 const { v4: uuidv4 } = require('uuid');
-const jieba = require('nodejieba');
-const fetch = require('node-fetch');
+const jieba = require('@node-rs/jieba');
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -265,13 +265,13 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
 
     let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
     let getUK = await fetch(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
-    let getUKBuf = await getUK.buffer();
-    let getUKChunk = JSON.parse(getUKBuf.toString());
+    let getUKBuf = await getUK.arrayBuffer();
+    let getUKChunk = JSON.parse(Buffer.from(getUKBuf).toString());
     // 请求回答
     let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
     let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
-    let getAnswerBuf = await getAnswer.buffer();
-    let chunk = getAnswerBuf.toString();
+    let getAnswerBuf = await getAnswer.arrayBuffer();
+    let chunk = Buffer.from(getAnswerBuf).toString();
     // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
     chunk = chunk.substring(chunk.search(/\{/u));
     try {
@@ -383,8 +383,8 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
                 data = encodeURI(data.replace(/\u{D800}/gu, '')).replace(/%25/gu, '%');
                 let filepath = path.join(cacheDir, Date.now().toString());
                 let get = await fetch(new URL(data));
-                let getBuf = await get.buffer();
-                fs.writeFileSync(filepath, getBuf);
+                let getBuf = await get.arrayBuffer();
+                fs.writeFileSync(filepath, Buffer.from(getBuf));
                 answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
             } else {
                 data = encodeURI(data).replace(/%25/gu, '%');
@@ -489,8 +489,8 @@ const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
     let partA = `/_/TranslateWebserverUi/data/batchexecute`;
     let partB = `f.req=${encodeURIComponent(JSON.stringify([[['MkEWBc', `${JSON.stringify([[text, src, tgt, true], [null]])}`, null, 'generic']]]))}`;
     let get = await fetch(new URL(`https://translate.google.cn${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
-    let getBuf = await get.buffer();
-    let chunk = getBuf.toString();
+    let getBuf = await get.arrayBuffer();
+    let chunk = Buffer.from(getBuf).toString();
     chunk = chunk.substring(chunk.search(/\[/u));
     // 读入 JSON
     try {
@@ -584,8 +584,8 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
     // 百度翻译最坑的一点在于要带 Cookie 请求，得到的 Token 才有效，所以要先拿到 Cookie 再重新请求
     let cookie = getCookie.headers.raw()['set-cookie'];
     let getToken = await fetch(new URL('https://fanyi.baidu.com/'), { headers: { 'Cookie': cookie } });
-    let getTokenBuf = await getToken.buffer();
-    let getTokenChunk = getTokenBuf.toString();
+    let getTokenBuf = await getToken.arrayBuffer();
+    let getTokenChunk = Buffer.from(getTokenBuf).toString();
     let token = getTokenChunk.match(/token: '(.*?)'/u)[1];
     // gtk 类似于 Google 翻译的 tkk
     let gtk = getTokenChunk.match(/gtk = '(.*?)'/u)[1];
@@ -593,8 +593,8 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
     let sign = getSign(text, gtk);
     let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
     let get = await fetch(new URL('https://fanyi.baidu.com/v2transapi'), { method: 'POST', body: postData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData), 'Cookie': cookie } });
-    let getBuf = await get.buffer();
-    let chunk = getBuf.toString();
+    let getBuf = await get.arrayBuffer();
+    let chunk = Buffer.from(getBuf).toString();
     // 读入 JSON
     try {
         chunk = JSON.parse(chunk);
@@ -613,8 +613,8 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
 
 const couplet = async (text) => {
     let get = await fetch(new URL(`https://ai-backend.binwang.me/chat/couplet/${encodeURIComponent(text)}`));
-    let getBuf = await get.buffer();
-    let chunk = getBuf.toString();
+    let getBuf = await get.arrayBuffer();
+    let chunk = Buffer.from(getBuf).toString();
     // 读入 JSON
     try {
         chunk = JSON.parse(chunk);
@@ -749,15 +749,15 @@ const wtfurry = (sentence) => {
 const yngshiau = async (event0, event1) => {
     let event = `${event0}${event1}`;
     let get = await fetch(new URL(`https://image.so.com/i?q=${encodeURIComponent(event)}&src=srp`));
-    let getBuf = await get.buffer();
-    let chunk = JSON.parse(getBuf.toString().match(/<script type="text\/data" id="initData">(.*?)<\/script>/u)[1]);
+    let getBuf = await get.arrayBuffer();
+    let chunk = JSON.parse(Buffer.from(getBuf).toString().match(/<script type="text\/data" id="initData">(.*?)<\/script>/u)[1]);
     let imgs = chunk.list;
     // 随机抽取一张图片
     let img = imgs[Math.floor(Math.random() * imgs.length)].img;
     let filepath = path.join(cacheDir, Date.now().toString());
     let getImg = await fetch(new URL(img));
-    let getImgBuf = await getImg.buffer();
-    fs.writeFileSync(filepath, getImgBuf);
+    let getImgBuf = await getImg.arrayBuffer();
+    fs.writeFileSync(filepath, Buffer.from(getImgBuf));
     let template = `${qqbot.escape(event)}是怎么回事呢？${qqbot.escape(event)}相信大家都很熟悉，但是${qqbot.escape(event)}是怎么回事呢？下面就让小编带大家一起了解吧。\n${qqbot.escape(event)}，其实就是${qqbot.escape(event)}，大家可能会感到很惊讶，${qqbot.escape(event0)}怎么会${qqbot.escape(event1) || qqbot.escape(event0)}？但事实就是这样，小编也感到非常惊讶。\n[CQ:image,file=${qqbot.escape(filepath, true)}]\n那么这就是关于${qqbot.escape(event)}的事情了，大家有甚么想法呢？欢迎在评论区告诉小编一起讨论哦。`;
     return template;
 };
@@ -770,9 +770,9 @@ const zuzi = async (str) => {
     };
     let normalised = Buffer.from(get.headers.raw()['x-zi-tools-normalized-ids'][0], 'base64').toString();
     let matches = Buffer.from(get.headers.raw()['x-zi-tools-matches-characters'][0], 'base64').toString().split(' ').filter((value) => value);
-    let getBuf = await get.buffer();
+    let getBuf = await get.arrayBuffer();
     let filepath = path.join(cacheDir, Date.now().toString());
-    fs.writeFileSync(filepath, getBuf);
+    fs.writeFileSync(filepath, Buffer.from(getBuf));
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
@@ -1663,6 +1663,8 @@ qqbot.on('PrivateMessage', async (rawdata) => {
         writeConfig(gAIxxz, './data/AIxxz.group.js');
         writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
         reply(rawdata, '所有数据已强制写入。');
+    } else if (config.version && rawdata.raw.match(new RegExp(config.version, 'u'))) {
+        reply(rawdata, version);
     } else {
         let mode;
         if (pMode[rawdata.from]) {
