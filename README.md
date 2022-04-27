@@ -84,3 +84,5 @@ node main.js
 1.8.4 移植「营销号，如紫火般燃烧」。
 
 1.8.5 修复 Google 翻译模式。
+
+1.8.6 加入动态组字模式，修复 `node-fetch`，将 `nodejieba` 替换为 `@node-rs/jieba`，加入版本号显示。
