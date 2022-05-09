@@ -781,7 +781,7 @@ const zuzi = async (str) => {
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
-// 使用 RDKit-JS（mrhso 修改版）读取 InChI
+// 使用 RDKit-JS（Ishisashi 修改版）读取 InChI
 const inchi2img = (str) => {
     let arr = str.split('\n');
     let output = '';
