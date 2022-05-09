@@ -27,6 +27,7 @@
 - 售壬控模拟器模式
 - 营销号模拟器模式
 - 动态组字模式
+- InChI 转结构模式
 
 ## 使用方法
 首先准备好依赖。
@@ -39,7 +40,6 @@
 ```
 npm install
 ```
-- 编译 opencc.node，自备 OpenCC 转换档
 
 这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text 内的数据。
 
@@ -86,3 +86,5 @@ node main.js
 1.8.5 修复 Google 翻译模式。
 
 1.8.6 加入动态组字模式，修复 `node-fetch`，将 `nodejieba` 替换为 `@node-rs/jieba`，加入版本号显示。
+
+1.8.7 加入 InChI 转结构模式。

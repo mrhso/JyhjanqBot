@@ -8,6 +8,8 @@ const OpenCC = require('opencc');
 const { v4: uuidv4 } = require('uuid');
 const jieba = require('@node-rs/jieba');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const initRDKitModule = require("./lib/RDKit_minimal.js");
+const sharp = require('sharp');
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -48,6 +50,9 @@ try {
 } catch (ex) {
     conLog('Failed to load mode.group.js', true);
 };
+
+let RDKitModule;
+(async () => { RDKitModule = await initRDKitModule(); })();
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -776,8 +781,22 @@ const zuzi = async (str) => {
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi';
-let version = '智障 Bot 1.8.6\n지장 보트 1.8.6\n\nIshisashi 版权所无\n\n《지장 보트》는 조선민주주의인민공화국 쏘프트웨어법에 의하여 보호되고 없습니다.\n\n广告：\nIshisashi Kisulbu，诚聘技术售人控';
+// 使用 RDKit-JS（mrhso 修改版）读取 InChI
+const inchi2img = (str) => {
+    let arr = str.split('\n');
+    let output = '';
+    for (let inchi of arr) {
+        let mol = RDKitModule.get_mol_from_inchi(inchi);
+        let svg = Buffer.from(mol.get_svg());
+        let filepath = path.join(cacheDir, Date.now().toString());
+        sharp(svg).toFile(filepath);
+        output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;
+    };
+    return output;
+};
+
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi、inchi2img';
+let version = '智障 Bot 1.8.7\n지장 보트 1.8.7\n\nIshisashi 版权所无\n\n《지장 보트》는 조선민주주의인민공화국 쏘프트웨어법에 의하여 보호되고 없습니다.\n\n广告：\nIshisashi Kisulbu，诚聘技术售人控';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.pModeSwitch, 'u'))) {
@@ -1607,6 +1626,15 @@ qqbot.on('GroupMessage', async (rawdata) => {
                 };
                 break;
 
+            // InChI 转结构
+            case 'inchi2img':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
+                    let output = inchi2img(str);
+                    reply(rawdata, output, { noEscape: true });
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -2171,6 +2199,12 @@ qqbot.on('PrivateMessage', async (rawdata) => {
             case 'zuzi':
                 str = rawdata.text;
                 output = await zuzi(str);
+                reply(rawdata, output, { noEscape: true });
+                break;
+
+            case 'inchi2img':
+                str = rawdata.text;
+                output = inchi2img(str);
                 reply(rawdata, output, { noEscape: true });
                 break;
 
