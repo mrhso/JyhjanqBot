@@ -782,15 +782,20 @@ const zuzi = async (str) => {
 };
 
 // 使用 RDKit-JS（Ishisashi 修改版）读取 InChI
-const inchi2img = (str) => {
+const inchi2img = async (str) => {
     let arr = str.split('\n');
     let output = '';
     for (let inchi of arr) {
         let mol = RDKitModule.get_mol_from_inchi(inchi);
-        let svg = Buffer.from(mol.get_svg());
-        let filepath = path.join(cacheDir, Date.now().toString());
-        sharp(svg).toFile(filepath);
-        output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;
+        if (mol.is_valid()) {
+            mol = RDKitModule.get_canonical_tautomer(mol);
+            let svg = Buffer.from(mol.get_svg());
+            let filepath = path.join(cacheDir, Date.now().toString());
+            await sharp(svg).toFile(filepath);
+            output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;
+        } else {
+            output+= '&#91;非法语句！！&#93;';
+        };
     };
     return output;
 };
@@ -1630,7 +1635,7 @@ qqbot.on('GroupMessage', async (rawdata) => {
             case 'inchi2img':
                 if (rawdata.extra.ats.includes(botQQ)) {
                     let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
-                    let output = inchi2img(str);
+                    let output = await inchi2img(str);
                     reply(rawdata, output, { noEscape: true });
                 };
                 break;
@@ -2204,7 +2209,7 @@ qqbot.on('PrivateMessage', async (rawdata) => {
 
             case 'inchi2img':
                 str = rawdata.text;
-                output = inchi2img(str);
+                output = await inchi2img(str);
                 reply(rawdata, output, { noEscape: true });
                 break;
 
