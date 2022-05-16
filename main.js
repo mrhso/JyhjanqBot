@@ -789,7 +789,8 @@ const inchi2img = async (str) => {
         let mol = RDKitModule.get_mol_from_inchi(inchi);
         if (mol.is_valid()) {
             let molCt = RDKitModule.get_canonical_tautomer(mol);
-            if (mol.get_inchi() === molCt.get_inchi()) {
+            // 仅对标准 InChI 使用
+            if (inchi.includes('InChI=1S/') && mol.get_inchi() === molCt.get_inchi()) {
                 mol = molCt;
             };
             let svg = Buffer.from(mol.get_svg());
