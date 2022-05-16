@@ -788,7 +788,10 @@ const inchi2img = async (str) => {
     for (let inchi of arr) {
         let mol = RDKitModule.get_mol_from_inchi(inchi);
         if (mol.is_valid()) {
-            mol = RDKitModule.get_canonical_tautomer(mol);
+            let molCt = RDKitModule.get_canonical_tautomer(mol);
+            if (mol.get_inchi() === molCt.get_inchi()) {
+                mol = molCt;
+            };
             let svg = Buffer.from(mol.get_svg());
             let filepath = path.join(cacheDir, Date.now().toString());
             await sharp(svg).toFile(filepath);
