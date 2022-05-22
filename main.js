@@ -269,12 +269,12 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
     };
 
     let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
-    let getUK = await fetch(new URL('http://get.xiaoxinzi.com/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
+    let getUK = await fetch(new URL('http://xxz_ai.aiibt.cn/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
     let getUKBuf = await getUK.arrayBuffer();
     let getUKChunk = JSON.parse(Buffer.from(getUKBuf).toString());
     // 请求回答
     let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
-    let getAnswer = await fetch(new URL('http://ai.xiaoxinzi.com/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
+    let getAnswer = await fetch(new URL('http://xxz_ai.aiibt.cn/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
     let getAnswerBuf = await getAnswer.arrayBuffer();
     let chunk = Buffer.from(getAnswerBuf).toString();
     // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
