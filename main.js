@@ -8,7 +8,6 @@ const OpenCC = require('opencc');
 const { v4: uuidv4 } = require('uuid');
 const jieba = require('@node-rs/jieba');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const initRDKitModule = require("./lib/RDKit_minimal.js");
 const sharp = require('sharp');
 const java = require('java');
 
