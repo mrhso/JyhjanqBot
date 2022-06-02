@@ -55,6 +55,7 @@ java.classpath.push('./lib/cdk.jar');
 const InChIGeneratorFactory = java.import('org.openscience.cdk.inchi.InChIGeneratorFactory');
 const SilentChemObjectBuilder = java.import('org.openscience.cdk.silent.SilentChemObjectBuilder');
 const DepictionGenerator = java.import('org.openscience.cdk.depict.DepictionGenerator');
+const AtomContainerManipulator = java.import('org.openscience.cdk.tools.manipulator.AtomContainerManipulator');
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -790,6 +791,7 @@ const inchi2img = async (str) => {
     for (let inchi of arr) {
         let mol = InChIGeneratorFactory.getInstanceSync().getInChIToStructureSync(inchi, SilentChemObjectBuilder.getInstanceSync()).getAtomContainerSync();
         if (!mol.isEmptySync()) {
+            mol = AtomContainerManipulator.removeHydrogensSync(mol);
             let svg = Buffer.from(new DepictionGenerator().withSizeSync(-1, -1).withFillToFitSync().withZoomSync(2.5).depictSync(mol).toSvgStrSync());
             let filepath = path.join(cacheDir, Date.now().toString());
             await sharp(svg).toFile(filepath);
