@@ -10,6 +10,7 @@ const jieba = require('@node-rs/jieba');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 const initRDKitModule = require("./lib/RDKit_minimal.js");
 const sharp = require('sharp');
+const java = require('java');
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -51,8 +52,10 @@ try {
     conLog('Failed to load mode.group.js', true);
 };
 
-let RDKitModule;
-(async () => { RDKitModule = await initRDKitModule(); })();
+java.classpath.push('./lib/cdk.jar');
+const InChIGeneratorFactory = java.import('org.openscience.cdk.inchi.InChIGeneratorFactory');
+const SilentChemObjectBuilder = java.import('org.openscience.cdk.silent.SilentChemObjectBuilder');
+const DepictionGenerator = java.import('org.openscience.cdk.depict.DepictionGenerator');
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -781,19 +784,14 @@ const zuzi = async (str) => {
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
-// 使用 RDKit-JS（Ishisashi 修改版）读取 InChI
+// 使用 CDK 读取 InChI
 const inchi2img = async (str) => {
     let arr = str.split('\n');
     let output = '';
     for (let inchi of arr) {
-        let mol = RDKitModule.get_mol_from_inchi(inchi);
-        if (mol.is_valid()) {
-            let molCt = RDKitModule.get_canonical_tautomer(mol);
-            // 仅对标准 InChI 使用
-            if (inchi.includes('InChI=1S/') && mol.get_inchi() === molCt.get_inchi()) {
-                mol = molCt;
-            };
-            let svg = Buffer.from(mol.get_svg());
+        let mol = InChIGeneratorFactory.getInstanceSync().getInChIToStructureSync(inchi, SilentChemObjectBuilder.getInstanceSync()).getAtomContainerSync();
+        if (!mol.isEmptySync()) {
+            let svg = Buffer.from(new DepictionGenerator().withSizeSync(-1, -1).withFillToFitSync().withZoomSync(2.5).depictSync(mol).toSvgStrSync());
             let filepath = path.join(cacheDir, Date.now().toString());
             await sharp(svg).toFile(filepath);
             output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;

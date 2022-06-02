@@ -40,6 +40,7 @@
 ```
 npm install
 ```
+- 下载 [CDK](https://github.com/cdk/cdk/releases)，更名为 `cdk.jar` 后放入 lib 目录。确保 JDK 17 的 `bin\server` 在 `PATH` 当中。
 
 这样依赖都准备好了。接下来请编辑 config.example.js 设定机器人，如果有需要的话就编辑 text 内的数据。
 
