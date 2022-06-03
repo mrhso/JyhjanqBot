@@ -56,6 +56,14 @@ const InChIGeneratorFactory = java.import('org.openscience.cdk.inchi.InChIGenera
 const SilentChemObjectBuilder = java.import('org.openscience.cdk.silent.SilentChemObjectBuilder');
 const DepictionGenerator = java.import('org.openscience.cdk.depict.DepictionGenerator');
 const AtomContainerManipulator = java.import('org.openscience.cdk.tools.manipulator.AtomContainerManipulator');
+const SmartsPattern = java.import('org.openscience.cdk.smarts.SmartsPattern');
+const Cycles = java.import('org.openscience.cdk.graph.Cycles');
+const CDKConstants = java.import('org.openscience.cdk.CDKConstants');
+const InChITautomerGenerator = java.import('org.openscience.cdk.tautomers.InChITautomerGenerator');
+const SmilesGenerator = java.import('org.openscience.cdk.smiles.SmilesGenerator');
+const Aromaticity = java.import('org.openscience.cdk.aromaticity.Aromaticity');
+const ElectronDonation = java.import('org.openscience.cdk.aromaticity.ElectronDonation');
+const SmiFlavor = java.import('org.openscience.cdk.smiles.SmiFlavor');
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -784,15 +792,194 @@ const zuzi = async (str) => {
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
+const scoreRings = (mol) => {
+    let score = 0;
+
+    let ringSet = Cycles.sssrSync(mol).toRingSetSync();
+    let ringCount = ringSet.getAtomContainerCountSync();
+    let ringOffset = 0;
+    while (ringOffset < ringCount) {
+        let allC = true;
+        let allAromatic = true;
+
+        let ring = ringSet.getAtomContainerSync(ringOffset);
+
+        let bondCount = ring.getBondCountSync();
+        let bondOffset = 0;
+        while (bondOffset < bondCount) {
+            let bond = ring.getBondSync(bondOffset);
+
+            if (!bond.isAromaticSync()) {
+                allAromatic = false;
+                break;
+            };
+
+            bondOffset += 1;
+        };
+
+        let atomCount = ring.getAtomCountSync();
+        let atomOffset = 0;
+        while (atomOffset < atomCount) {
+            let atom = ring.getAtomSync(atomOffset);
+
+            if (atom.getAtomicNumberSync() !== 6) {
+                allC = false;
+                break;
+            };
+
+            atomOffset += 1;
+        };
+
+        if (allAromatic) {
+            score += 100;
+            if (allC) {
+                score += 150;
+            };
+        };
+
+        ringOffset += 1;
+    };
+
+    return score;
+};
+
+const scoreSubstructs = (mol) => {
+    let substructureTerms = [
+        // benzoquinone
+        ['[#6]1([#6]=[#6][#6]([#6]=[#6]1)=,:[N,S,O])=,:[N,S,O]', 25],
+        // oxim
+        ['[#6]=[N][OH]', 4],
+        // C=O
+        ['[#6]=,:[#8]', 2],
+        // N=O
+        ['[#7]=,:[#8]', 2],
+        // P=O
+        ['[#15]=,:[#8]', 2],
+        // C=hetero
+        ['[C]=[!#1;!#6]', 1],
+        // C(=hetero)-hetero
+        ['[C](=[!#1;!#6])[!#1;!#6]', 2],
+        // aromatic C = exocyclic N
+        ['[c]=!@[N]', -1],
+        // methyl
+        ['[CX4H3]', 1],
+        // guanidine terminal=N
+        ['[#7]C(=[NR0])[#7H0]', 1],
+        // guanidine endocyclic=N
+        ['[#7;R][#6;R]([N])=[#7;R]', 2],
+        // aci-nitro
+        ['[#6]=[N+]([O-])[OH]', -4]
+    ];
+
+    let score = 0;
+
+    for (let [smarts, termScore] of substructureTerms) {
+        let matches = SmartsPattern.createSync(smarts).matchAllSync(mol);
+        score += matches.countSync() * termScore;
+    };
+
+    return score;
+};
+
+const getExplicitHydrogenCount = (atomContainer, atom) => {
+    let count = 0;
+
+    let connectedAtoms = atomContainer.getConnectedAtomsListSync(atom);
+    let connectedAtomCount = connectedAtoms.sizeSync();
+    let connectedAtomOffset = 0;
+    while (connectedAtomOffset < connectedAtomCount) {
+        let connectedAtom = connectedAtoms.getSync(connectedAtomOffset);
+
+        if (connectedAtom.getAtomicNumberSync() === 1) {
+            count += 1;
+        };
+
+        connectedAtomOffset += 1;
+    };
+
+    return count;
+};
+
+const getImplicitHydrogenCount = (atom) => {
+    let count = atom.getImplicitHydrogenCountSync();
+    return count === CDKConstants.UNSET ? 0 : count;
+};
+
+const getHydrogenCount = (atomContainer, atom) => getExplicitHydrogenCount(atomContainer, atom) + getImplicitHydrogenCount(atom);
+
+const scoreHeteroHs = (mol) => {
+    let score = 0;
+
+    let atomCount = mol.getAtomCountSync();
+    let atomOffset = 0;
+    while (atomOffset < atomCount) {
+        let atom = mol.getAtomSync(atomOffset);
+
+        let anum = atom.getAtomicNumberSync();
+        if (anum === 15 || anum === 16 || anum === 34 || anum === 52) {
+            score -= getHydrogenCount(mol, atom);
+        };
+
+        atomOffset += 1;
+    };
+
+    return score;
+};
+
+const scoreTautomer = (mol) => scoreRings(mol) + scoreSubstructs(mol) + scoreHeteroHs(mol);
+
+const pickCanonical = (tautomers) => {
+    let bestMol;
+
+    let tautomerCount = tautomers.sizeSync();
+
+    if (tautomerCount === 1) {
+        bestMol = tautomers.getSync(0);
+    } else {
+        let bestScore = -Infinity;
+        let bestSmiles = '';
+
+        let aromaticity = new Aromaticity(ElectronDonation.daylightSync(), Cycles.allSync());
+        let smilesGen = new SmilesGenerator(SmiFlavor.Absolute | SmiFlavor.UseAromaticSymbols);
+
+        let tautomerOffset = 0;
+        while (tautomerOffset < tautomerCount) {
+            let tautomer = tautomers.getSync(tautomerOffset);
+
+            aromaticity.apply(tautomer);
+
+            let score = scoreTautomer(tautomer);
+            let smiles = smilesGen.createSync(tautomer);
+            if (score > bestScore) {
+                bestScore = score;
+                bestSmiles = smiles;
+                bestMol = tautomer;
+            } else if (score === bestScore) {
+                if (smiles < bestSmiles) {
+                    bestSmiles = smiles;
+                    bestMol = tautomer;
+                };
+            };
+
+            tautomerOffset += 1;
+        };
+    };
+
+    return bestMol;
+};
+
 // 使用 CDK 读取 InChI
 const inchi2img = async (str) => {
     let arr = str.split('\n');
     let output = '';
+    let tautomerGenerator = new InChITautomerGenerator();
     for (let inchi of arr) {
         let mol = InChIGeneratorFactory.getInstanceSync().getInChIToStructureSync(inchi, SilentChemObjectBuilder.getInstanceSync()).getAtomContainerSync();
         if (!mol.isEmptySync()) {
-            mol = AtomContainerManipulator.removeHydrogensSync(mol);
-            let svg = Buffer.from(new DepictionGenerator().withSizeSync(-1, -1).withFillToFitSync().withZoomSync(2.5).depictSync(mol).toSvgStrSync());
+            AtomContainerManipulator.percieveAtomTypesAndConfigureAtomsSync(mol);
+            let tautomers = tautomerGenerator.getTautomersSync(mol, inchi);
+            mol = AtomContainerManipulator.removeHydrogensSync(pickCanonical(tautomers));
+            let svg = Buffer.from(new DepictionGenerator().withSizeSync(DepictionGenerator.AUTOMATIC, DepictionGenerator.AUTOMATIC).withFillToFitSync().withZoomSync(2.5).depictSync(mol).toSvgStrSync());
             let filepath = path.join(cacheDir, Date.now().toString());
             await sharp(svg).toFile(filepath);
             output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;
