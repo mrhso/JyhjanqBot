@@ -920,7 +920,7 @@ const pickCanonical = (tautomers) => {
         while (tautomerOffset < tautomerCount) {
             let tautomer = tautomers.getSync(tautomerOffset);
 
-            AtomContainerManipulator.convertImplicitToExplicitHydrogens(tautomer);
+            AtomContainerManipulator.convertImplicitToExplicitHydrogensSync(tautomer);
             aromaticity.apply(tautomer);
 
             let score = scoreTautomer(tautomer);
