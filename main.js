@@ -910,7 +910,7 @@ const pickCanonical = (tautomers) => {
 
     let tautomerCount = tautomers.sizeSync();
 
-    if (tautomerCount === 0) {
+    if (tautomerCount === 1) {
         bestMol = tautomers.getSync(0);
     } else {
         let bestScore = -Infinity;
