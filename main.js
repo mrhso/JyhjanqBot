@@ -8,6 +8,7 @@ const OpenCC = require('opencc');
 const { v4: uuidv4 } = require('uuid');
 const jieba = require('@node-rs/jieba');
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
+const initRDKitModule = require('@rdkit/rdkit');
 const sharp = require('sharp');
 const java = require('java');
 
@@ -51,6 +52,8 @@ try {
     conLog('Failed to load mode.group.js', true);
 };
 
+let RDKitModule;
+(async () => { RDKitModule = await initRDKitModule(); })();
 java.classpath.push('./lib/cdk.jar');
 const InChIGeneratorFactory = java.import('org.openscience.cdk.inchi.InChIGeneratorFactory');
 const SilentChemObjectBuilder = java.import('org.openscience.cdk.silent.SilentChemObjectBuilder');
@@ -907,7 +910,7 @@ const pickCanonical = (tautomers) => {
 
     let tautomerCount = tautomers.sizeSync();
 
-    if (tautomerCount === 1) {
+    if (tautomerCount === 0) {
         bestMol = tautomers.getSync(0);
     } else {
         let bestScore = -Infinity;
@@ -924,7 +927,7 @@ const pickCanonical = (tautomers) => {
             aromaticity.apply(tautomer);
 
             let score = scoreTautomer(tautomer);
-            let smiles = smilesGen.createSync(tautomer);
+            let smiles = RDKitModule.get_mol(smilesGen.createSync(tautomer)).get_smiles();
             if (score > bestScore) {
                 bestScore = score;
                 bestSmiles = smiles;
