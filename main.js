@@ -881,32 +881,6 @@ const scoreSubstructs = (mol) => {
     return score;
 };
 
-const getExplicitHydrogenCount = (atomContainer, atom) => {
-    let count = 0;
-
-    let connectedAtoms = atomContainer.getConnectedAtomsListSync(atom);
-    let connectedAtomCount = connectedAtoms.sizeSync();
-    let connectedAtomOffset = 0;
-    while (connectedAtomOffset < connectedAtomCount) {
-        let connectedAtom = connectedAtoms.getSync(connectedAtomOffset);
-
-        if (connectedAtom.getAtomicNumberSync() === 1) {
-            count += 1;
-        };
-
-        connectedAtomOffset += 1;
-    };
-
-    return count;
-};
-
-const getImplicitHydrogenCount = (atom) => {
-    let count = atom.getImplicitHydrogenCountSync();
-    return count === CDKConstants.UNSET ? 0 : count;
-};
-
-const getHydrogenCount = (atomContainer, atom) => getExplicitHydrogenCount(atomContainer, atom) + getImplicitHydrogenCount(atom);
-
 const scoreHeteroHs = (mol) => {
     let score = 0;
 
@@ -917,7 +891,7 @@ const scoreHeteroHs = (mol) => {
 
         let anum = atom.getAtomicNumberSync();
         if (anum === 15 || anum === 16 || anum === 34 || anum === 52) {
-            score -= getHydrogenCount(mol, atom);
+            score -= AtomContainerManipulator.countHydrogensSync(mol, atom);
         };
 
         atomOffset += 1;
@@ -946,6 +920,7 @@ const pickCanonical = (tautomers) => {
         while (tautomerOffset < tautomerCount) {
             let tautomer = tautomers.getSync(tautomerOffset);
 
+            AtomContainerManipulator.convertImplicitToExplicitHydrogens(tautomer);
             aromaticity.apply(tautomer);
 
             let score = scoreTautomer(tautomer);
@@ -965,7 +940,7 @@ const pickCanonical = (tautomers) => {
         };
     };
 
-    return bestMol;
+    return AtomContainerManipulator.removeHydrogensSync(bestMol);
 };
 
 // 使用 CDK 读取 InChI
@@ -978,7 +953,7 @@ const inchi2img = async (str) => {
         if (!mol.isEmptySync()) {
             AtomContainerManipulator.percieveAtomTypesAndConfigureAtomsSync(mol);
             let tautomers = tautomerGenerator.getTautomersSync(mol, inchi);
-            mol = AtomContainerManipulator.removeHydrogensSync(pickCanonical(tautomers));
+            mol = pickCanonical(tautomers);
             let svg = Buffer.from(new DepictionGenerator().withSizeSync(DepictionGenerator.AUTOMATIC, DepictionGenerator.AUTOMATIC).withFillToFitSync().withZoomSync(2.5).depictSync(mol).toSvgStrSync());
             let filepath = path.join(cacheDir, Date.now().toString());
             await sharp(svg).toFile(filepath);
