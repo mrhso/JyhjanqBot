@@ -61,7 +61,6 @@ const DepictionGenerator = java.import('org.openscience.cdk.depict.DepictionGene
 const AtomContainerManipulator = java.import('org.openscience.cdk.tools.manipulator.AtomContainerManipulator');
 const SmartsPattern = java.import('org.openscience.cdk.smarts.SmartsPattern');
 const Cycles = java.import('org.openscience.cdk.graph.Cycles');
-const CDKConstants = java.import('org.openscience.cdk.CDKConstants');
 const InChITautomerGenerator = java.import('org.openscience.cdk.tautomers.InChITautomerGenerator');
 const SmilesGenerator = java.import('org.openscience.cdk.smiles.SmilesGenerator');
 const Aromaticity = java.import('org.openscience.cdk.aromaticity.Aromaticity');
