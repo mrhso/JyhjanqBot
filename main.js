@@ -950,13 +950,14 @@ const inchi2img = async (str) => {
     let arr = str.split('\n');
     let output = '';
     let tautomerGenerator = new InChITautomerGenerator();
+    let depictionGenerator = new DepictionGenerator().withSizeSync(DepictionGenerator.AUTOMATIC, DepictionGenerator.AUTOMATIC).withFillToFitSync().withZoomSync(2.5);
     for (let inchi of arr) {
         let mol = InChIGeneratorFactory.getInstanceSync().getInChIToStructureSync(inchi, SilentChemObjectBuilder.getInstanceSync()).getAtomContainerSync();
         if (!mol.isEmptySync()) {
             AtomContainerManipulator.percieveAtomTypesAndConfigureAtomsSync(mol);
             let tautomers = tautomerGenerator.getTautomersSync(mol, inchi);
             mol = pickCanonical(tautomers);
-            let svg = Buffer.from(new DepictionGenerator().withSizeSync(DepictionGenerator.AUTOMATIC, DepictionGenerator.AUTOMATIC).withFillToFitSync().withZoomSync(2.5).depictSync(mol).toSvgStrSync());
+            let svg = Buffer.from(depictionGenerator.depictSync(mol).toSvgStrSync());
             let filepath = path.join(cacheDir, Date.now().toString());
             await sharp(svg).toFile(filepath);
             output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;
