@@ -164,6 +164,7 @@ try {
 } catch (ex) {
     conLog('Failed to load AIxxz.uuid.js', true);
 };
+let AIxxzUK = new Map();
 
 let wtfurryDic = {};
 let wtfurryIndy_s = {};
@@ -281,12 +282,17 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         return;
     };
 
-    let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
-    let getUK = await fetch(new URL('http://xxz_ai.aiibt.cn/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
-    let getUKBuf = await getUK.arrayBuffer();
-    let getUKChunk = JSON.parse(Buffer.from(getUKBuf).toString());
+    let uk = AIxxzUK.get(uuid);
+    if (!uk) {
+        let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
+        let getUK = await fetch(new URL('http://xxz_ai.aiibt.cn/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
+        let getUKBuf = await getUK.arrayBuffer();
+        let getUKChunk = JSON.parse(Buffer.from(getUKBuf).toString());
+        uk = getUKChunk.data[uuid].uk;
+        AIxxzUK.set(uuid, uk);
+    };
     // 请求回答
-    let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(getUKChunk.data[uuid].uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
+    let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
     let getAnswer = await fetch(new URL('http://xxz_ai.aiibt.cn/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
     let getAnswerBuf = await getAnswer.arrayBuffer();
     let chunk = Buffer.from(getAnswerBuf).toString();
