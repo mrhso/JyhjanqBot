@@ -361,7 +361,9 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
             list.sort(sort);
             for (let data2 of list) {
                 if (data2 === 'picurl') {
-                    answer.push(`\u{D800}${data.picurl}`);
+                    if (data.picurl) {
+                        answer.push(`\u{D800}${data.picurl}`);
+                    };
                 } else {
                     answer.push(data[data2]);
                 };
@@ -377,7 +379,9 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
         list.sort(sort);
         for (let data of list) {
             if (data === 'picurl') {
-                answer.push(`\u{D800}${chunk.data.picurl}`);
+                if (chunk.data.picurl) {
+                    answer.push(`\u{D800}${chunk.data.picurl}`);
+                };
             } else {
                 answer.push(chunk.data[data]);
             };
