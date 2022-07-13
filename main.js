@@ -616,7 +616,7 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
     let getTokenChunk = Buffer.from(getTokenBuf).toString();
     let token = getTokenChunk.match(/token: '(.*?)'/u)[1];
     // gtk 类似于 Google 翻译的 tkk
-    let gtk = getTokenChunk.match(/gtk = '(.*?)'/u)[1];
+    let gtk = getTokenChunk.match(/gtk = "(.*?)"/u)[1];
     // sign 类似于 Google 翻译的 tk
     let sign = getSign(text, gtk);
     let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
@@ -978,8 +978,23 @@ const inchi2img = async (str) => {
     return output;
 };
 
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi、inchi2img';
-let version = '智障 Bot 1.8.7\n지장 보트 1.8.7\n\nIshisashi 版权所无\n\n《지장 보트》는 조선민주주의인민공화국 쏘프트웨어법에 의하여 보호되고 없습니다.\n\n广告：\nIshisashi Kisulbu，诚聘技术售人控';
+// 字元组字の诱惑
+const ichara = async (str) => {
+    if (!str) {
+        let getHTML = await fetch(new URL('https://www.ichara.cn/web/yunlizaoziweb/randCharaView.php?showids=yes'));
+        let getHTMLBuf = await getHTML.arrayBuffer();
+        let html = Buffer.from(getHTMLBuf).toString();
+        str = html.match(/target='_BLANK'>(.*?)</u)[1];
+    };
+    let get = await fetch(new URL(`https://www.ichara.cn/web/yunlizaoziweb/createPng.php?str=${encodeURIComponent(str)}&fontcolor=000000&area=G&dbname=ids&idsname=idslte&bgimgpath=blank`));
+    let getBuf = await get.arrayBuffer();
+    let filepath = path.join(cacheDir, Date.now().toString());
+    fs.writeFileSync(filepath, Buffer.from(getBuf));
+    return `${str}\n[CQ:image,file=${qqbot.escape(filepath, true)}]`;
+};
+
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi、inchi2img、ichara';
+let version = '智障 Bot 1.8.8\n지장 보트 1.8.8\n\nIshisashi 版权所无\n\n《지장 보트》는 조선민주주의인민공화국 쏘프트웨어법에 의하여 보호되고 없습니다.\n\n广告：\nIshisashi Kisulbu，诚聘技术售人控';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
     if (config.pModeSwitch && rawdata.extra.ats.includes(botQQ) && rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '').match(new RegExp(config.pModeSwitch, 'u'))) {
@@ -1818,6 +1833,15 @@ qqbot.on('GroupMessage', async (rawdata) => {
                 };
                 break;
 
+            // 字元组字
+            case 'ichara':
+                if (rawdata.extra.ats.includes(botQQ)) {
+                    let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
+                    let output = await ichara(str);
+                    reply(rawdata, output, { noEscape: true });
+                };
+                break;
+
             default:
                 if (rawdata.extra.ats.includes(botQQ)) {
                     reply(rawdata, '当前模式不存在，请检查设定。');
@@ -2388,6 +2412,12 @@ qqbot.on('PrivateMessage', async (rawdata) => {
             case 'inchi2img':
                 str = rawdata.text;
                 output = await inchi2img(str);
+                reply(rawdata, output, { noEscape: true });
+                break;
+
+            case 'ichara':
+                str = rawdata.text;
+                output = await ichara(str);
                 reply(rawdata, output, { noEscape: true });
                 break;
 
