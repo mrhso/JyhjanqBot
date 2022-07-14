@@ -561,7 +561,7 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
             for (let d = text.split(/[\uD800-\uDBFF][\uDC00-\uDFFF]/), e = 0, f = d.length; f > e; e++) {
                 if (d[e] !== '') {
                     // 此处 split 也不好用 [...] 代替，因为 non-BMP 两者存在差异
-                    c.push.apply(c, [...d[e].split('')]);
+                    c.push.apply(c, d[e].split(''));
                 };
                 if (e !== f - 1) {
                     c.push(a[e]);
