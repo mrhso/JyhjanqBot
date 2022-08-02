@@ -683,7 +683,7 @@ const charCode = (str) => {
     output.push(`UTF-8: ${getCode(str, 'UTF-8')}`);
     output.push(`UTF-16 BE: ${getCode(str, 'UTF-16 BE')}`);
     output.push(`UTF-32 BE: ${getCode(str, 'UTF-32 BE')}`);
-    output.push(`GB 18030-2005: ${getCode(str, 'GB 18030-2005')}`);
+    output.push(`GB 18030-2022: ${getCode(str, 'GB 18030-2022')}`);
     output.push(`UTF-1: ${getCode(str, 'UTF-1')}`);
 
     return output.join('\n');
