@@ -776,18 +776,21 @@ const wtfurry = (sentence) => {
 // 移植自 https://github.com/mrhso/IshisashiWebsite/blob/master/%E4%B9%B1%E5%86%99%E7%A8%8B%E5%BC%8F/%E8%90%A5%E9%94%80%E5%8F%B7%EF%BC%8C%E5%A6%82%E7%B4%AB%E7%81%AB%E8%88%AC%E7%87%83%E7%83%A7.js
 const yngshiau = async (event0, event1) => {
     let event = `${event0}${event1}`;
+    let template = [`${qqbot.escape(event)}是怎么回事呢？${qqbot.escape(event)}相信大家都很熟悉，但是${qqbot.escape(event)}是怎么回事呢？下面就让小编带大家一起了解吧。\n${qqbot.escape(event)}，其实就是${qqbot.escape(event)}，大家可能会感到很惊讶，${qqbot.escape(event0)}怎么会${qqbot.escape(event1) || qqbot.escape(event0)}？但事实就是这样，小编也感到非常惊讶。\n`, '', `那么这就是关于${qqbot.escape(event)}的事情了，大家有甚么想法呢？欢迎在评论区告诉小编一起讨论哦。`];
     let get = await fetch(new URL(`https://image.so.com/i?q=${encodeURIComponent(event)}&src=srp`));
     let getBuf = await get.arrayBuffer();
     let chunk = JSON.parse(Buffer.from(getBuf).toString().match(/<script type="text\/data" id="initData">(.*?)<\/script>/u)[1]);
     let imgs = chunk.list;
-    // 随机抽取一张图片
-    let img = imgs[Math.floor(Math.random() * imgs.length)].img;
-    let filepath = path.join(cacheDir, Date.now().toString());
-    let getImg = await fetch(new URL(img));
-    let getImgBuf = await getImg.arrayBuffer();
-    fs.writeFileSync(filepath, Buffer.from(getImgBuf));
-    let template = `${qqbot.escape(event)}是怎么回事呢？${qqbot.escape(event)}相信大家都很熟悉，但是${qqbot.escape(event)}是怎么回事呢？下面就让小编带大家一起了解吧。\n${qqbot.escape(event)}，其实就是${qqbot.escape(event)}，大家可能会感到很惊讶，${qqbot.escape(event0)}怎么会${qqbot.escape(event1) || qqbot.escape(event0)}？但事实就是这样，小编也感到非常惊讶。\n[CQ:image,file=${qqbot.escape(filepath, true)}]\n那么这就是关于${qqbot.escape(event)}的事情了，大家有甚么想法呢？欢迎在评论区告诉小编一起讨论哦。`;
-    return template;
+    if (imgs.length > 0) {
+        // 随机抽取一张图片
+        let img = imgs[Math.floor(Math.random() * imgs.length)].img;
+        let filepath = path.join(cacheDir, Date.now().toString());
+        let getImg = await fetch(new URL(img));
+        let getImgBuf = await getImg.arrayBuffer();
+        fs.writeFileSync(filepath, Buffer.from(getImgBuf));
+        template[1] = `[CQ:image,file=${qqbot.escape(filepath, true)}]\n`;
+    };
+    return template.join('');
 };
 
 // 老白提供 API
