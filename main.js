@@ -516,7 +516,7 @@ const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
     // 开始请求
     let partA = `/_/TranslateWebserverUi/data/batchexecute`;
     let partB = `f.req=${encodeURIComponent(JSON.stringify([[['MkEWBc', `${JSON.stringify([[text, src, tgt, true], [null]])}`, null, 'generic']]]))}`;
-    let get = await fetch(new URL(`https://translate.google.cn${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
+    let get = await fetch(new URL(`https://translate.google.com.hk${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
     let getBuf = await get.arrayBuffer();
     let chunk = Buffer.from(getBuf).toString();
     chunk = chunk.substring(chunk.search(/\[/u));
@@ -640,7 +640,7 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
 };
 
 const couplet = async (text) => {
-    let get = await fetch(new URL(`https://ai-backend.binwang.me/chat/couplet/${encodeURIComponent(text)}`));
+    let get = await fetch(new URL(`https://seq2seq-couplet-model.rssbrain.com/v0.2/couplet/${encodeURIComponent(text)}`));
     let getBuf = await get.arrayBuffer();
     let chunk = Buffer.from(getBuf).toString();
     // 读入 JSON
@@ -649,7 +649,7 @@ const couplet = async (text) => {
     } catch (ex) {
         conLog(ex, true);
     };
-    return chunk.output;
+    return chunk.output[0];
 };
 
 const charCode = (str) => {
