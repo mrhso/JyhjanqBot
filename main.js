@@ -655,11 +655,7 @@ const couplet = async (text) => {
 const charCode = (str) => {
     const usv = (chr) => {
         let value = chr.codePointAt().toString(16).toUpperCase();
-        if (value.length < 4) {
-            return `U+${`000${value}`.slice(-4)}`;
-        } else {
-            return `U+${value}`;
-        };
+        return `U+${value.padStart(4, '0')}`;
     };
 
     const buf2hex = (buf) => Buffer.from(buf).toString('hex').toUpperCase();
