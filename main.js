@@ -5,12 +5,9 @@ const { toLF, toCRLF, TextEncoder } = require('ishisashiencoding');
 const path = require('path');
 const fs = require('fs');
 const OpenCC = require('opencc');
-const { v4: uuidv4 } = require('uuid');
-const jieba = require('@node-rs/jieba');
-const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
-const initRDKitModule = require('@rdkit/rdkit');
-const sharp = require('sharp');
-const java = require('java');
+const crypto = require('crypto');
+const { Jieba } = require('@node-rs/jieba');
+const { dict: jiebaDict } = require('@node-rs/jieba/dict');
 
 const conLog = (message, isError = false) => {
     let date = new Date();
@@ -52,20 +49,7 @@ try {
     conLog('Failed to load mode.group.js', true);
 };
 
-let RDKitModule;
-(async () => { RDKitModule = await initRDKitModule(); })();
-java.classpath.push('./lib/cdk.jar');
-const InChIGeneratorFactory = java.import('org.openscience.cdk.inchi.InChIGeneratorFactory');
-const SilentChemObjectBuilder = java.import('org.openscience.cdk.silent.SilentChemObjectBuilder');
-const DepictionGenerator = java.import('org.openscience.cdk.depict.DepictionGenerator');
-const AtomContainerManipulator = java.import('org.openscience.cdk.tools.manipulator.AtomContainerManipulator');
-const SmartsPattern = java.import('org.openscience.cdk.smarts.SmartsPattern');
-const Cycles = java.import('org.openscience.cdk.graph.Cycles');
-const InChITautomerGenerator = java.import('org.openscience.cdk.tautomers.InChITautomerGenerator');
-const SmilesGenerator = java.import('org.openscience.cdk.smiles.SmilesGenerator');
-const Aromaticity = java.import('org.openscience.cdk.aromaticity.Aromaticity');
-const ElectronDonation = java.import('org.openscience.cdk.aromaticity.ElectronDonation');
-const SmiFlavor = java.import('org.openscience.cdk.smiles.SmiFlavor');
+const jieba = Jieba.withDict(jiebaDict);
 
 let qqbot = new QQBot({
     CoolQAirA: config.CoolQAirA,
@@ -201,10 +185,11 @@ const writeConfig = (config, file) => {
     });
 };
 
-const reply = (rawdata, message, options) => {
+const reply = async (rawdata, message, options) => {
     if (Object.prototype.toString.call(message) === '[object String]') {
         let length;
         let id;
+        let timeout = false;
 
         if (options && options.noEscape) {
             length = [...message.replace(/\[CQ:(.*?),(.*?)\]/gu, ' ').replace(/&#91;/gu, '[').replace(/&#93;/gu, ']').replace(/&amp;/gu, '&')].length;
@@ -215,9 +200,17 @@ const reply = (rawdata, message, options) => {
 
         if (rawdata.group) {
             if (rawdata.from === 80000000) {
-                id = qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
+                try {
+                    id = await qqbot.sendGroupMessage(rawdata.group, message, { noEscape: true });
+                } catch (ex) {
+                    timeout = true;
+                };
             } else {
-                id = qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
+                try {
+                    id = await qqbot.sendGroupMessage(rawdata.group, `[CQ:at,qq=${rawdata.from}] ${message}`, { noEscape: true });
+                } catch (ex) {
+                    timeout = true;
+                };
             };
             // 这里要注意，数组即使为空也为真值，这与空字符串不同
             if (qqbot.parseMessage(message).extra.ats.length > 0) {
@@ -236,19 +229,23 @@ const reply = (rawdata, message, options) => {
                     };
                     conout = qqbot.parseMessage(conout).text;
                     if (rawdata.from === 80000000) {
-                        conLog(`Output: ${qqbot.parseMessage(conout).text}`);
+                        conLog(`${timeout ? 'Timeout' : 'Output'}: ${qqbot.parseMessage(conout).text}`, timeout);
                     } else {
-                        conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`);
+                        conLog(`${timeout ? 'Timeout' : 'Output'}: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(conout).text}`, timeout);
                     };
                 }).catch(_ => {});
             } else if (rawdata.from === 80000000) {
-                conLog(`Output: ${qqbot.parseMessage(message).text}`);
+                conLog(`${timeout ? 'Timeout' : 'Output'}: ${qqbot.parseMessage(message).text}`, timeout);
             } else {
-                conLog(`Output: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`);
+                conLog(`${timeout ? 'Timeout' : 'Output'}: @${rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString()} ${qqbot.parseMessage(message).text}`, timeout);
             };
         } else {
-            id = qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
-            conLog(`Output: ${qqbot.parseMessage(message).text}`);
+            try {
+                id = await qqbot.sendPrivateMessage(rawdata.from, message, { noEscape: true });
+            } catch (ex) {
+                timeout = true;
+            };
+            conLog(`${timeout ? 'Timeout' : 'Output'}: ${qqbot.parseMessage(message).text}`, timeout);
         };
 
         return id;
@@ -271,7 +268,7 @@ const jinkohChishoh = (question) => {
 const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => {
     let uuid = AIxxzUUID[rawdata.from];
     if (!uuid) {
-        uuid = uuidv4();
+        uuid = crypto.randomUUID();
         AIxxzUUID[rawdata.from] = uuid;
         writeConfig(AIxxzUUID, './data/AIxxz.uuid.js');
     };
@@ -285,7 +282,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
     let uk = AIxxzUK.get(uuid);
     if (!uk) {
         let getUKPostData = `secret=${encodeURIComponent(config.appid || 'dcXbXX0X')}|${encodeURIComponent(config.ak || '5c011b2726e0adb52f98d6a57672774314c540a0')}|${encodeURIComponent(config.token || 'f9e79b0d9144b9b47f3072359c0dfa75926a5013')}&event=GetUk&data=["${encodeURIComponent(uuid)}"]`;
-        let getUK = await fetch(new URL('http://xxz_ai.aiibt.cn/app_event.php'), { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getUKPostData) } });
+        let getUK = await fetch('http://xxz_ai.aiibt.cn/app_event.php', { method: 'POST', body: getUKPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
         let getUKBuf = await getUK.arrayBuffer();
         let getUKChunk = JSON.parse(Buffer.from(getUKBuf).toString());
         uk = getUKChunk.data[uuid].uk;
@@ -293,7 +290,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
     };
     // 请求回答
     let getAnswerPostData = `app=${encodeURIComponent(config.appid || 'dcXbXX0X')}&dev=${encodeURIComponent(uuid)}&uk=${encodeURIComponent(uk)}&text=${encodeURIComponent(question)}&lang=${encodeURIComponent(lang)}&nickname=${encodeURIComponent(rawdata.user.groupCard || rawdata.user.name || rawdata.user.qq.toString())}&city=${encodeURIComponent(city)}`;
-    let getAnswer = await fetch(new URL('http://xxz_ai.aiibt.cn/api3.php'), { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(getAnswerPostData) } });
+    let getAnswer = await fetch('http://xxz_ai.aiibt.cn/api3.php', { method: 'POST', body: getAnswerPostData, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
     let getAnswerBuf = await getAnswer.arrayBuffer();
     let chunk = Buffer.from(getAnswerBuf).toString();
     // 特别注意，请求回答的时候 JSON 前面就可能有各种奇妙的报错了，所以要先滤掉
@@ -410,7 +407,7 @@ const AIxxz = async (rawdata, question, lang = 'zh-CN', city = '', callback) => 
             if (data.match(/\u{D800}/u)) {
                 data = encodeURI(data.replace(/\u{D800}/gu, '')).replace(/%25/gu, '%');
                 let filepath = path.join(cacheDir, Date.now().toString());
-                let get = await fetch(new URL(data));
+                let get = await fetch(data);
                 let getBuf = await get.arrayBuffer();
                 fs.writeFileSync(filepath, Buffer.from(getBuf));
                 answerURI.push(`[CQ:image,file=${qqbot.escape(filepath, true)}]`);
@@ -516,7 +513,7 @@ const googleTranslate = async (text, src = 'auto', tgt = 'en') => {
     // 开始请求
     let partA = `/_/TranslateWebserverUi/data/batchexecute`;
     let partB = `f.req=${encodeURIComponent(JSON.stringify([[['MkEWBc', `${JSON.stringify([[text, src, tgt, true], [null]])}`, null, 'generic']]]))}`;
-    let get = await fetch(new URL(`https://translate.google.com.hk${partA}`), { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(partB) } });
+    let get = await fetch(`https://translate.google.com.hk${partA}`, { method: 'POST', body: partB, headers: { 'Content-Type': 'application/x-www-form-urlencoded' } });
     let getBuf = await get.arrayBuffer();
     let chunk = Buffer.from(getBuf).toString();
     chunk = chunk.substring(chunk.search(/\[/u));
@@ -608,10 +605,10 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
         return `${l}.${l ^ gtkInt}`;
     };
     // 开始请求
-    let getCookie = await fetch(new URL('https://fanyi.baidu.com/'));
+    let getCookie = await fetch('https://fanyi.baidu.com/');
     // 百度翻译最坑的一点在于要带 Cookie 请求，得到的 Token 才有效，所以要先拿到 Cookie 再重新请求
-    let cookie = getCookie.headers.raw()['set-cookie'];
-    let getToken = await fetch(new URL('https://fanyi.baidu.com/'), { headers: { 'Cookie': cookie } });
+    let cookie = getCookie.headers.get('set-cookie');
+    let getToken = await fetch('https://fanyi.baidu.com/', { headers: { 'Cookie': cookie } });
     let getTokenBuf = await getToken.arrayBuffer();
     let getTokenChunk = Buffer.from(getTokenBuf).toString();
     let token = getTokenChunk.match(/token: '(.*?)'/u)[1];
@@ -620,7 +617,7 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
     // sign 类似于 Google 翻译的 tk
     let sign = getSign(text, gtk);
     let postData = `from=${encodeURIComponent(src)}&to=${encodeURIComponent(tgt)}&query=${encodeURIComponent(text)}&transtype=realtime&simple_means_flag=3&sign=${encodeURIComponent(sign)}&token=${encodeURIComponent(token)}`;
-    let get = await fetch(new URL('https://fanyi.baidu.com/v2transapi'), { method: 'POST', body: postData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(postData), 'Cookie': cookie } });
+    let get = await fetch('https://fanyi.baidu.com/v2transapi', { method: 'POST', body: postData, headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cookie': cookie } });
     let getBuf = await get.arrayBuffer();
     let chunk = Buffer.from(getBuf).toString();
     // 读入 JSON
@@ -640,7 +637,7 @@ const baiduFanyi = async (text, src = 'auto', tgt = 'en') => {
 };
 
 const couplet = async (text) => {
-    let get = await fetch(new URL(`https://seq2seq-couplet-model.rssbrain.com/v0.2/couplet/${encodeURIComponent(text)}`));
+    let get = await fetch(`https://seq2seq-couplet-model.rssbrain.com/v0.2/couplet/${encodeURIComponent(text)}`);
     let getBuf = await get.arrayBuffer();
     let chunk = Buffer.from(getBuf).toString();
     // 读入 JSON
@@ -773,7 +770,7 @@ const wtfurry = (sentence) => {
 const yngshiau = async (event0, event1) => {
     let event = `${event0}${event1}`;
     let template = [`${qqbot.escape(event)}是怎么回事呢？${qqbot.escape(event)}相信大家都很熟悉，但是${qqbot.escape(event)}是怎么回事呢？下面就让小编带大家一起了解吧。\n${qqbot.escape(event)}，其实就是${qqbot.escape(event)}，大家可能会感到很惊讶，${qqbot.escape(event0)}怎么会${qqbot.escape(event1) || qqbot.escape(event0)}？但事实就是这样，小编也感到非常惊讶。\n`, '', `那么这就是关于${qqbot.escape(event)}的事情了，大家有甚么想法呢？欢迎在评论区告诉小编一起讨论哦。`];
-    let get = await fetch(new URL(`https://image.so.com/i?q=${encodeURIComponent(event)}&src=srp`));
+    let get = await fetch(`https://image.so.com/i?q=${encodeURIComponent(event)}&src=srp`);
     let getBuf = await get.arrayBuffer();
     let chunk = JSON.parse(Buffer.from(getBuf).toString().match(/<script type="text\/data" id="initData">(.*?)<\/script>/u)[1]);
     let imgs = chunk.list;
@@ -781,7 +778,7 @@ const yngshiau = async (event0, event1) => {
         // 随机抽取一张图片
         let img = imgs[Math.floor(Math.random() * imgs.length)].img;
         let filepath = path.join(cacheDir, Date.now().toString());
-        let getImg = await fetch(new URL(img));
+        let getImg = await fetch(img);
         let getImgBuf = await getImg.arrayBuffer();
         fs.writeFileSync(filepath, Buffer.from(getImgBuf));
         template[1] = `[CQ:image,file=${qqbot.escape(filepath, true)}]\n`;
@@ -791,208 +788,34 @@ const yngshiau = async (event0, event1) => {
 
 // 老白提供 API
 const zuzi = async (str) => {
-    let get = await fetch(new URL(`http://zu.zi.tools/${encodeURIComponent(str)}.png`));
+    let get = await fetch(`http://zu.zi.tools/${encodeURIComponent(str)}.png`);
     if (get.status === 400) {
         return '非法语句！！';
     };
-    let normalised = Buffer.from(get.headers.raw()['x-zi-tools-normalized-ids'][0], 'base64').toString();
-    let matches = Buffer.from(get.headers.raw()['x-zi-tools-matches-characters'][0], 'base64').toString().split(' ').filter((value) => value);
+    let normalised = Buffer.from(get.headers.get('x-zi-tools-normalized-ids'), 'base64').toString();
+    let matches = Buffer.from(get.headers.get('x-zi-tools-matches-characters'), 'base64').toString().split(' ').filter((value) => value);
     let getBuf = await get.arrayBuffer();
     let filepath = path.join(cacheDir, Date.now().toString());
     fs.writeFileSync(filepath, Buffer.from(getBuf));
     return `IDS: ${qqbot.escape(str)}\nNormalised IDS: ${qqbot.escape(normalised)}\n${matches.length > 0 ? `Matches character(s): ${matches.join(' / ')}\n` : ''}[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
-const scoreRings = (mol) => {
-    let score = 0;
-
-    let ringSet = Cycles.sssrSync(mol).toRingSetSync();
-    let ringCount = ringSet.getAtomContainerCountSync();
-    let ringOffset = 0;
-    while (ringOffset < ringCount) {
-        let allC = true;
-        let allAromatic = true;
-
-        let ring = ringSet.getAtomContainerSync(ringOffset);
-
-        let bondCount = ring.getBondCountSync();
-        let bondOffset = 0;
-        while (bondOffset < bondCount) {
-            let bond = ring.getBondSync(bondOffset);
-
-            if (!bond.isAromaticSync()) {
-                allAromatic = false;
-                break;
-            };
-
-            bondOffset += 1;
-        };
-
-        let atomCount = ring.getAtomCountSync();
-        let atomOffset = 0;
-        while (atomOffset < atomCount) {
-            let atom = ring.getAtomSync(atomOffset);
-
-            if (atom.getAtomicNumberSync() !== 6) {
-                allC = false;
-                break;
-            };
-
-            atomOffset += 1;
-        };
-
-        if (allAromatic) {
-            score += 100;
-            if (allC) {
-                score += 150;
-            };
-        };
-
-        ringOffset += 1;
-    };
-
-    return score;
-};
-
-const scoreSubstructs = (mol) => {
-    let substructureTerms = [
-        // benzoquinone
-        ['[#6]1([#6]=[#6][#6]([#6]=[#6]1)=,:[N,S,O])=,:[N,S,O]', 25],
-        // oxim
-        ['[#6]=[N][OH]', 4],
-        // C=O
-        ['[#6]=,:[#8]', 2],
-        // N=O
-        ['[#7]=,:[#8]', 2],
-        // P=O
-        ['[#15]=,:[#8]', 2],
-        // C=hetero
-        ['[C]=[!#1;!#6]', 1],
-        // C(=hetero)-hetero
-        ['[C](=[!#1;!#6])[!#1;!#6]', 2],
-        // aromatic C = exocyclic N
-        ['[c]=!@[N]', -1],
-        // methyl
-        ['[CX4H3]', 1],
-        // guanidine terminal=N
-        ['[#7]C(=[NR0])[#7H0]', 1],
-        // guanidine endocyclic=N
-        ['[#7;R][#6;R]([N])=[#7;R]', 2],
-        // aci-nitro
-        ['[#6]=[N+]([O-])[OH]', -4]
-    ];
-
-    let score = 0;
-
-    for (let [smarts, termScore] of substructureTerms) {
-        let matches = SmartsPattern.createSync(smarts).matchAllSync(mol);
-        score += matches.countSync() * termScore;
-    };
-
-    return score;
-};
-
-const scoreHeteroHs = (mol) => {
-    let score = 0;
-
-    let atomCount = mol.getAtomCountSync();
-    let atomOffset = 0;
-    while (atomOffset < atomCount) {
-        let atom = mol.getAtomSync(atomOffset);
-
-        let anum = atom.getAtomicNumberSync();
-        if (anum === 15 || anum === 16 || anum === 34 || anum === 52) {
-            score -= AtomContainerManipulator.countHydrogensSync(mol, atom);
-        };
-
-        atomOffset += 1;
-    };
-
-    return score;
-};
-
-const scoreTautomer = (mol) => scoreRings(mol) + scoreSubstructs(mol) + scoreHeteroHs(mol);
-
-const pickCanonical = (tautomers) => {
-    let bestMol;
-
-    let tautomerCount = tautomers.sizeSync();
-
-    if (tautomerCount === 1) {
-        bestMol = tautomers.getSync(0);
-    } else {
-        let bestScore = -Infinity;
-        let bestSmiles = '';
-
-        let aromaticity = new Aromaticity(ElectronDonation.daylightSync(), Cycles.allSync());
-        let smilesGen = new SmilesGenerator(SmiFlavor.Absolute | SmiFlavor.UseAromaticSymbols);
-
-        let tautomerOffset = 0;
-        while (tautomerOffset < tautomerCount) {
-            let tautomer = tautomers.getSync(tautomerOffset);
-
-            AtomContainerManipulator.convertImplicitToExplicitHydrogensSync(tautomer);
-            aromaticity.apply(tautomer);
-
-            let score = scoreTautomer(tautomer);
-            let smiles = RDKitModule.get_mol(smilesGen.createSync(tautomer)).get_smiles();
-            if (score > bestScore) {
-                bestScore = score;
-                bestSmiles = smiles;
-                bestMol = tautomer;
-            } else if (score === bestScore) {
-                if (smiles < bestSmiles) {
-                    bestSmiles = smiles;
-                    bestMol = tautomer;
-                };
-            };
-
-            tautomerOffset += 1;
-        };
-    };
-
-    return AtomContainerManipulator.removeHydrogensSync(bestMol);
-};
-
-// 使用 CDK 读取 InChI
-const inchi2img = async (str) => {
-    let arr = str.split('\n');
-    let output = '';
-    let tautomerGenerator = new InChITautomerGenerator();
-    let depictionGenerator = new DepictionGenerator().withSizeSync(DepictionGenerator.AUTOMATIC, DepictionGenerator.AUTOMATIC).withFillToFitSync().withZoomSync(2.5);
-    for (let inchi of arr) {
-        let mol = InChIGeneratorFactory.getInstanceSync().getInChIToStructureSync(inchi, SilentChemObjectBuilder.getInstanceSync()).getAtomContainerSync();
-        if (!mol.isEmptySync()) {
-            AtomContainerManipulator.percieveAtomTypesAndConfigureAtomsSync(mol);
-            let tautomers = tautomerGenerator.getTautomersSync(mol, inchi);
-            mol = pickCanonical(tautomers);
-            let svg = Buffer.from(depictionGenerator.depictSync(mol).toSvgStrSync());
-            let filepath = path.join(cacheDir, Date.now().toString());
-            await sharp(svg).toFile(filepath);
-            output += `[CQ:image,file=${qqbot.escape(filepath, true)}]`;
-        } else {
-            output+= '&#91;非法语句！！&#93;';
-        };
-    };
-    return output;
-};
-
 // 字元组字の诱惑
 const ichara = async (str) => {
     if (!str) {
-        let getHTML = await fetch(new URL('https://www.ichara.cn/web/yunlizaoziweb/randCharaView.php?showids=yes'));
+        let getHTML = await fetch('https://www.ichara.cn/web/yunlizaoziweb/randCharaView.php?showids=yes');
         let getHTMLBuf = await getHTML.arrayBuffer();
         let html = Buffer.from(getHTMLBuf).toString();
         str = html.match(/target='_BLANK'>(.*?)</u)[1];
     };
-    let get = await fetch(new URL(`https://www.ichara.cn/web/yunlizaoziweb/createPng.php?str=${encodeURIComponent(str)}&fontcolor=000000&area=G&dbname=ids&idsname=idslte&bgimgpath=blank`));
+    let get = await fetch(`https://www.ichara.cn/web/yunlizaoziweb/createPng.php?str=${encodeURIComponent(str)}&fontcolor=000000&area=G&dbname=ids&idsname=idslte&bgimgpath=blank`);
     let getBuf = await get.arrayBuffer();
     let filepath = path.join(cacheDir, Date.now().toString());
     fs.writeFileSync(filepath, Buffer.from(getBuf));
     return `${str}\n[CQ:image,file=${qqbot.escape(filepath, true)}]`;
 };
 
-let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi、inchi2img、ichara';
+let modeList = '可切换模式列表：chishoh、AIxxz、pet、gong、kufon、gt、gtRound、couplet、code、bf、bfRound、jiowjeh、wtfurry、yngshiau、zuzi、ichara';
 let version = '智障 Bot 1.8.8\n지장 보트 1.8.8\n\nIshisashi 版权所无\n\n《지장 보트》는 조선민주주의인민공화국 쏘프트웨어법에 의하여 보호되고 없습니다.\n\n广告：\nIshisashi Kisulbu，诚聘技术售人控';
 // 群聊
 qqbot.on('GroupMessage', async (rawdata) => {
@@ -1823,15 +1646,6 @@ qqbot.on('GroupMessage', async (rawdata) => {
                 };
                 break;
 
-            // InChI 转结构
-            case 'inchi2img':
-                if (rawdata.extra.ats.includes(botQQ)) {
-                    let str = qqbot.parseMessage(rawdata.raw.replace(new RegExp(`\\[CQ:at,qq=${botQQ}\\] ?`, 'gu'), '')).text;
-                    let output = await inchi2img(str);
-                    reply(rawdata, output, { noEscape: true });
-                };
-                break;
-
             // 字元组字
             case 'ichara':
                 if (rawdata.extra.ats.includes(botQQ)) {
@@ -2405,12 +2219,6 @@ qqbot.on('PrivateMessage', async (rawdata) => {
             case 'zuzi':
                 str = rawdata.text;
                 output = await zuzi(str);
-                reply(rawdata, output, { noEscape: true });
-                break;
-
-            case 'inchi2img':
-                str = rawdata.text;
-                output = await inchi2img(str);
                 reply(rawdata, output, { noEscape: true });
                 break;
 
